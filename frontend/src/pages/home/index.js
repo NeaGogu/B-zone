@@ -1,7 +1,22 @@
 import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu, theme } from 'antd';
 import React from 'react';
+function getItem(label, key, icon, children, type) {
+    return {
+        key,
+        icon,
+        children,
+        label,
+        type,
+    };
+}
 const { Header, Content, Sider } = Layout;
+const item = [
+    getItem('Saved zones', 'sub1', null , [
+        getItem('Initial Zone', 'g1', null,null, 'group'),
+        getItem('Saved Zone 1', 'g2', null, null, 'group'),
+    ])
+]
 const items1 = ['1', '2', '3'].map((key) => ({
     key,
     label: `nav ${key}`,
@@ -21,6 +36,7 @@ const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map((icon, i
         }),
     };
 });
+
 export default function Home(){
     const {
         token: { colorBgContainer },
@@ -29,7 +45,7 @@ export default function Home(){
         <Layout>
             <Header className="header">
                 <div className="logo" />
-                <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['2']} items={items1} />
+                <Menu theme="dark" mode="horizontal" />
             </Header>
             <Layout>
                 <Sider
@@ -46,7 +62,7 @@ export default function Home(){
                             height: '100%',
                             borderRight: 0,
                         }}
-                        items={items2}
+                        items={item}
                     />
                 </Sider>
                 <Layout
