@@ -12,21 +12,21 @@ func hello(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) routes() http.Handler {
-    // init the router
-    router := chi.NewRouter()
+	// init the router
+	router := chi.NewRouter()
 
-    // TODO
-    // router.NotFound()
+	// TODO
+	// router.NotFound()
 
-    // A good base middleware stack
-    router.Use(middleware.RequestID)
-    router.Use(middleware.RealIP)
-    router.Use(middleware.Logger)
-    router.Use(middleware.Recoverer)
+	// A good base middleware stack
+	router.Use(middleware.RequestID)
+	router.Use(middleware.RealIP)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
 
-    router.Route("/test_route", func(r chi.Router) {
-	r.Get("/", hello)
-    })
+	router.Route("/test_route", func(r chi.Router) {
+		r.Get("/", hello)
+	})
 
-    return router
+	return router
 }
