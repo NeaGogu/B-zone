@@ -29,14 +29,10 @@ REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
 mongo        latest    a440572ac3c1   3 weeks ago   639MB
 ```
 
-- [ ] Create a folder "mongodb" in your root directory e.g. C:\Users\20193308.
-
-- [ ] Enter `cd C:\yourdirectory\mongodb`. e.g. C:\Users\20193308\mongodb.
-
 - [ ] Enter `docker run -d -p 27017:27017 -v ~/mongodb:/data/db --name Bumbal mongo:latest`. The entire command line should look like this: 
 
 ```
-C:\Users\20193308\mongodb> docker run -d -p 27017:27017 -v ~/mongodb:/data/db --name Bumbal mongo:latest
+C:\Users\20193308\mongodb> docker run -d -p 27017:27017 --name Bumbal mongo:latest
 ```
 
 - [ ]  Enter `docker ps`. You should see something similar:
