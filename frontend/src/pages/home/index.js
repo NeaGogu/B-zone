@@ -1,26 +1,29 @@
 import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import { Breadcrumb, Layout, Menu, theme, Button } from 'antd';
 import React from 'react';
-const { Header, Content, Sider } = Layout;
-const items1 = ['1', '2', '3'].map((key) => ({
-    key,
-    label: `nav ${key}`,
-}));
-const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map((icon, index) => {
-    const key = String(index + 1);
+function getItem(label, key, icon, children, type) {
     return {
-        key: `sub${key}`,
-        icon: React.createElement(icon),
-        label: `subnav ${key}`,
-        children: new Array(4).fill(null).map((_, j) => {
-            const subKey = index * 4 + j + 1;
-            return {
-                key: subKey,
-                label: `option${subKey}`,
-            };
-        }),
+        key,
+        icon,
+        children,
+        label,
+        type,
     };
-});
+}
+const {SubMenu} = Menu;
+const { Header, Content, Sider } = Layout;
+const item = [
+    getItem('Saved zones', 'sub1', null , [
+        getItem('Initial Zone', 'g1', null,null, 'group'),
+        getItem('Saved Zone 1', 'g2', null, null, 'group'),
+    ]),
+    getItem('Filter', 'sub2' , null, null)
+];
+
+
+
+
+
 export default function Home(){
     const {
         token: { colorBgContainer },
@@ -29,7 +32,7 @@ export default function Home(){
         <Layout>
             <Header className="header">
                 <div className="logo" />
-                <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['2']} items={items1} />
+                <Menu theme="dark" mode="horizontal" />
             </Header>
             <Layout>
                 <Sider
@@ -38,6 +41,7 @@ export default function Home(){
                         background: colorBgContainer,
                     }}
                 >
+
                     <Menu
                         mode="inline"
                         defaultSelectedKeys={['1']}
@@ -46,23 +50,23 @@ export default function Home(){
                             height: '100%',
                             borderRight: 0,
                         }}
-                        items={items2}
-                    />
+                        >
+                        <SubMenu key="sub1"  title="Input field">
+                        </SubMenu>
+                        <SubMenu key="sub2"  title="Saved Zones">
+                            <Menu.Item key="5">Initial Zone</Menu.Item>
+                            <Menu.Item key="6">Saved Zone 1</Menu.Item>
+                        </SubMenu>
+                        <Button type="primary">Compare</Button>
+
+                    </Menu>
                 </Sider>
                 <Layout
                     style={{
                         padding: '0 24px 24px',
                     }}
                 >
-                    <Breadcrumb
-                        style={{
-                            margin: '16px 0',
-                        }}
-                    >
-                        <Breadcrumb.Item>Home</Breadcrumb.Item>
-                        <Breadcrumb.Item>List</Breadcrumb.Item>
-                        <Breadcrumb.Item>App</Breadcrumb.Item>
-                    </Breadcrumb>
+
                     <Content
                         style={{
                             padding: 24,
