@@ -1,6 +1,7 @@
-import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme, Button } from 'antd';
+import { LaptopOutlined, NotificationOutlined, UserOutlined,DownOutlined } from '@ant-design/icons';
+import { Breadcrumb, Layout, Menu, theme, Button, Dropdown, Space} from 'antd';
 import React from 'react';
+import DropdownButton from "antd/es/dropdown/dropdown-button";
 function getItem(label, key, icon, children, type) {
     return {
         key,
@@ -20,6 +21,25 @@ const item = [
     getItem('Filter', 'sub2' , null, null)
 ];
 
+const items = [
+    {
+        key: '1',
+        label: (
+            <a target="_blank" rel="noopener noreferrer">
+                email
+            </a>
+        )
+    },
+    {
+        key: '3',
+        label: (
+            <a target="_blank" rel="noopener noreferrer" >
+                password
+            </a>
+        )
+    },
+];
+
 
 
 
@@ -31,8 +51,46 @@ export default function Home(){
     return(
         <Layout>
             <Header className="header">
-                <div className="logo" />
-                <Menu theme="dark" mode="horizontal" />
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    className="logo"
+
+                    <Dropdown
+                        menu={{
+                            items,
+                        }}
+                    >
+                        <a onClick={(e) => e.preventDefault()}>
+                            <Space>
+                                <button type="button"  variant="contained" style={{float: 'right'}} >
+                                    <UserOutlined/>
+                                </button>
+                                <DownOutlined />
+                            </Space>
+                        </a>
+                    </Dropdown>
+
+
+
+                </div>
+
+                <Menu theme="dark" mode="horizontal"/>
+
+
+                {/*<Dropdown*/}
+                {/*    menu={{*/}
+                {/*        items,*/}
+                {/*    }}*/}
+                {/*>*/}
+                {/*    /!*<a onClick={(e) => e.preventDefault()}>*!/*/}
+                {/*    /!*    <Space>*!/*/}
+                {/*    /!*        Hover me*!/*/}
+                {/*    /!*    </Space>*!/*/}
+                {/*    /!*</a>*!/*/}
+                {/*</Dropdown>*/}
+
+
+
+
             </Header>
             <Layout>
                 <Sider
@@ -53,11 +111,12 @@ export default function Home(){
                         >
                         <SubMenu key="sub1"  title="Input field">
                         </SubMenu>
-                        <SubMenu key="sub2"  title="Saved Zones">
+                        <SubMenu key="sub2"  title="Saved Zones" icon={<NotificationOutlined/>}>
                             <Menu.Item key="5">Initial Zone</Menu.Item>
                             <Menu.Item key="6">Saved Zone 1</Menu.Item>
                         </SubMenu>
                         <Button type="primary">Compare</Button>
+
 
                     </Menu>
                 </Sider>
