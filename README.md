@@ -33,10 +33,10 @@ mongo        latest    a440572ac3c1   3 weeks ago   639MB
 
 - [ ] Enter `cd C:\yourdirectory\mongodb`. e.g. C:\Users\20193308\mongodb.
 
-- [ ] Enter `docker run -d -p 2717:27017 -v ~/mongodb:/data/db --name Bumbal mongo:latest`. The entire command line should look like this: 
+- [ ] Enter `docker run -d -p 27017:27017 -v ~/mongodb:/data/db --name Bumbal mongo:latest`. The entire command line should look like this: 
 
 ```
-C:\Users\20193308\mongodb> docker run -d -p 2717:27017 -v ~/mongodb:/data/db --name Bumbal mongo:latest
+C:\Users\20193308\mongodb> docker run -d -p 27017:27017 -v ~/mongodb:/data/db --name Bumbal mongo:latest
 ```
 
 - [ ]  Enter `docker ps`. You should see something similar:
@@ -45,7 +45,7 @@ C:\Users\20193308\mongodb> docker run -d -p 2717:27017 -v ~/mongodb:/data/db --n
 C:\Users\20193308\mongodb> docker ps
 
 CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS                      NAMES
-a56ffa709baa   mongo:latest   "docker-entrypoint.s…"   7 seconds ago    Up 7 seconds    0.0.0.0:2717->27017/tcp    Bumbal
+a56ffa709baa   mongo:latest   "docker-entrypoint.s…"   7 seconds ago    Up 7 seconds    0.0.0.0:27017->27017/tcp    Bumbal
 ```
 - [ ]  Open the Docker Desktop. You should see Container "Bumbal" with status "Running".
 
@@ -72,7 +72,7 @@ local   40.00 KiBy running the disableTelemetry() command.
 ```
 Commands that can be used in the shell: `use admin`,`use local`, `use test`, `show collections`, etc... https://www.mongodb.com/docs/mongodb-shell/
 
-- [ ]  Run `MongoDB Compass`. Enter `mongodb://localhost:2717`.
+- [ ]  Run `MongoDB Compass`. Enter `mongodb://localhost:27017`.
 
 
 ![](https://www.prisma.io/dataguide/content/mongodb/setting-up-a-local-database/windows/16_compass_running.png)
