@@ -1,3 +1,24 @@
+
+# How to run
+
+From the `backend` folder, run the following command in the terminal:
+
+```go
+go run ./cmd/web
+```
+
+You should see a line being printed in the terminal that looks like this:
+`INFO	2023/02/28 11:44:50 Starting server on :4000`
+
+By default, the server starts running on address `localhost:4000`. You can pass a different port as an argument like this:
+
+```go
+go run ./cmd/web -addr ":3400"
+```
+
+This will run the server on port `3400` and you should see it reflected in the terminal.
+
+
 # Project structure and organization
 
 The project structure looks something like:
