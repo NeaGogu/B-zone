@@ -9,9 +9,6 @@ const { darkAlgorithm } = theme;
 export default function Login() {
 
     const navigate = useNavigate();
-    const username = "sep@bumbal.eu"
-    const password = "cW$#Qbph0524";
-    const token = "";
     var verified;
 
     function signIn(user, passw) {
