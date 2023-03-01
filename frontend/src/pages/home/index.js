@@ -1,5 +1,5 @@
-import { LaptopOutlined, NotificationOutlined, UserOutlined,DownOutlined } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme, Button, Dropdown, Space} from 'antd';
+import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
+import { Breadcrumb, Layout, Menu, theme, Button } from 'antd';
 import React from 'react';
 import DropdownButton from "antd/es/dropdown/dropdown-button";
 function getItem(label, key, icon, children, type) {
@@ -11,14 +11,14 @@ function getItem(label, key, icon, children, type) {
         type,
     };
 }
-const {SubMenu} = Menu;
+const { SubMenu } = Menu;
 const { Header, Content, Sider } = Layout;
 const item = [
-    getItem('Saved zones', 'sub1', null , [
-        getItem('Initial Zone', 'g1', null,null, 'group'),
+    getItem('Saved zones', 'sub1', null, [
+        getItem('Initial Zone', 'g1', null, null, 'group'),
         getItem('Saved Zone 1', 'g2', null, null, 'group'),
     ]),
-    getItem('Filter', 'sub2' , null, null)
+    getItem('Filter', 'sub2', null, null)
 ];
 
 const items = [
@@ -40,15 +40,11 @@ const items = [
     },
 ];
 
-
-
-
-
-export default function Home(){
+export default function Home() {
     const {
         token: { colorBgContainer },
     } = theme.useToken();
-    return(
+    return (
         <Layout>
             <Header className="header">
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -108,10 +104,10 @@ export default function Home(){
                             height: '100%',
                             borderRight: 0,
                         }}
-                        >
-                        <SubMenu key="sub1"  title="Input field">
+                    >
+                        <SubMenu key="sub1" title="Input field">
                         </SubMenu>
-                        <SubMenu key="sub2"  title="Saved Zones" icon={<NotificationOutlined/>}>
+                        <SubMenu key="sub2"  title="Saved Zones">
                             <Menu.Item key="5">Initial Zone</Menu.Item>
                             <Menu.Item key="6">Saved Zone 1</Menu.Item>
                         </SubMenu>
@@ -126,15 +122,20 @@ export default function Home(){
                     }}
                 >
 
-                    <Content
+                    <Content className="map" id="map"
                         style={{
+                            margin: '24px 16px',
                             padding: 24,
-                            margin: 0,
-                            minHeight: 280,
+                            minHeight: 500,
                             background: colorBgContainer,
                         }}
                     >
-                        Content
+                        <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500 }}>
+                            <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            />
+                        </MapContainer>
                     </Content>
                 </Layout>
             </Layout>
