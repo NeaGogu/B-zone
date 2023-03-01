@@ -43,6 +43,8 @@ export default function Login() {
                 }
                 else{
                     localStorage.setItem('token', data.token)
+                    localStorage.setItem('email', user)
+                    localStorage.setItem('id', data.user.id)
                     navigate('/home')
                 }
                 
