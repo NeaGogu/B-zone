@@ -56,10 +56,6 @@ export default function Home() {
         token: { colorBgContainer },
     } = theme.useToken();
 
-    // function setEmail() {
-    //     document.getElementById('email').innerHTML = id_user //gets email for text in item
-    // }
-
 
     return (
         <Layout>
@@ -87,23 +83,7 @@ export default function Home() {
                 </div>
 
                 <Menu theme="dark" mode="horizontal"/>
-
-
-                {/*<Dropdown*/}
-                {/*    menu={{*/}
-                {/*        items,*/}
-                {/*    }}*/}
-                {/*>*/}
-                {/*    /!*<a onClick={(e) => e.preventDefault()}>*!/*/}
-                {/*    /!*    <Space>*!/*/}
-                {/*    /!*        Hover me*!/*/}
-                {/*    /!*    </Space>*!/*/}
-                {/*    /!*</a>*!/*/}
-                {/*</Dropdown>*/}
-
-
-
-
+                
             </Header>
             <Layout>
                 <Sider
