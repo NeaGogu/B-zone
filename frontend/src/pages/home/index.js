@@ -157,9 +157,9 @@ export default function Home() {
                                     </MyFormItemGroup>
                                 </MyFormItemGroup>
 
-                                <Button style={{ width: "100%" }} type="primary">
-                                    Calculate
-                                </Button>
+                                <Button style={{ width: "100%" }} type="primary">Calculate</Button>
+                                &nbsp;
+                                <Button style={{ width: "100%" }} type="primary">Save</Button>
                             </Form>
 
                             <SubMenu key="sub2" title="Saved Zones">
