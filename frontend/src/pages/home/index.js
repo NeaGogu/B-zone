@@ -1,5 +1,5 @@
 import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme, Button, Dropdown, Space } from 'antd';
+import { Breadcrumb, Layout, Menu, theme, Button, Dropdown, Space, ConfigProvider  } from 'antd';
 import React from 'react';
 import DropdownButton from "antd/es/dropdown/dropdown-button";
 import { MapContainer, TileLayer,Marker,Popup } from 'react-leaflet';
@@ -20,6 +20,7 @@ function setEmail() {
     document.getElementById('email').innerHTML = id_user //gets email for text in item
 }
 const { SubMenu } = Menu;
+const { darkAlgorithm} = theme;
 const { Header, Content, Sider } = Layout;
 const item = [
     getItem('Saved zones', 'sub1', null, [
@@ -58,84 +59,103 @@ export default function Home() {
 
 
     return (
-        <Layout>
-            <Header className="header">
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    className="logo"
-
-                    <Dropdown
-                        menu={{
-                            items,
-                        }}
-                    >
-                        <a onClick={(e) => {e.preventDefault(); }}>
-                            <Space>
-                                <button type="button"  variant="contained" style={{float: 'right'}} >
-                                    <UserOutlined/>
-                                </button>
-                                <DownOutlined />
-                            </Space>
-                        </a>
-                    </Dropdown>
-
-
-
-                </div>
-
-                <Menu theme="dark" mode="horizontal"/>
-                
-            </Header>
+        <ConfigProvider
+            // theme which we should use
+            theme={{
+                token: {
+                    colorPrimary: "#ffd369",
+                    colorBgBase: "#222831",
+                    colorPrimaryBg: "#393E46",
+                    colorTextBase: "#eeeeee"
+                },
+                // renders antd components with dark mode
+                algorithm: darkAlgorithm
+            }}
+        >
             <Layout>
-                <Sider
-                    width={200}
-                    style={{
-                        background: colorBgContainer,
-                    }}
-                >
+                <Header className="header" >
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }} >
 
-                    <Menu
-                        mode="inline"
-                        defaultSelectedKeys={['1']}
-                        defaultOpenKeys={['sub1']}
+                        <Dropdown
+                            menu={{
+                                items,
+                            }}
+                        >
+                            <a onClick={(e) => e.preventDefault()}>
+                                <Space>
+                                    <button type="button" variant="contained" style={{ float: 'right' }} >
+                                        <UserOutlined />
+                                    </button>
+                                    <DownOutlined />
+                                </Space>
+                            </a>
+                        </Dropdown>
+
+
+
+                    </div>
+
+                    <Menu theme="dark" mode="horizontal" />
+
+
+
+                </Header>
+                <Layout>
+                    <Sider
+                        width={200}
                         style={{
-                            height: '100%',
-                            borderRight: 0,
-                        }}
-                    >
-                        <SubMenu key="sub1" title="Input field">
-                        </SubMenu>
-                        <SubMenu key="sub2"  title="Saved Zones">
-                            <Menu.Item key="5">Initial Zone</Menu.Item>
-                            <Menu.Item key="6">Saved Zone 1</Menu.Item>
-                        </SubMenu>
-                        <Button type="primary">Compare</Button>
-
-
-                    </Menu>
-                </Sider>
-                <Layout
-                    style={{
-                        padding: '0 24px 24px',
-                    }}
-                >
-
-                    <Content className="map" id="map"
-                        style={{
-                            margin: '24px 16px',
-                            padding: 24,
-                            minHeight: 500,
                             background: colorBgContainer,
                         }}
                     >
-                        <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500 }}>
-                            <TileLayer
-                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            />
-                        </MapContainer>
-                    </Content>
+
+                        <Menu
+                            mode="inline"
+                            defaultSelectedKeys={['1']}
+                            defaultOpenKeys={['sub1']}
+                            style={{
+                                height: '100%',
+                                borderRight: 0,
+                            }}
+                        >
+                            <SubMenu key="sub1" title="Input field">
+                            </SubMenu>
+                            <Button style={{ width: "100%" }} type="primary">Calculate</Button>
+                            <SubMenu key="sub2" title="Saved Zones">
+                                <Menu.Item key="5">Initial Zone</Menu.Item>
+                                <Menu.Item key="6">Saved Zone 1</Menu.Item>
+                            </SubMenu>
+                            <Button style={{ width: "100%" }} type="primary">Compare</Button>
+
+
+                        </Menu>
+                    </Sider>
+                    <Layout
+                        style={{
+                            padding: '0 24px 24px',
+                        }}
+                    >
+
+                        <Content className="map" id="map"
+                                 style={{
+                                     margin: '24px 16px',
+                                     padding: 24,
+                                     minHeight: 500,
+                                     background: colorBgContainer,
+                                 }}
+                        >
+                            <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500 }}>
+                                <TileLayer
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                />
+                            </MapContainer>
+                        </Content>
+                    </Layout>
                 </Layout>
             </Layout>
-        </Layout>
+
+        </ConfigProvider>
+
+
     );
 }
