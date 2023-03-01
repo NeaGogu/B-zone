@@ -144,10 +144,10 @@ export default function Home() {
                                 <MyFormItemGroup>
                                     <MyFormItemGroup>
                                         <MyFormItem name="fuelCost" label="Average fuel cost">
-                                            <Input />
+                                            <Input placeholder="1" />
                                         </MyFormItem>
                                         <MyFormItem name="fuelUsage" label="Average fuel usage of car">
-                                            <Input />
+                                            <Input placeholder="1" />
                                         </MyFormItem>
                                     </MyFormItemGroup>
                                 </MyFormItemGroup>
@@ -160,9 +160,8 @@ export default function Home() {
                             <SubMenu key="sub2" title="Saved Zones">
                                 <Menu.Item key="5">Initial Zone</Menu.Item>
                                 <Menu.Item key="6">Saved Zone 1</Menu.Item>
+                                <Button style={{ width: "100%" }} type="primary">Compare</Button>
                             </SubMenu>
-                            <Button style={{ width: "100%" }} type="primary">Compare</Button>
-
 
                         </Menu>
                     </Sider>
