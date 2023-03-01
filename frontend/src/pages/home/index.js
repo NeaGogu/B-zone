@@ -16,6 +16,9 @@ function getItem(label, key, icon, children, type) {
         type,
     };
 }
+function setEmail() {
+    document.getElementById('email').innerHTML = id_user //gets email for text in item
+}
 const { SubMenu } = Menu;
 const { Header, Content, Sider } = Layout;
 const item = [
@@ -25,14 +28,16 @@ const item = [
     ]),
     getItem('Filter', 'sub2', null, null)
 ];
+const id_user = localStorage.getItem('email')
 
 const items = [
     {
         key: '1',
         label: (
-            <a target="_blank" rel="noopener noreferrer">
-                email
-            </a>
+            <p target="_blank" rel="noopener noreferrer" id="email">
+                <var>{id_user}</var>
+
+            </p>
         )
     },
     {
@@ -44,11 +49,18 @@ const items = [
         )
     },
 ];
-
+localStorage.getItem('token')
 export default function Home() {
+
     const {
         token: { colorBgContainer },
     } = theme.useToken();
+
+    // function setEmail() {
+    //     document.getElementById('email').innerHTML = id_user //gets email for text in item
+    // }
+
+
     return (
         <Layout>
             <Header className="header">
@@ -60,7 +72,7 @@ export default function Home() {
                             items,
                         }}
                     >
-                        <a onClick={(e) => e.preventDefault()}>
+                        <a onClick={(e) => {e.preventDefault(); }}>
                             <Space>
                                 <button type="button"  variant="contained" style={{float: 'right'}} >
                                     <UserOutlined/>
