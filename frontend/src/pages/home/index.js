@@ -140,6 +140,11 @@ export default function Home() {
                                 borderRight: 0,
                             }}
                         >
+                            <div style={{ width: "100%" }}>
+                                <Button style={{ width: "50%" }} type="primary">Heat map</Button>
+                                <Button style={{ width: "50%" }} type="primary">Zones</Button>
+                            </div>
+
                             <Form name="form_item_path" layout="vertical" onFinish={onFinish}>
                                 <MyFormItemGroup>
                                     <MyFormItemGroup>
