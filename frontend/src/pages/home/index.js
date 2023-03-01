@@ -1,8 +1,8 @@
 import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme, Button, Dropdown, Space, ConfigProvider  } from 'antd';
+import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider } from 'antd';
 import React from 'react';
 import DropdownButton from "antd/es/dropdown/dropdown-button";
-import { MapContainer, TileLayer,Marker,Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
@@ -16,11 +16,13 @@ function getItem(label, key, icon, children, type) {
         type,
     };
 }
+
 function setEmail() {
     document.getElementById('email').innerHTML = id_user //gets email for text in item
 }
+
 const { SubMenu } = Menu;
-const { darkAlgorithm} = theme;
+const { darkAlgorithm } = theme;
 const { Header, Content, Sider } = Layout;
 const item = [
     getItem('Saved zones', 'sub1', null, [
@@ -29,6 +31,7 @@ const item = [
     ]),
     getItem('Filter', 'sub2', null, null)
 ];
+
 const id_user = localStorage.getItem('email')
 
 const items = [
@@ -50,12 +53,32 @@ const items = [
         )
     },
 ];
+
+const MyFormItemContext = React.createContext([]);
+function toArr(str) {
+    return Array.isArray(str) ? str : [str];
+}
+const MyFormItemGroup = ({ prefix, children }) => {
+    const prefixPath = React.useContext(MyFormItemContext);
+    const concatPath = React.useMemo(() => [...prefixPath, ...toArr(prefix)], [prefixPath, prefix]);
+    return <MyFormItemContext.Provider value={concatPath}>{children}</MyFormItemContext.Provider>;
+};
+const MyFormItem = ({ name, ...props }) => {
+    const prefixPath = React.useContext(MyFormItemContext);
+    const concatName = name !== undefined ? [...prefixPath, ...toArr(name)] : undefined;
+    return <Form.Item name={concatName} {...props} />;
+};
+
 localStorage.getItem('token')
 export default function Home() {
 
     const {
         token: { colorBgContainer },
     } = theme.useToken();
+
+    const onFinish = (value) => {
+        console.log(value);
+    };
 
 
     return (
@@ -117,9 +140,23 @@ export default function Home() {
                                 borderRight: 0,
                             }}
                         >
-                            <SubMenu key="sub1" title="Input field">
-                            </SubMenu>
-                            <Button style={{ width: "100%" }} type="primary">Calculate</Button>
+                            <Form name="form_item_path" layout="vertical" onFinish={onFinish}>
+                                <MyFormItemGroup>
+                                    <MyFormItemGroup>
+                                        <MyFormItem name="fuelCost" label="Average fuel cost">
+                                            <Input />
+                                        </MyFormItem>
+                                        <MyFormItem name="fuelUsage" label="Average fuel usage of car">
+                                            <Input />
+                                        </MyFormItem>
+                                    </MyFormItemGroup>
+                                </MyFormItemGroup>
+
+                                <Button style={{ width: "100%" }} type="primary">
+                                    Calculate
+                                </Button>
+                            </Form>
+
                             <SubMenu key="sub2" title="Saved Zones">
                                 <Menu.Item key="5">Initial Zone</Menu.Item>
                                 <Menu.Item key="6">Saved Zone 1</Menu.Item>
@@ -136,12 +173,12 @@ export default function Home() {
                     >
 
                         <Content className="map" id="map"
-                                 style={{
-                                     margin: '24px 16px',
-                                     padding: 24,
-                                     minHeight: 500,
-                                     background: colorBgContainer,
-                                 }}
+                            style={{
+                                margin: '24px 16px',
+                                padding: 24,
+                                minHeight: 500,
+                                background: colorBgContainer,
+                            }}
                         >
                             <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500 }}>
                                 <TileLayer
