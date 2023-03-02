@@ -30,14 +30,17 @@ func main() {
 		infoLog:  infoLog,
 	}
 
-	srv := &http.Server{
+	_ = &http.Server{
 		Addr:     *addr,
 		ErrorLog: errorLog,
 		Handler:  app.routes(),
 	}
 
-	infoLog.Printf("Starting server on %s", *addr)
-	err := srv.ListenAndServe()
-	errorLog.Fatal(err)
+	infoLog.Printf("Starting server on %s", addr)
+
+	parseZipFile("./short.json")
+
+	//err := srv.ListenAndServe()
+	//errorLog.Fatal(err)
 
 }
