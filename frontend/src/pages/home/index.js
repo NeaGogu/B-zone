@@ -16,6 +16,7 @@ function getItem(label, key, icon, children, type) {
         type,
     };
 }
+
 const { SubMenu } = Menu;
 const { Header, Content, Sider } = Layout;
 const item = [
@@ -26,29 +27,62 @@ const item = [
     getItem('Filter', 'sub2', null, null)
 ];
 
-const items = [
-    {
-        key: '1',
-        label: (
-            <a target="_blank" rel="noopener noreferrer">
-                email
-            </a>
-        )
-    },
-    {
-        key: '3',
-        label: (
-            <a target="_blank" rel="noopener noreferrer" >
-                password
-            </a>
-        )
-    },
-];
-
 export default function Home() {
     const {
         token: { colorBgContainer },
     } = theme.useToken();
+
+    const items = [
+        {
+            key: '1',
+            label: (
+                <a target="_blank" rel="noopener noreferrer">
+                    Email:
+                </a>
+            )
+        },
+        {
+            key: '2',
+            label: (
+                <Button href="/" OnClick = {() => (console.log("Log out button clicked"))}>Log Out</Button>
+            )
+        },
+    ];
+
+    //signOut function
+    function signOut() {
+        const token = localStorage.getItem('token');
+        var valid;
+
+        //1. delete the user token and send sign out GET message
+        console.log("Fetching sign out API")
+        fetch(`https://sep202302.bumbal.eu/api/v2/authenticate/sign-out?token=${encodeURIComponent(token)}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then((response) => {
+            console.log("This is the response:")
+            console.log(response)
+            if (response.ok) {
+                valid = true;
+            }
+        }).then((data) => {
+            console.log(data)
+            if (valid) {
+                localStorage.clear();
+                alert('You have been logged out!')
+                //window.location.reload()
+            }
+        })
+
+        //2. re-route user to home page
+
+
+    }
+
     return (
         <Layout>
             <Header className="header">

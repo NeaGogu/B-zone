@@ -11,7 +11,7 @@ export default function Login() {
     const navigate = useNavigate();
     var verified;
 
-    function signIn(user, passw) {
+    async function signIn(user, passw) {
         fetch("https://sep202302.bumbal.eu/api/v2/authenticate/sign-in", {
             method: 'POST',
             headers: {
@@ -43,7 +43,7 @@ export default function Login() {
                 }
                 else{
                     localStorage.setItem('token', data.token)
-                    navigate('/home')
+                    window.location.reload()
                 }
                 
             })
