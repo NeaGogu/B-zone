@@ -45,14 +45,51 @@ const items = [
         )
     },
     {
-        key: '3',
+        key: '2',
         label: (
-            <a target="_blank" rel="noopener noreferrer" >
-                password
+            <a target="_blank" rel="noopener noreferrer" onClick={() => signOut()}>
+                Log Out
             </a>
         )
     },
 ];
+
+//signOut function
+function signOut() {
+    const token = localStorage.getItem('token');
+    var valid;
+
+    //1. delete the user token and send sign out GET message
+    console.log("Fetching sign out API")
+    fetch(`https://sep202302.bumbal.eu/api/v2/authenticate/sign-out?token=${encodeURIComponent(token)}`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`, // add token to Bearer Authorization when sending GET signOut request
+        }
+    })
+        .then((response) => {
+            console.log("This is the response:")
+            console.log(response)
+            if (response.ok) {
+                valid = true;
+
+            }
+        }).then((data) => {
+        console.log("This is the data:")
+        console.log(data)
+        if (valid) {
+            localStorage.clear();
+            alert('You have been logged out!')
+            //2. re-route user to home page
+            window.location.reload()
+        } else {
+            alert("You could not be logged out! Please try again later.")
+        }
+    })
+
+}
 
 const MyFormItemContext = React.createContext([]);
 function toArr(str) {
