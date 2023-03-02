@@ -45,6 +45,7 @@ export default function Login() {
                     localStorage.setItem('token', data.token)
                     localStorage.setItem('email', user)
                     localStorage.setItem('id', data.user.id)
+                    window.location.reload()
                     navigate('/home')
                 }
                 
