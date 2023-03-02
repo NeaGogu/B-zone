@@ -13,20 +13,18 @@ function App() {
 
   return (
 
-    <Router>
-      <Routes>
-        <Route path='/home' element={<Home />} />
+      <Router>
+        <Routes>
+          <Route path='/home' element={authenticated ? <Home /> : <Navigate replace to={'/'}/>}  />
+          <Route path='/login' element={authenticated ? <Navigate replace to={'/'}/> : <Login/>}/>
+          <Route path='/' element={
 
-        <Route path='/login' element={<Login />} />
+            authenticated ? (<Navigate to="/home" replace />) :
+                (<Navigate to="/login" replace />)
 
-        <Route path='/' element={
-
-          authenticated ? (<Navigate to="/home" replace />) :
-            (<Navigate to="/login" replace />)
-
-        } />
-      </Routes>
-    </Router>
+          } />
+        </Routes>
+      </Router>
   );
 }
 
