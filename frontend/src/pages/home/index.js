@@ -44,7 +44,10 @@ export default function Home() {
         {
             key: '2',
             label: (
-                <Button href="/" OnClick = {() => (console.log("Log out button clicked"))}>Log Out</Button>
+                //<Button href="/" OnClick = {console.log("Log out button clicked")}>Log Out</Button>
+                <a target="_blank" rel="noopener noreferrer" onClick={() => signOut()}>
+                    Log Out
+                </a>
             )
         },
     ];
@@ -68,13 +71,17 @@ export default function Home() {
             console.log(response)
             if (response.ok) {
                 valid = true;
+
             }
         }).then((data) => {
+            console.log("This is the data:")
             console.log(data)
             if (valid) {
                 localStorage.clear();
                 alert('You have been logged out!')
-                //window.location.reload()
+                window.location.reload()
+            } else {
+                alert("You could not be logged out! Please try again later.")
             }
         })
 
