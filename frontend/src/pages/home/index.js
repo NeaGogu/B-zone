@@ -62,7 +62,8 @@ function signOut() {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`, // add token to Bearer Authorization when sending GET signOut request
         }
     })
         .then((response) => {
@@ -78,14 +79,12 @@ function signOut() {
         if (valid) {
             localStorage.clear();
             alert('You have been logged out!')
+            //2. re-route user to home page
             window.location.reload()
         } else {
             alert("You could not be logged out! Please try again later.")
         }
     })
-
-    //2. re-route user to home page
-
 
 }
 
