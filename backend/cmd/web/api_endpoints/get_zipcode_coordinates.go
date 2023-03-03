@@ -8,22 +8,25 @@ import (
 	"os"
 )
 
-func GetAreaPoint(w http.ResponseWriter, r *http.Request) {
+// Codes Data structure containing the zipcode and its coordinates
+type Codes struct {
+	Pc4         string `json:"pc4"`
+	Coordinates any    `json:"coordinates"`
+}
 
-	type Codes struct {
-		Pc4         string `json:"pc4"`
-		Coordinates any    `json:"coordinates"`
-	}
+// Nl Data structure for all the zipcodes
+type Nl struct {
+	Nl []Codes `json:"nl"`
+}
 
-	type Nl struct {
-		Nl []Codes `json:"nl"`
-	}
+// CodesRequested Data structure for storing the requested zipcodes
+type CodesRequested struct {
+	Pc4Codes []string `json:"pc4"`
+}
 
-	type CodesRequested struct {
-		Pc4Codes []string `json:"pc4"`
-	}
-
-	var path = "./data/nlnasty.json"
+// Opens the file containing all the zipcodes and returns
+// a data structure containing them and the request code
+func openFile(path string, w http.ResponseWriter, r *http.Request) (Nl, CodesRequested) {
 	jsonNl, err := os.Open(path)
 
 	if err != nil {
@@ -53,10 +56,13 @@ func GetAreaPoint(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
 	}
 
-	pc4 := reqCode.Pc4Codes
+	return nl, reqCode
+}
+
+// Boolean function that checks if the inputted zipcodes are valid
+func checkZipcodesValidity(pc4 []string, nl Nl, w http.ResponseWriter) bool {
 	var checkZipcodes []string
 
 	var found bool
@@ -79,9 +85,14 @@ func GetAreaPoint(w http.ResponseWriter, r *http.Request) {
 
 	if len(checkZipcodes) > 0 {
 		json.NewEncoder(w).Encode(append(checkZipcodes, "not in the dataset"))
-		return
+		return false
+	} else {
+		return true
 	}
+}
 
+// Encodes the coordinates of the requested zipcodes
+func returnCoordinates(pc4 []string, nl Nl, w http.ResponseWriter) {
 	var coordinates []any
 
 	for i := 0; i < len(nl.Nl); i++ {
@@ -98,5 +109,23 @@ func GetAreaPoint(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("All coordinates were collected and returned!")
 
 	w.WriteHeader(http.StatusNotFound)
+	return
+}
+
+// GetAreaPoint This is the main function of this API endpoint
+func GetAreaPoint(w http.ResponseWriter, r *http.Request) {
+
+	var path = "./data/nlnasty.json"
+
+	nl, reqCode := openFile(path, w, r)
+	pc4 := reqCode.Pc4Codes
+
+	if checkZipcodesValidity(pc4, nl, w) == false {
+		fmt.Println("Some zipcodes are not in the dataset!")
+		return
+	} else {
+		returnCoordinates(pc4, nl, w)
+	}
+
 	return
 }
