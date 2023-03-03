@@ -12,7 +12,7 @@ type depot struct {
 
 type Cost struct {
 	zoneID int
-	cost   float64
+	cost   int
 }
 
 type service struct {
@@ -27,16 +27,16 @@ func euclideanDistance(x1, x2, y1, y2 int) (m int) {
 	return
 }
 
-func calculateCost(serviceArray [5]service, depotArray [1]depot) (costArray [2]Cost, newCost float64) {
+func calculateCost(serviceArray []service, depotArray []depot, n int) (costArray []Cost, newCost int) {
 	s := 0
-	for s <= 1 {
+	for s <= n {
 		totalZoneCost := 0
 		for i := range serviceArray {
 			if serviceArray[i].zoneID == s {
 				totalZoneCost += euclideanDistance(serviceArray[i].lat, depotArray[0].lat, serviceArray[i].long, depotArray[0].long)
 			}
 		}
-		costArray[s] = Cost{s, float64(totalZoneCost)}
+		costArray = append(costArray, Cost{s, totalZoneCost})
 		s++
 	}
 
@@ -48,7 +48,7 @@ func calculateCost(serviceArray [5]service, depotArray [1]depot) (costArray [2]C
 	return
 }
 
-func MinIntSlice(v [2]Cost) (m Cost) {
+func MinIntSlice(v []Cost) (m Cost) {
 	for i, e := range v {
 		if i == 0 || e.cost < m.cost {
 			m = e
@@ -57,7 +57,7 @@ func MinIntSlice(v [2]Cost) (m Cost) {
 	return
 }
 
-func MaxIntSlice(v [2]Cost) (m Cost) {
+func MaxIntSlice(v []Cost) (m Cost) {
 	for i, e := range v {
 		if i == 0 || e.cost > m.cost {
 			m = e
@@ -66,9 +66,9 @@ func MaxIntSlice(v [2]Cost) (m Cost) {
 	return
 }
 
-func calculateMaxDistance(serviceArray [5]service, depotArray [1]depot, maxZone Cost) (m service) {
+func calculateMaxDistance(serviceArray []service, depotArray []depot, maxZone Cost) (m service) {
 	for i, e := range serviceArray {
-		if e.zoneID == maxZone.zoneID && (i == 0 || euclideanDistance(e.lat, depotArray[0].lat, e.long, depotArray[0].long) <
+		if e.zoneID == maxZone.zoneID && (i == 0 || euclideanDistance(e.lat, depotArray[0].lat, e.long, depotArray[0].long) >
 			euclideanDistance(m.lat, depotArray[0].lat, m.long, depotArray[0].long)) {
 			m = e
 		}
@@ -77,33 +77,31 @@ func calculateMaxDistance(serviceArray [5]service, depotArray [1]depot, maxZone 
 }
 
 func main() {
-	var prevCost = math.Inf(1)
-	var newCost = math.Inf(1)
+	var prevCost = math.MaxInt
+	var newCost = math.MaxInt
 	fmt.Println("prevCost, newCost =", prevCost, newCost)
 
-	var depotArray = [1]depot{
+	var depotArray = []depot{
 		{1, 3},
 	}
 	fmt.Println("depotArray =", depotArray)
 
-	var costArray = [2]Cost{
-		{0, math.Inf(1)}, //Write function to calculate this cost
-		{1, math.Inf(1)}, //Write function to calculate this cost
+	var costArray = []Cost{
+		{0, math.MinInt}, //Write function to calculate this cost
+		{1, math.MinInt}, //Write function to calculate this cost
 	}
 	fmt.Println("costArray =", costArray)
 
-	var serviceArray = [5]service{
-		{0, 1, 2, 0},
-		{1, 12, 4, 0},
-		{2, 3, 5, 0},
-		{3, 2, 6, 0},
-		{4, 5, 3, 1},
+	var serviceArray = []service{
+		{0, 5, 2, 0},
+		{1, 2, 4, 1},
+		{2, 3, 5, 1},
+		{3, 3, 6, 0},
 	}
 	fmt.Println("serviceArray =", serviceArray)
 
-	costArray, newCost = calculateCost(serviceArray, depotArray)
-
-	fmt.Println(costArray)
+	costArray, newCost = calculateCost(serviceArray, depotArray, 1)
+	fmt.Println("costArray", costArray)
 
 	for newCost < prevCost {
 		//Move the activity that is the furthest from the depot to the zone with the lowest cost
@@ -116,7 +114,7 @@ func main() {
 		fmt.Println("maxZone =", maxZone)
 
 		//3. Pick from the that zone that has the highest cost the service with the largest distance to depot
-		maxDistanceService := calculateMaxDistance(serviceArray, depotArray, maxZone) // <-- ERROR SEEMS TO BE HERE, why is service 0 selected when service 1 is further away?
+		maxDistanceService := calculateMaxDistance(serviceArray, depotArray, maxZone)
 		fmt.Println("maxDistanceService =", maxDistanceService)
 
 		//4. Move the selected service to the zone with the lowest cost
@@ -127,8 +125,8 @@ func main() {
 		prevCost = newCost
 
 		//Recalculate costs for zones and total cost
-		costArray, newCost = calculateCost(serviceArray, depotArray)
-		fmt.Println(costArray)
+		costArray, newCost = calculateCost(serviceArray, depotArray, 1)
+		fmt.Println("costArray, newCost =", costArray, newCost)
 
 		//Print the new costs
 		fmt.Println("newCost is", newCost)
