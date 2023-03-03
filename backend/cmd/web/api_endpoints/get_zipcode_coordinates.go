@@ -24,8 +24,15 @@ type CodesRequested struct {
 	Pc4Codes []string `json:"pc4"`
 }
 
-// Opens the file containing all the zipcodes and returns
-// a data structure containing them and the request code
+// openFile
+//
+//	@Description: Opens the file containing all the zipcodes and returns a data structure
+//				  containing them and the request code
+//	@param path
+//	@param w
+//	@param r
+//	@return Nl
+//	@return CodesRequested
 func openFile(path string, w http.ResponseWriter, r *http.Request) (Nl, CodesRequested) {
 	jsonNl, err := os.Open(path)
 
@@ -61,7 +68,13 @@ func openFile(path string, w http.ResponseWriter, r *http.Request) (Nl, CodesReq
 	return nl, reqCode
 }
 
-// Boolean function that checks if the inputted zipcodes are valid
+// checkZipcodesValidity
+//
+//	@Description: Boolean function that checks if the inputted zipcodes are valid
+//	@param pc4
+//	@param nl
+//	@param w
+//	@return bool
 func checkZipcodesValidity(pc4 []string, nl Nl, w http.ResponseWriter) bool {
 	var checkZipcodes []string
 
@@ -91,7 +104,12 @@ func checkZipcodesValidity(pc4 []string, nl Nl, w http.ResponseWriter) bool {
 	}
 }
 
-// Encodes the coordinates of the requested zipcodes
+// returnCoordinates
+//
+//	@Description: Encodes the coordinates of the requested zipcodes
+//	@param pc4
+//	@param nl
+//	@param w
 func returnCoordinates(pc4 []string, nl Nl, w http.ResponseWriter) {
 	var coordinates []any
 
@@ -112,7 +130,11 @@ func returnCoordinates(pc4 []string, nl Nl, w http.ResponseWriter) {
 	return
 }
 
-// GetAreaPoint This is the main function of this API endpoint
+// GetAreaPoint
+//
+//	@Description: This is the main function of this API endpoint
+//	@param w
+//	@param r
 func GetAreaPoint(w http.ResponseWriter, r *http.Request) {
 
 	var path = "./data/nlnasty.json"
