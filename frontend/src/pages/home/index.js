@@ -150,10 +150,10 @@ export default function Home() {
                         >
                             <a onClick={(e) => e.preventDefault()}>
                                 <Space>
-                                    <button type="button" variant="contained" style={{ float: 'right', color: "ffd369"}} >
+                                    <button type="button" variant="contained" style={{ float: 'right'}} >
                                         <UserOutlined/>
                                     </button>
-                                    <DownOutlined />
+                                    <DownOutlined style={{ color: '#ffd369'}} />
                                 </Space>
                             </a>
                         </Dropdown>
