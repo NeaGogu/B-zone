@@ -6,6 +6,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
+import './index.css';
 
 function getItem(label, key, icon, children, type) {
     return {
@@ -135,6 +136,12 @@ export default function Home() {
             <Layout>
                 <Header className="header" >
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }} >
+                        <div style={{ margin: 'auto', width: '100%' }} >
+                            <img src='./b-zone-logo.png' style={{ display: 'block', width: '11%'}} alt='logo'/>
+                        </div>
+                        <div className="headerText">
+                            B-ZONE 
+                        </div>
 
                         <Dropdown
                             menu={{
@@ -208,17 +215,14 @@ export default function Home() {
                         </Menu>
                     </Sider>
                     <Layout
-                        style={{
-                            padding: '0 24px 24px',
-                        }}
                     >
 
                         <Content className="map" id="map"
                             style={{
-                                margin: '24px 16px',
+                                
                                 padding: 24,
                                 minHeight: 500,
-                                background: colorBgContainer,
+                                background: '#FFFF00',
                             }}
                         >
                             <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500 }}>
