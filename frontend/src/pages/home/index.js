@@ -214,7 +214,10 @@ export default function Home() {
 
                         </Menu>
                     </Sider>
-                    <Layout
+                    <Layout  style={{
+                                
+                                padding: 30
+                            }}
                     >
 
                         <Content className="map" id="map"
