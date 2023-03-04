@@ -222,10 +222,7 @@ export default function Home() {
 
                         <Content className="map" id="map"
                             style={{
-                                
-                                padding: 24,
                                 minHeight: 500,
-                                background: '#FFFF00',
                             }}
                         >
                             <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500 }}>
