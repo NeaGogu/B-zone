@@ -133,7 +133,7 @@ export default function Home() {
                 algorithm: darkAlgorithm
             }}
         >
-            <Layout>
+            <Layout  style={{height:'100vh'}}>
                 <Header className="header" >
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }} >
                         <div style={{ margin: 'auto', width: '100%' }} >
@@ -150,8 +150,8 @@ export default function Home() {
                         >
                             <a onClick={(e) => e.preventDefault()}>
                                 <Space>
-                                    <button type="button" variant="contained" style={{ float: 'right' }} >
-                                        <UserOutlined />
+                                    <button type="button" variant="contained" style={{ float: 'right', color: "ffd369"}} >
+                                        <UserOutlined/>
                                     </button>
                                     <DownOutlined />
                                 </Space>
