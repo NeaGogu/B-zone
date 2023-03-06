@@ -6,6 +6,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
+import './index.css';
 
 function getItem(label, key, icon, children, type) {
     return {
@@ -38,7 +39,7 @@ const items = [
     {
         key: '1',
         label: (
-            <p target="_blank" rel="noopener noreferrer" id="email">
+            <p target="_blank" rel="noopener noreferrer" id="email" style={{ color: '#ffd369'}}>
                 <var>{id_user}</var>
 
             </p>
@@ -47,7 +48,7 @@ const items = [
     {
         key: '2',
         label: (
-            <a target="_blank" rel="noopener noreferrer" onClick={() => signOut()}>
+            <a style={{ color: '#ffd369'}} target="_blank" rel="noopener noreferrer" onClick={() => signOut()}>
                 Log Out
             </a>
         )
@@ -132,9 +133,15 @@ export default function Home() {
                 algorithm: darkAlgorithm
             }}
         >
-            <Layout>
+            <Layout  style={{height:'100vh'}}>
                 <Header className="header" >
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }} >
+                        <div style={{ margin: 'auto', width: '100%' }} >
+                            <img src='./b-zone-logo.png' style={{ display: 'block', width: '11%'}} alt='logo'/>
+                        </div>
+                        <div className="headerText">
+                            B-ZONE 
+                        </div>
 
                         <Dropdown
                             menu={{
@@ -143,10 +150,10 @@ export default function Home() {
                         >
                             <a onClick={(e) => e.preventDefault()}>
                                 <Space>
-                                    <button type="button" variant="contained" style={{ float: 'right' }} >
+                                    <button type="button" variant="contained" style={{ float: 'right'}} >
                                         <UserOutlined />
                                     </button>
-                                    <DownOutlined />
+                                    <DownOutlined style={{ color: '#ffd369'}} />
                                 </Space>
                             </a>
                         </Dropdown>
@@ -207,18 +214,15 @@ export default function Home() {
 
                         </Menu>
                     </Sider>
-                    <Layout
-                        style={{
-                            padding: '0 24px 24px',
-                        }}
+                    <Layout  style={{
+                                
+                                padding: 30
+                            }}
                     >
 
                         <Content className="map" id="map"
                             style={{
-                                margin: '24px 16px',
-                                padding: 24,
                                 minHeight: 500,
-                                background: colorBgContainer,
                             }}
                         >
                             <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500 }}>

@@ -41,3 +41,22 @@
     margin-right: auto;
     width: 100%;
 }
+
+.headerText {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+
+    font-family: Impact, Charcoal, sans-serif;
+    font-size: 29px;
+    letter-spacing: 2px;
+    word-spacing: 2px;
+    color: #ffd369;
+    font-weight: 700;
+    text-decoration: none;
+    font-style: normal;
+    font-variant: normal;
+    text-transform: none;
+    margin-right: 25%;
+}
