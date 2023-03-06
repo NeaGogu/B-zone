@@ -1,13 +1,33 @@
 import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider } from 'antd';
-import React from 'react';
+import React, {useState} from 'react';
+import L from 'leaflet';
 import DropdownButton from "antd/es/dropdown/dropdown-button";
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import {TileLayer, Marker, Popup, useMapEvents, useMap} from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
+import { MapContainer } from 'react-leaflet/MapContainer';
 import './index.css';
 
+function LocationMarker() {
+    const [position, setPosition] = useState(null)
+    const map = useMapEvents({
+        click(e) {
+            setPosition(e.latlng)
+        },
+        locationfound(e) {
+            setPosition(e.latlng)
+            map.flyTo(e.latlng, map.getZoom())
+        },
+    })
+
+    return position === null ? null : (
+        <Marker position={position}>
+            <Popup>Latitude: {position.lat}, Longitude: {position.lng}</Popup>
+        </Marker>
+    )
+}
 function getItem(label, key, icon, children, type) {
     return {
         key,
@@ -17,11 +37,9 @@ function getItem(label, key, icon, children, type) {
         type,
     };
 }
-
 function setEmail() {
     document.getElementById('email').innerHTML = id_user //gets email for text in item
 }
-
 const { SubMenu } = Menu;
 const { darkAlgorithm } = theme;
 const { Header, Content, Sider } = Layout;
@@ -32,9 +50,7 @@ const item = [
     ]),
     getItem('Filter', 'sub2', null, null)
 ];
-
 const id_user = localStorage.getItem('email')
-
 const items = [
     {
         key: '1',
@@ -54,7 +70,6 @@ const items = [
         )
     },
 ];
-
 //signOut function
 function signOut() {
     const token = localStorage.getItem('token');
@@ -91,7 +106,6 @@ function signOut() {
     })
 
 }
-
 const MyFormItemContext = React.createContext([]);
 function toArr(str) {
     return Array.isArray(str) ? str : [str];
@@ -157,15 +171,8 @@ export default function Home() {
                                 </Space>
                             </a>
                         </Dropdown>
-
-
-
                     </div>
-
                     <Menu theme="dark" mode="horizontal" />
-
-
-
                 </Header>
                 <Layout>
                     <Sider
@@ -225,11 +232,30 @@ export default function Home() {
                                 minHeight: 500,
                             }}
                         >
-                            <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500 }}>
+                            <MapContainer
+                                // zoomControl={true}
+                                //           doubleClickZoom={true}
+                                //           scrollWheelZoom={true}
+                                //           dragging={true}
+                                //           animate={true}
+                                //           easeLinearity={0.35}
+                                //           center={[52, 7]}
+                                //           zoom={7}
+                                //           maxZoom={20}
+                                //           attributionControl={true}
+                                //           scrollWheelZoom={true}
+                                          center={[50.5, 30.5]}
+                                          zoom={13}
+                                          // onClick = {(e) => handleClick(e)}
+                            >
                                 <TileLayer
                                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 />
+                                <LocationMarker/>
+
+
+
                             </MapContainer>
                         </Content>
                     </Layout>
