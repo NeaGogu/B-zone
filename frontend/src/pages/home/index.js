@@ -39,7 +39,7 @@ const items = [
     {
         key: '1',
         label: (
-            <p target="_blank" rel="noopener noreferrer" id="email">
+            <p target="_blank" rel="noopener noreferrer" id="email" style={{ color: '#ffd369'}}>
                 <var>{id_user}</var>
 
             </p>
@@ -48,7 +48,7 @@ const items = [
     {
         key: '2',
         label: (
-            <a target="_blank" rel="noopener noreferrer" onClick={() => signOut()}>
+            <a style={{ color: '#ffd369'}} target="_blank" rel="noopener noreferrer" onClick={() => signOut()}>
                 Log Out
             </a>
         )
@@ -151,7 +151,7 @@ export default function Home() {
                             <a onClick={(e) => e.preventDefault()}>
                                 <Space>
                                     <button type="button" variant="contained" style={{ float: 'right'}} >
-                                        <UserOutlined/>
+                                        <UserOutlined />
                                     </button>
                                     <DownOutlined style={{ color: '#ffd369'}} />
                                 </Space>
