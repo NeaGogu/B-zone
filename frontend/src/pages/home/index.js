@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
 import './index.css';
+import { useState } from 'react';
 
 function getItem(label, key, icon, children, type) {
     return {
@@ -118,6 +119,12 @@ export default function Home() {
         console.log(value);
     };
 
+    // for comparison button to split maps
+    const [showComparison, setShowComparison] = useState(false);
+    const toggleComparison = () => {
+        setShowComparison(!showComparison);
+    };
+
 
     return (
         <ConfigProvider
@@ -209,7 +216,7 @@ export default function Home() {
                             <SubMenu key="sub2" title="Saved Zones">
                                 <Menu.Item key="5">Initial Zone</Menu.Item>
                                 <Menu.Item key="6">Saved Zone 1</Menu.Item>
-                                <Button style={{ width: "100%" }} type="primary">Compare</Button>
+                                <Button style={{ width: "100%" }} type="primary" onClick={toggleComparison}>Compare</Button>
                             </SubMenu>
 
                         </Menu>
@@ -225,20 +232,29 @@ export default function Home() {
                                 minHeight: 500,
                             }}
                         >
-                            <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
-                                    <TileLayer
-                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                    />
-                                </MapContainer>
+                            {showComparison ? (
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
+                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
+                                        <TileLayer
+                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        />
+                                    </MapContainer>
+                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: "20px" }}>
+                                        <TileLayer
+                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        />
+                                    </MapContainer>
+                                </div>
+                            ) : (
                                 <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: "20px" }}>
                                     <TileLayer
                                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                     />
                                 </MapContainer>
-                            </div>
+                            )}
                         </Content>
                     </Layout>
                 </Layout>
