@@ -11,18 +11,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 
 	geojson "github.com/paulmach/go.geojson"
+
+	"bzone/backend/internal/models" 
 )
 
 const uri = "mongodb://localhost:27017"
-
-
-type ZipCode struct {
-	Code string `json:"code" bson:"code"`
-	// PolygonCoordinates [][][]float64 `json:"zone_coordinates" bson:"zone_coordinates, omitempty"`
-	// MultiPolyCoordinates [][][][]float64 `json:"zone_coordinates" bson:"zone_coordinates, omitempty"`
-	Coordinates interface{} `json:"zone_coordinates" bson:"zone_coordinates"`
-	Type string `json:"type" bson:"type, omitempty"`
-}
 
 
 // BE CAREFUL WITH THIS FUNCTION, IT WILL DELETE ALL THE DATA IN THE DATABASE
@@ -88,7 +81,7 @@ func populateDatabase() {
 	// loop through features and add them to database
 
 	fmt.Print("----------Inserting zipcodes into coordinates collection-------\n")
-	var zipDocument ZipCode
+	var zipDocument models.ZipCode
 
 	for _, f := range fc.Features {
 		featureGeometry := f.Geometry
@@ -132,6 +125,6 @@ func populateDatabase() {
 	}
 
 	fmt.Print("----------Done inserting zipcodes into coordinates collection-------\n")
-	
+ 
 }
 

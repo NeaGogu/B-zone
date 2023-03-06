@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bzone/backend/internal/models"
 	"context"
 	"flag"
 	"log"
@@ -15,7 +16,7 @@ import (
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
-	db *mongo.Client
+	zipCodeDbModel *models.ZipCodeDBModel
 }
 
 func main() {
@@ -47,10 +48,12 @@ func main() {
 		}
 	}()
 
+
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
-		db: db,
+		// TODO remove hardcoded value
+		zipCodeDbModel: &models.ZipCodeDBModel{ DB: db.Database("zipcodes") },
 	}
 
 	srv := &http.Server{
@@ -69,7 +72,7 @@ func openDB(dsn string) (*mongo.Client, error) {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(dsn).SetServerAPIOptions(serverAPI)
 	// Create a new client and connect to the server
-	client, err := mongo.Connect(context.TODO(), opts)
+	client, err := mongo.Connect(context.TODO(), opts)	
 	if err != nil {
 		// prefer to lift up the error to the caller rather than handling it here
 		return nil, err
