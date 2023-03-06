@@ -34,30 +34,10 @@ func main() {
 	nrOfZones := 2
 
 	var ActivityArray = []ActivityModel{
-		{
-			id:               0,
-			address:          AddressModel{},
-			depot_address:    AddressModel{},
-			depot_address_id: 0,
-			zone:             nil,
-		},
-		{
-			id:               1,
-			address:          AddressModel{},
-			depot_address:    AddressModel{},
-			depot_address_id: 0,
-			zone:             nil,
-		},
-		{
-			id:               3,
-			address:          AddressModel{},
-			depot_address:    AddressModel{},
-			depot_address_id: 0,
-			zone:             nil,
-		},
+		{id: 0}, {id: 1}, {id: 3},
 	}
-	var ZonesArray [][]ZoneModel
 
+	var ZonesArray [][]ZoneModel
 	for i := 0; i < nrOfZones; i++ {
 		ZonesArray = append(ZonesArray, []ZoneModel{{
 			id:          i,
@@ -67,7 +47,6 @@ func main() {
 
 	for e := range ActivityArray {
 		ActivityArray[e].zone = ZonesArray[rand.Intn(nrOfZones)]
-		fmt.Println("Activity id", ActivityArray[e].id, "has zone/zipcode ranges", ActivityArray[e].zone)
+		fmt.Println("Activity id", ActivityArray[e].id, "has zone", ActivityArray[e].zone)
 	}
-
 }
