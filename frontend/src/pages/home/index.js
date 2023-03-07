@@ -8,6 +8,397 @@ import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility
 import "leaflet-defaulticon-compatibility";
 import './index.css';
 
+import { useMap, useMapEvents } from 'react-leaflet'
+import { useEffect } from 'react'
+import L from 'leaflet'
+import "leaflet.heat"
+
+function HeatmapFunction(){
+  const map = useMap()
+  useEffect(() => {
+    var addressPoints = [
+      [
+          52.141,
+          4.457
+      ],
+      [
+          51.853,
+          4.377
+      ],
+      [
+          51.851,
+          4.329
+      ],
+      [
+          52.044,
+          4.728
+      ],
+      [
+          52.154,
+          4.662
+      ],
+      [
+          52.434,
+          4.647
+      ],
+      [
+          52.642,
+          5.003
+      ],
+      [
+          52.013,
+          4.746
+      ],
+      [
+          52.301,
+          4.547
+      ],
+      [
+          52.605,
+          4.689
+      ],
+      [
+          51.893,
+          4.543
+      ],
+      [
+          52.092,
+          4.327
+      ],
+      [
+          52.236,
+          4.451
+      ],
+      [
+          52.444,
+          4.635
+      ],
+      [
+          52.046,
+          4.731
+      ],
+      [
+          51.919,
+          4.564
+      ],
+      [
+          51.832,
+          4.733
+      ],
+      [
+          52.0,
+          4.443
+      ],
+      [
+          52.586,
+          4.704
+      ],
+      [
+          52.067,
+          4.237
+      ],
+      [
+          52.14,
+          4.534
+      ],
+      [
+          52.333,
+          4.634
+      ],
+      [
+          51.937,
+          4.331
+      ],
+      [
+          52.05,
+          4.644
+      ],
+      [
+          52.657,
+          5.108
+      ],
+      [
+          52.281,
+          4.626
+      ],
+      [
+          51.956,
+          4.604
+      ],
+      [
+          52.141,
+          4.457
+      ],
+      [
+          51.853,
+          4.377
+      ],
+      [
+          51.793,
+          4.481
+      ],
+      [
+          51.851,
+          4.329
+      ],
+      [
+          51.793,
+          4.481
+      ],
+      [
+          52.373,
+          4.528
+      ],
+      [
+          52.154,
+          4.662
+      ],
+      [
+          52.434,
+          4.647
+      ],
+      [
+          52.642,
+          5.003
+      ],
+      [
+          52.013,
+          4.746
+      ],
+      [
+          52.301,
+          4.547
+      ],
+      [
+          52.605,
+          4.689
+      ],
+      [
+          51.795,
+          4.047
+      ],
+      [
+          52.235,
+          4.459
+      ],
+      [
+          52.036,
+          4.718
+      ],
+      [
+          51.793,
+          4.712
+      ],
+      [
+          52.349,
+          4.585
+      ],
+      [
+          52.044,
+          4.728
+      ],
+      [
+          52.088,
+          4.311
+      ],
+      [
+          51.893,
+          4.543
+      ],
+      [
+          51.86,
+          4.506
+      ],
+      [
+          51.849,
+          4.488
+      ],
+      [
+          52.236,
+          4.451
+      ],
+      [
+          51.909,
+          4.171
+      ],
+      [
+          52.435,
+          4.655
+      ],
+      [
+          52.431,
+          4.656
+      ],
+      [
+          52.633,
+          4.665
+      ],
+      [
+          52.444,
+          4.635
+      ],
+      [
+          52.046,
+          4.731
+      ],
+      [
+          51.919,
+          4.564
+      ],
+      [
+          52.034,
+          4.3
+      ],
+      [
+          51.832,
+          4.733
+      ],
+      [
+          52.027,
+          4.696
+      ],
+      [
+          52.169,
+          4.579
+      ],
+      [
+          52.317,
+          4.644
+      ],
+      [
+          52.0,
+          4.443
+      ],
+      [
+          52.224,
+          4.669
+      ],
+      [
+          52.586,
+          4.704
+      ],
+      [
+          52.067,
+          4.237
+      ],
+      [
+          52.14,
+          4.534
+      ],
+      [
+          52.162,
+          4.469
+      ],
+      [
+          51.53,
+          4.452
+      ],
+      [
+          52.238,
+          4.431
+      ],
+      [
+          51.835,
+          4.16
+      ],
+      [
+          51.91,
+          4.168
+      ],
+      [
+          51.904,
+          4.232
+      ],
+      [
+          51.842,
+          4.155
+      ],
+      [
+          51.846,
+          4.496
+      ],
+      [
+          52.333,
+          4.634
+      ],
+      [
+          52.306,
+          4.865
+      ],
+      [
+          51.937,
+          4.331
+      ],
+      [
+          51.954,
+          4.611
+      ],
+      [
+          51.993,
+          4.512
+      ],
+      [
+          52.315,
+          4.874
+      ],
+      [
+          52.036,
+          4.644
+      ],
+      [
+          52.03,
+          4.616
+      ],
+      [
+          52.05,
+          4.644
+      ],
+      [
+          52.657,
+          5.108
+      ],
+      [
+          52.484,
+          4.762
+      ],
+      [
+          51.997,
+          4.482
+      ],
+      [
+          52.281,
+          4.626
+      ],
+      [
+          51.835,
+          4.353
+      ],
+      [
+          52.64,
+          4.813
+      ],
+      [
+          51.956,
+          4.604
+      ],
+      [
+          52.436,
+          4.805
+      ],
+      [
+          51.923,
+          4.612
+      ]]
+    const points = addressPoints
+    ? addressPoints.map((p) => {
+      return [p[0], p[1], 500]; // lat lng intensity
+      })
+    : [];
+
+    L.heatLayer(points).addTo(map);
+  }, []);
+}
+
 function getItem(label, key, icon, children, type) {
     return {
         key,
@@ -108,8 +499,12 @@ const MyFormItem = ({ name, ...props }) => {
 };
 
 localStorage.getItem('token')
-export default function Home() {
 
+
+export default function Home() {
+    const [showResults, setShowResults] = React.useState(false)
+    const onClick = () => setShowResults(true)
+    
     const {
         token: { colorBgContainer },
     } = theme.useToken();
@@ -185,7 +580,7 @@ export default function Home() {
                             }}
                         >
                             <div style={{ width: "100%" }}>
-                                <Button style={{ width: "50%" }} type="primary">Heat map</Button>
+                                <Button style={{ width: "50%" }} type="primary" onClick={onClick}>Heat map</Button>
                                 <Button style={{ width: "50%" }} type="primary">Zones</Button>
                             </div>
 
@@ -230,6 +625,7 @@ export default function Home() {
                                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 />
+                                 { showResults ? <HeatmapFunction/> : null }
                             </MapContainer>
                         </Content>
                     </Layout>
