@@ -121,10 +121,21 @@ export default function Home() {
 
     // for comparison button to split maps
     const [showComparison, setShowComparison] = useState(false);
-    const toggleComparison = () => {
-        setShowComparison(!showComparison);
-    };
+    const [showMap, setShowMap] = useState(true);
 
+    const toggleComparison = () => {
+        if (showComparison) {
+            return; // If showComparison is already true, do nothing
+        }
+
+        setShowComparison(true);
+        setShowMap(false); // reset to singular map
+    }
+
+    const toggleMap = () => {
+        setShowMap(!showMap);
+        setShowComparison(false); // reset comparison state when switching singular map
+    };
 
     return (
         <ConfigProvider
@@ -192,8 +203,8 @@ export default function Home() {
                             }}
                         >
                             <div style={{ width: "100%" }}>
-                                <Button style={{ width: "50%" }} type="primary">Heat map</Button>
-                                <Button style={{ width: "50%" }} type="primary">Zones</Button>
+                                <Button style={{ width: "50%" }} type="primary" onClick={toggleMap}>Heat map</Button>
+                                <Button style={{ width: "50%" }} type="primary" onClick={toggleMap}>Zones</Button>
                             </div>
 
                             <Form name="form_item_path" layout="vertical" onFinish={onFinish}>
@@ -248,9 +259,9 @@ export default function Home() {
                                     </MapContainer>
                                 </div>
                             ) : (
-                                <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: "20px" }}>
+                                <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: showMap ? "20px" : "0" }}>
                                     <TileLayer
-                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                     />
                                 </MapContainer>
