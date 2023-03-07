@@ -1,6 +1,6 @@
 import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider } from 'antd';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import L from 'leaflet';
 import DropdownButton from "antd/es/dropdown/dropdown-button";
 import {TileLayer, Marker, Popup, useMapEvents, useMap} from 'react-leaflet';
@@ -10,23 +10,45 @@ import "leaflet-defaulticon-compatibility";
 import { MapContainer } from 'react-leaflet/MapContainer';
 import './index.css';
 
-function LocationMarker() {
-    const [position, setPosition] = useState(null)
+function LocationMarker() {const [position, setPosition] = useState(null);
+    const [zipCode, setZipCode] = useState(null);
+
+    useEffect(() => {
+        async function getAddress() {
+            if (position) {
+                const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${position.lng},${position.lat}.json?access_token=pk.eyJ1IjoidGFuaWFnb2lhMTEiLCJhIjoiY2xleTRrYm02MDlmMTN4bzVsZTR4cWp4OCJ9.hmT59q-Q1IcEjC6mdY2R9w`);
+                const data = await response.json();
+                const zipCode = data.features.find(f => f.place_type.includes('postcode')).text;
+                setZipCode(zipCode);
+            }
+        }
+
+        getAddress();
+    }, [position]);
+
     const map = useMapEvents({
         click(e) {
-            setPosition(e.latlng)
+            setPosition(e.latlng);
+            setZipCode(null);
         },
         locationfound(e) {
-            setPosition(e.latlng)
-            map.flyTo(e.latlng, map.getZoom())
+            setPosition(e.latlng);
+            setZipCode(null);
         },
-    })
+    });
 
     return position === null ? null : (
         <Marker position={position}>
-            <Popup>Latitude: {position.lat}, Longitude: {position.lng}</Popup>
+            <Popup>
+                <div>
+                    <div>Latitude: {position.lat}</div>
+                    <div>Longitude: {position.lng}</div>
+                    {zipCode && <div>ZipCode: {zipCode}</div>}
+                    {!zipCode && <div>Loading ZipCode...</div>}
+                </div>
+            </Popup>
         </Marker>
-    )
+    );
 }
 function getItem(label, key, icon, children, type) {
     return {
