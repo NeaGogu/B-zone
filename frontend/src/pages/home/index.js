@@ -10,30 +10,31 @@ import "leaflet-defaulticon-compatibility";
 import { MapContainer } from 'react-leaflet/MapContainer';
 import './index.css';
 
-function LocationMarker() {const [position, setPosition] = useState(null);
-    const [zipCode, setZipCode] = useState(null);
 
-    useEffect(() => {
-        async function getAddress() {
-            if (position) {
-                const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${position.lng},${position.lat}.json?access_token=pk.eyJ1IjoidGFuaWFnb2lhMTEiLCJhIjoiY2xleTRrYm02MDlmMTN4bzVsZTR4cWp4OCJ9.hmT59q-Q1IcEjC6mdY2R9w`);
-                const data = await response.json();
-                const zipCode = data.features.find(f => f.place_type.includes('postcode')).text;
-                setZipCode(zipCode);
-            }
-        }
-
-        getAddress();
-    }, [position]);
-
+//shows address, zipcode and coordinates when clicking on the map
+function LocationMarker() {
+    const [position, setPosition] = useState(null);
+    const [address, setAddress] = useState(null);
+    const [zipcode, setZipcode] = useState(null);
     const map = useMapEvents({
         click(e) {
+            const { lat, lng } = e.latlng;
             setPosition(e.latlng);
-            setZipCode(null);
-        },
-        locationfound(e) {
-            setPosition(e.latlng);
-            setZipCode(null);
+            const API_KEY = 'pk.eyJ1IjoidGFuaWFnb2lhMTEiLCJhIjoiY2xleTRrYm02MDlmMTN4bzVsZTR4cWp4OCJ9.hmT59q-Q1IcEjC6mdY2R9w';
+            const API_URL = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${API_KEY}&types=postcode,address`;
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(data => {
+                    const features = data.features;
+                    if (features.length > 0) {
+                        const address = features[0].place_name;
+                        const zipcodes = features.filter(feature => feature.place_type[0] === 'postcode');
+                        const zipcode = zipcodes.length > 0 ? zipcodes[0].text : null;
+                        setAddress(address);
+                        setZipcode(zipcode);
+                    }
+                });
+            map.flyTo(e.latlng, map.getZoom());
         },
     });
 
@@ -41,10 +42,10 @@ function LocationMarker() {const [position, setPosition] = useState(null);
         <Marker position={position}>
             <Popup>
                 <div>
-                    <div>Latitude: {position.lat}</div>
-                    <div>Longitude: {position.lng}</div>
-                    {zipCode && <div>ZipCode: {zipCode}</div>}
-                    {!zipCode && <div>Loading ZipCode...</div>}
+                    <div>Latitude: {position.lat.toFixed(4)}</div>
+                    <div>Longitude: {position.lng.toFixed(4)}</div>
+                    {address && <div>Address: {address}</div>}
+                    {zipcode && <div>Zipcode: {zipcode}</div>}
                 </div>
             </Popup>
         </Marker>
