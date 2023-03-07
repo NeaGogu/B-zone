@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/biogo/cluster/kmeans"
 	"image"
 	"image/color"
 	"image/png"
@@ -14,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/biogo/cluster/kmeans"
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 	files := []string{"Burma", "USCapitals", "Beergardens", "Cities", "Large"}
 	for _, file := range files {
 		fmt.Println(file)
-		points := loadData("data/" + file + ".txt")
+		points := loadData("data\\" + file + ".txt")
 		clusterPoints(points, 5, file, 250)
 	}
 	// data := loadCSVData("data/klant1_locs.csv")
@@ -129,7 +130,8 @@ func loadCSVData(fileName string) []*Pos {
 
 // loadData loads the coordinate data from the txt data file
 func loadData(fileName string) []*Pos {
-	file, err := os.Open(fileName)
+	pwd, _ := os.Getwd()
+	file, err := os.Open(pwd + "\\backend\\cmd\\k-means\\" + fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
