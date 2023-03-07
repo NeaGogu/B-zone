@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/middleware"
@@ -25,6 +24,10 @@ func JwtChecker(next http.Handler) http.Handler {
 
 		// query BUMBAL /check-token -> GET req with TOKEN in body
 		req, err := http.NewRequest(http.MethodGet, url, nil)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
 		req.Header.Add("Authorization", jwToken)
 
 		resp, err := http.DefaultClient.Do(req)
@@ -32,8 +35,8 @@ func JwtChecker(next http.Handler) http.Handler {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
 		if resp.StatusCode != http.StatusOK {
-			fmt.Println(resp.StatusCode)
 			http.Error(w, resp.Status, resp.StatusCode)
 			return
 		} else {
