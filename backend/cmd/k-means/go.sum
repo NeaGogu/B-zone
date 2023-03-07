@@ -1,9 +1,2 @@
-github.com/biogo/cluster v0.0.0-20150317015930-38d63f016191 h1:srUE0JQExPvx0jOI/HZ8HeXST1CuiluSRpQDdiZgTbo=
-github.com/biogo/cluster v0.0.0-20150317015930-38d63f016191/go.mod h1:QZhDEaiHnJxh+/62vYDdYNm59evVTxeb77jmn5gm9H4=
-github.com/kr/pretty v0.2.1 h1:Fmg33tUaq4/8ym9TJN1x7sLJnHVwhP33CNkpYV/7rwI=
-github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
-github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
-github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
-github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c h1:Hei/4ADfdWqJk1ZMxUNpqntNwaWcugrBjAiHlqqRiVk=
-gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c/go.mod h1:JHkPIbrfpd72SG/EVd6muEfDQjcINNoR0C8j2r3qZ4Q=
+github.com/mroth/weightedrand/v2 v2.0.1 h1:zrEVDIaau/E4QLOKu02kpg8T8myweFlMGikIgbIdrRA=
+github.com/mroth/weightedrand/v2 v2.0.1/go.mod h1:f2faGsfOGOwc1p94wzHKKZyTpcJUW7OJ/9U4yfiNAOU=
