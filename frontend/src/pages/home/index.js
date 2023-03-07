@@ -1,8 +1,8 @@
 import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider } from 'antd';
-import React from 'react';
-import DropdownButton from "antd/es/dropdown/dropdown-button";
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import React, {useState, useEffect} from 'react';
+import L from 'leaflet';
+import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
@@ -39,7 +39,7 @@ const items = [
     {
         key: '1',
         label: (
-            <p target="_blank" rel="noopener noreferrer" id="email" style={{ color: '#ffd369'}}>
+            <p target="_blank" rel="noopener noreferrer" id="email" style={{ color: '#ffd369' }}>
                 <var>{id_user}</var>
 
             </p>
@@ -48,13 +48,52 @@ const items = [
     {
         key: '2',
         label: (
-            <a style={{ color: '#ffd369'}} target="_blank" rel="noopener noreferrer" onClick={() => signOut()}>
+            <a style={{ color: '#ffd369' }} target="_blank" rel="noopener noreferrer" onClick={() => signOut()}>
                 Log Out
             </a>
         )
     },
 ];
 
+//function for map which shows address, zipcode and coordinates when clicking on the map
+function LocationMarker() {
+    const [position, setPosition] = useState(null);
+    const [address, setAddress] = useState(null);
+    const [zipcode, setZipcode] = useState(null);
+    const map = useMapEvents({
+        click(e) {
+            const { lat, lng } = e.latlng;
+            setPosition(e.latlng);
+            const API_KEY = 'pk.eyJ1IjoidGFuaWFnb2lhMTEiLCJhIjoiY2xleTRrYm02MDlmMTN4bzVsZTR4cWp4OCJ9.hmT59q-Q1IcEjC6mdY2R9w';
+            const API_URL = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${API_KEY}&types=postcode,address`;
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(data => {
+                    const features = data.features;
+                    if (features.length > 0) {
+                        const address = features[0].place_name;
+                        const zipcodes = features.filter(feature => feature.place_type[0] === 'postcode');
+                        const zipcode = zipcodes.length > 0 ? zipcodes[0].text : null;
+                        setAddress(address);
+                        setZipcode(zipcode);
+                    }
+                });
+            map.flyTo(e.latlng, map.getZoom());
+        },
+    });
+    return position === null ? null : (
+        <Marker position={position}>
+            <Popup>
+                <div>
+                    <div>Latitude: {position.lat.toFixed(4)}</div>
+                    <div>Longitude: {position.lng.toFixed(4)}</div>
+                    {address && <div>Address: {address}</div>}
+                    {zipcode && <div>Zipcode: {zipcode}</div>}
+                </div>
+            </Popup>
+        </Marker>
+    );
+}
 //signOut function
 function signOut() {
     const token = localStorage.getItem('token');
@@ -78,17 +117,17 @@ function signOut() {
 
             }
         }).then((data) => {
-        console.log("This is the data:")
-        console.log(data)
-        if (valid) {
-            localStorage.clear();
-            alert('You have been logged out!')
-            //2. re-route user to home page
-            window.location.reload()
-        } else {
-            alert("You could not be logged out! Please try again later.")
-        }
-    })
+            console.log("This is the data:")
+            console.log(data)
+            if (valid) {
+                localStorage.clear();
+                alert('You have been logged out!')
+                //2. re-route user to home page
+                window.location.reload()
+            } else {
+                alert("You could not be logged out! Please try again later.")
+            }
+        })
 
 }
 
@@ -118,6 +157,23 @@ export default function Home() {
         console.log(value);
     };
 
+    // for comparison button to split maps
+    const [showComparison, setShowComparison] = useState(false);
+    const [showMap, setShowMap] = useState(true);
+
+    const toggleComparison = () => {
+        if (showComparison) {
+            return; // If showComparison is already true, do nothing
+        }
+
+        setShowComparison(true);
+        setShowMap(false); // reset to singular map
+    }
+
+    const toggleMap = () => {
+        setShowMap(!showMap);
+        setShowComparison(false); // reset comparison state when switching singular map
+    };
 
     return (
         <ConfigProvider
@@ -133,14 +189,14 @@ export default function Home() {
                 algorithm: darkAlgorithm
             }}
         >
-            <Layout  style={{height:'100vh'}}>
+            <Layout style={{ height: '100vh' }}>
                 <Header className="header" >
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }} >
                         <div style={{ margin: 'auto', width: '100%' }} >
-                            <img src='./b-zone-logo.png' style={{ display: 'block', width: '11%'}} alt='logo'/>
+                            <img src='./b-zone-logo.png' style={{ display: 'block', width: '11%' }} alt='logo' />
                         </div>
                         <div className="headerText">
-                            B-ZONE 
+                            B-ZONE
                         </div>
 
                         <Dropdown
@@ -150,10 +206,10 @@ export default function Home() {
                         >
                             <a onClick={(e) => e.preventDefault()}>
                                 <Space>
-                                    <button type="button" variant="contained" style={{ float: 'right'}} >
+                                    <button type="button" variant="contained" style={{ float: 'right' }} >
                                         <UserOutlined />
                                     </button>
-                                    <DownOutlined style={{ color: '#ffd369'}} />
+                                    <DownOutlined style={{ color: '#ffd369' }} />
                                 </Space>
                             </a>
                         </Dropdown>
@@ -185,8 +241,8 @@ export default function Home() {
                             }}
                         >
                             <div style={{ width: "100%" }}>
-                                <Button style={{ width: "50%" }} type="primary">Heat map</Button>
-                                <Button style={{ width: "50%" }} type="primary">Zones</Button>
+                                <Button style={{ width: "50%" }} type="primary" onClick={toggleMap}>Heat map</Button>
+                                <Button style={{ width: "50%" }} type="primary" onClick={toggleMap}>Zones</Button>
                             </div>
 
                             <Form name="form_item_path" layout="vertical" onFinish={onFinish}>
@@ -209,15 +265,15 @@ export default function Home() {
                             <SubMenu key="sub2" title="Saved Zones">
                                 <Menu.Item key="5">Initial Zone</Menu.Item>
                                 <Menu.Item key="6">Saved Zone 1</Menu.Item>
-                                <Button style={{ width: "100%" }} type="primary">Compare</Button>
+                                <Button style={{ width: "100%" }} type="primary" onClick={toggleComparison}>Compare</Button>
                             </SubMenu>
 
                         </Menu>
                     </Sider>
-                    <Layout  style={{
-                                
-                                padding: 30
-                            }}
+                    <Layout style={{
+
+                        padding: 30
+                    }}
                     >
 
                         <Content className="map" id="map"
@@ -225,12 +281,32 @@ export default function Home() {
                                 minHeight: 500,
                             }}
                         >
-                            <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500 }}>
-                                <TileLayer
-                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                />
-                            </MapContainer>
+                            {showComparison ? (
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
+                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
+                                        <TileLayer
+                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        />
+                                        <LocationMarker/>
+                                    </MapContainer>
+                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: "20px" }}>
+                                        <TileLayer
+                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        />
+                                        <LocationMarker/>
+                                    </MapContainer>
+                                </div>
+                            ) : (
+                                <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: showMap ? "20px" : "0" }}>
+                                    <TileLayer
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    />
+                                    <LocationMarker/>
+                                </MapContainer>
+                            )}
                         </Content>
                     </Layout>
                 </Layout>
