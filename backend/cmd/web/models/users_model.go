@@ -5,7 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type UserDBModel struct {
+type UsersDBModel struct {
 	DB *mongo.Database
 }
 
@@ -15,6 +15,8 @@ type UsersModel struct {
 	Id *int64 `json:"id,omitempty"`
 	// unique per user
 	Uuid *string `json:"uuid,omitempty"`
+	// zones plots per user
+	ZonesPlots *[]ZonesPlotModel `json:"user_zones_plots,omitempty"`
 }
 
 // NewUsersModel instantiates a new UsersModel object
@@ -98,6 +100,38 @@ func (o *UsersModel) SetUuid(v string) {
 	o.Uuid = &v
 }
 
+// GetZonesPlots returns the Zones field value if set, zero value otherwise.
+func (o *UsersModel) GetZonesPlots() []ZonesPlotModel {
+	if o == nil || o.ZonesPlots == nil {
+		var ret []ZonesPlotModel
+		return ret
+	}
+	return *o.ZonesPlots
+}
+
+// GetZonesPlotsOk returns a tuple with the ZoneRanges field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *UsersModel) GetZonesPlotsOk() (*[]ZonesPlotModel, bool) {
+	if o == nil || o.ZonesPlots == nil {
+		return nil, false
+	}
+	return o.ZonesPlots, true
+}
+
+// HasZonesPlots returns a boolean if a field has been set.
+func (o *UsersModel) HasZonesPlots() bool {
+	if o != nil && o.ZonesPlots != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetZonesPlots SetUserZonesPlot gets a reference to the given []ZonesPlotModel and assigns it to the ZonesPlots field.
+func (o *UsersModel) SetZonesPlots(v []ZonesPlotModel) {
+	o.ZonesPlots = &v
+}
+
 func (o UsersModel) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if o.Id != nil {
@@ -105,6 +139,9 @@ func (o UsersModel) MarshalJSON() ([]byte, error) {
 	}
 	if o.Uuid != nil {
 		toSerialize["uuid"] = o.Uuid
+	}
+	if o.ZonesPlots != nil {
+		toSerialize["user_zones_plots"] = o.ZonesPlots
 	}
 	return json.Marshal(toSerialize)
 }
