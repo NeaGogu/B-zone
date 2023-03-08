@@ -155,7 +155,7 @@ func sampleCandidateCentroid(activities []openapi.ActivityModel, randomInt int, 
 		return emptyCentroid, err
 	}
 
-	candidateCenter = append(candidateCenters, centroid{
+	candidateCenter = append(candidateCenter, centroid{
 		center: coordinates{
 			long: long,
 			lat:  lat,
@@ -163,7 +163,7 @@ func sampleCandidateCentroid(activities []openapi.ActivityModel, randomInt int, 
 		AssignedActivities: activities[randomInt],
 	})
 
-	return candidateCenters, nil
+	return candidateCenter, nil
 }
 
 // function to calculate which candidate center has the lowest cost (cummilative distance)
