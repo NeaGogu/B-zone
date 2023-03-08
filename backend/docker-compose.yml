@@ -12,6 +12,8 @@ services:
   mongodb:
     image: goglete/sep_initial_db:v1.0.0
     container_name: mongodb-container
+    ports:
+      - "27017:27017"
     networks:
       - bzone_network
 networks:

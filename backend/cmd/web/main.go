@@ -31,8 +31,11 @@ func main() {
 	// if this env variable is not set then the database cannot be used
 	// so we should exit the program
 	dsn, ok := os.LookupEnv("MONGO_URL")
+	// TODO find another way for windows people to add the env variable
 	if !ok {
-		log.Fatal("MONGO_URL environment variable is not set")
+		// use default value, this will fail anyway if the database is not running locally
+		log.Println("MONGO_URL environment variable is not set. Using default value: mongodb://localhost:27017")
+		dsn = "mongodb://localhost:27017/?timeoutMS=10000"
 	}
 
 	flag.Parse()
