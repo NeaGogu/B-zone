@@ -88,9 +88,8 @@ func initCentroids(activities []openapi.ActivityModel, nrClusters int, nrCandida
 	//intialize slice to hold candidate centers
 	var candidateCenters []centroid
 	var err error
-
 	//Sample l candidateCenters
-	candidateCenters = make([]centroid, nrCandidateCenters)
+	candidateCenters = make([]centroid, 0, nrCandidateCenters)
 	for i := 0; i < nrCandidateCenters; i++ {
 		randomInt := rand.Intn(len(activities))
 
@@ -105,13 +104,18 @@ func initCentroids(activities []openapi.ActivityModel, nrClusters int, nrCandida
 	//calculate iteration with lowest cost
 	lowestCost := lowestcandidateCenterCost(activities, nrCandidateCenters, candidateCenters)
 
+	// long, _ := strconv.ParseFloat(*activities[lowestCost].AddressApplied.Longitude, 64)
+	// lat, _ := strconv.ParseFloat(*activities[lowestCost].AddressApplied.Latitude, 64)
+
 	//append lowestcost centroid
-	centroids = append(centroids, candidateCenters[lowestCost])
+	addedCentroid := candidateCenters[lowestCost]
+
+	centroids = append(centroids, addedCentroid)
 
 	//Iteratively choose best cluster to add
 	for i := 0; i < nrClusters-1; i++ {
 		//clear old candidateCenters
-		candidateCenters = make([]centroid, nrCandidateCenters)
+		candidateCenters = make([]centroid, 0, nrCandidateCenters)
 		//calculate bias of points with higher bias towards points further away from previous centroid
 		choices := newChoices(activities, centroids[i])
 		//make random chooser with bias
@@ -142,7 +146,6 @@ func initCentroids(activities []openapi.ActivityModel, nrClusters int, nrCandida
 // Samples a candidates from activities given a random (or biased) int
 func sampleCandidateCentroid(activities []openapi.ActivityModel, randomInt int, candidateCenter []centroid) ([]centroid, error) {
 	long, err := strconv.ParseFloat(*activities[randomInt].AddressApplied.Longitude, 64)
-
 	//return if converting throws error
 	if err != nil {
 		return emptyCentroid, err
@@ -187,23 +190,25 @@ func lowestcandidateCenterCost(activities []openapi.ActivityModel, nrCandidateCe
 
 func newChoices(activities []openapi.ActivityModel, centroid centroid) []weightedrand.Choice[int, int] {
 	//slice to store distance to given centroid used for sampling with probability
-	distanceToCentroid := make([]float64, 0, len(activities))
+	distanceToCentroid := make([]float64, len(activities))
 	distanceSum := 0.0
 
 	//choices
-	choices := make([]weightedrand.Choice[int, int], 0, len(activities))
+	choices := make([]weightedrand.Choice[int, int], len(activities))
 	//calculate distance to centroid
 	for index := range activities {
 		distanceToCentroid[index] = distanceToCluster(centroid, activities[index])
 		distanceSum += distanceToCentroid[index]
 	}
 
+	fmt.Print(choices)
+	//multiply coordinates by 1000 to get a precision of 10 meters
 	for index := range activities {
 		distanceToCentroid[index] = distanceToCentroid[index] / distanceSum
-		tempChoice := weightedrand.NewChoice(index, int(math.Round(distanceToCentroid[index])))
-		choices = append(choices, tempChoice)
+		tempChoice := weightedrand.NewChoice(index, int(math.Round(distanceToCentroid[index]*1000)))
+		choices[index] = tempChoice
 	}
-
+	fmt.Print(choices)
 	return choices
 }
 
@@ -229,5 +234,5 @@ func listActivities() []int {
 
 // Returns the distance to given cluster
 func distanceToCluster(centroid centroid, activity openapi.ActivityModel) float64 {
-	return 1.00
+	return 2.00
 }
