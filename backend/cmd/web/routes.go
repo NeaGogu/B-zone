@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "bzone/backend/cmd/web/api_endpoints"
 	"net/http"
 
 	"github.com/go-chi/chi/middleware"
@@ -71,6 +72,10 @@ func (app *application) routes() http.Handler {
 
 	router.Route("/test_route", func(r chi.Router) {
 		r.Get("/", hello)
+	})
+
+	router.Route("/zip", func(r chi.Router) {
+		r.Get("/coordinates", app.getZipCodeCoords)
 	})
 
 	return router
