@@ -36,11 +36,20 @@ func JwtChecker(next http.Handler) http.Handler {
 			return
 		}
 
-		if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusUnauthorized {
 			http.Error(w, resp.Status, resp.StatusCode)
 			return
-		} else {
+		} else if resp.StatusCode == http.StatusMethodNotAllowed {
+			http.Error(w, resp.Status, resp.StatusCode)
+			return
+		} else if resp.StatusCode == http.StatusUnprocessableEntity {
+			http.Error(w, resp.Status, resp.StatusCode)
+			return
+		} else if resp.StatusCode == http.StatusOK {
 			next.ServeHTTP(w, r)
+		} else {
+			http.Error(w, resp.Status, resp.StatusCode)
+			return
 		}
 	}
 	return http.HandlerFunc(fn)
