@@ -56,7 +56,6 @@ func TestInitCentroids(t *testing.T) {
 		activities := []openapi.ActivityModel{
 			*activity,
 		}
-		//fmt.Print(activities)
 		got, err := initCentroids(activities, nrClusters, nrCandidateCenters)
 
 		if err != nil {

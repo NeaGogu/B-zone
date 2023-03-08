@@ -201,14 +201,12 @@ func newChoices(activities []openapi.ActivityModel, centroid centroid) []weighte
 		distanceSum += distanceToCentroid[index]
 	}
 
-	fmt.Print(choices)
 	//multiply coordinates by 1000 to get a precision of 10 meters
 	for index := range activities {
 		distanceToCentroid[index] = distanceToCentroid[index] / distanceSum
 		tempChoice := weightedrand.NewChoice(index, int(math.Round(distanceToCentroid[index]*1000)))
 		choices[index] = tempChoice
 	}
-	fmt.Print(choices)
 	return choices
 }
 
@@ -234,5 +232,12 @@ func listActivities() []int {
 
 // Returns the distance to given cluster
 func distanceToCluster(centroid centroid, activity openapi.ActivityModel) float64 {
-	return 2.00
+	longCluster := centroid.center.long
+	latCluster := centroid.center.lat
+	longActivity, _ := strconv.Atoi(*activity.AddressApplied.Longitude)
+	latActivity, _ := strconv.Atoi(*activity.AddressApplied.Latitude)
+
+	distance := math.Sqrt(math.Pow(longCluster-float64(longActivity), 2) + math.Pow(latCluster-float64(latActivity), 2))
+	return distance
+
 }
