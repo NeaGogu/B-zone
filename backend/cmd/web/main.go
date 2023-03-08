@@ -20,8 +20,20 @@ type application struct {
 }
 
 func main() {
-	addr := flag.String("addr", ":4000", "HTTP network address")
-	dsn := flag.String("dsn", "mongodb://localhost:27017/?timeoutMS=10000", "Mongodb data source name")
+	// addr := flag.String("addr", ":4000", "HTTP network address")
+	// dsn := flag.String("dsn", "mongodb://test_network:27017/?timeoutMS=10000", "Mongodb data source name")
+	addr, ok := os.LookupEnv("ADDR")
+	if !ok {
+		log.Println("ADDR environment variable is not set. Using default value: :4000")
+		addr = ":4000"
+	}
+
+	// if this env variable is not set then the database cannot be used
+	// so we should exit the program
+	dsn, ok := os.LookupEnv("MONGO_URL")
+	if !ok {
+		log.Fatal("MONGO_URL environment variable is not set")
+	}
 
 	flag.Parse()
 
@@ -34,7 +46,7 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 
 	infoLog.Println("Connecting to MongoDB...[it can take up to 10 seconds]")
-	db, err := openDB(*dsn)
+	db, err := openDB(dsn)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
@@ -57,12 +69,12 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:     *addr,
+		Addr:     addr,
 		ErrorLog: errorLog,
 		Handler:  app.routes(),
 	}
 
-	infoLog.Printf("Starting server on %s", *addr)
+	infoLog.Printf("Starting server on %s", addr)
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 
