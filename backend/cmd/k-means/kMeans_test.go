@@ -6,7 +6,7 @@ import (
 	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
-func TestinitCentroids(t *testing.T) {
+func TestInitCentroids(t *testing.T) {
 
 	activitiesEmpty := []openapi.ActivityModel{}
 	activitiesTwo := []openapi.ActivityModel{

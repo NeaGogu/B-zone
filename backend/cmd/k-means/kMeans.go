@@ -31,9 +31,8 @@ var ErrNoActivities = errors.New("Number of candidate smaller than or equal to 0
 
 func kMeans(activities []openapi.ActivityModel, nrClusters int) ([][]openapi.ActivityModel, error) {
 
-	var err error
 	//initialize centroids
-	centroids, err := initCentroids(activities, nrClusters, 10)
+	_, err := initCentroids(activities, nrClusters, 10)
 	if err != nil {
 		return [][]openapi.ActivityModel{
 			{{}, {}},
@@ -48,36 +47,38 @@ func kMeans(activities []openapi.ActivityModel, nrClusters int) ([][]openapi.Act
 			//clear all the assigned activities
 			clearActivities()
 			//for each activity calculate the nearest centroid and assign activity to that centroid
-			closestCluster := nearestCluster()
-			centroids[closestCluster].AssignedActivities += activities
+			//closestCluster := nearestCluster()
+			//centroids[closestCluster].AssignedActivities += activities
 		}
 		//update the clusters
 		updateCluster()
 		converged = true
 	}
 
-	listAssignedActivities := listActivities()
-	return listAssignedActivities
+	//listAssignedActivities := listActivities()
+	return [][]openapi.ActivityModel{
+		{}, {}}, fmt.Errorf("test")
 }
 
 // initializes cluster by greedy k-means++ seeding
 func initCentroids(activities []openapi.ActivityModel, nrClusters int, nrCandidateCenters int) ([]centroid, error) {
 
+	//throw error if nr of activities is smaller than or equal to 0
 	if len(activities) <= 0 {
 		return []centroid{
-			centroid{
+			{
 				center: coordinates{
 					long: 0,
 					lat:  0,
 				},
-				AssignedActivities: activities[0],
+				AssignedActivities: openapi.ActivityModel{},
 			},
 		}, ErrNoActivities
 	}
 	//throw error if nrCluster is larger than length of activities or nrCandidateCenters smaller or equal to 0
 	if nrClusters > len(activities) {
 		return []centroid{
-			centroid{
+			{
 				center: coordinates{
 					long: 0,
 					lat:  0,
@@ -86,9 +87,10 @@ func initCentroids(activities []openapi.ActivityModel, nrClusters int, nrCandida
 			},
 		}, ErrNrActivitiesTooSmall
 	}
+	//throw error if nr of candidate centers is smaller or equal to 0
 	if nrCandidateCenters <= 0 {
 		return []centroid{
-			centroid{
+			{
 				center: coordinates{
 					long: 0,
 					lat:  0,
@@ -97,6 +99,7 @@ func initCentroids(activities []openapi.ActivityModel, nrClusters int, nrCandida
 			},
 		}, ErrNrCandidateCentersTooSmall
 	}
+
 	//initialize centroids
 	centroids := make([]centroid, 1, nrClusters)
 	//intialize slice to hold candidate centers
@@ -153,7 +156,7 @@ func initCentroids(activities []openapi.ActivityModel, nrClusters int, nrCandida
 	//Iteratively choose best cluster to add
 	for i := 0; i < nrClusters-1; i++ {
 		choices := newChoices(activities, centroids[i])
-		chs, err := weightedrand.NewChooser(choices...)
+		chs, _ := weightedrand.NewChooser(choices...)
 		for i := 0; i < nrCandidateCenters; i++ {
 			biasRandomInt := chs.Pick()
 			long, err := strconv.ParseFloat(*activities[biasRandomInt].AddressApplied.Longitude, 64)
@@ -172,6 +175,10 @@ func initCentroids(activities []openapi.ActivityModel, nrClusters int, nrCandida
 				AssignedActivities: activities[i],
 			}
 		}
+
+		sampleCandidateCentroids(activities, 2, func(chs *weightedrand.Chooser[int, int]) int {
+			return chs.Pick()
+		})
 
 		//calculate iteration with lowest cost
 		for i := 0; i < nrCandidateCenters; i++ {
@@ -217,14 +224,18 @@ func newChoices(activities []openapi.ActivityModel, centroid centroid) []weighte
 	return choices
 }
 
+func sampleCandidateCentroids[T any](activities []openapi.ActivityModel, nrCandidateCenters int, random T) {
+
+}
+
 // Clears all activities from given centroids
 func clearActivities() {
 
 }
 
 // Calculates and returns the nearest cluster
-func nearestCluster() {
-
+func nearestCluster() int {
+	return 1
 }
 
 // Calculates the center of the cluster (by average of all assigned activities)
@@ -233,8 +244,8 @@ func updateCluster() {
 }
 
 // puts all clusters in a list of list so it can be made into a zone
-func listActivities() {
-
+func listActivities() []int {
+	return []int{0}
 }
 
 // Returns the distance to given cluster
