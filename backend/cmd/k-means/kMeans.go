@@ -95,10 +95,10 @@ func initCentroids(activities []openapi.ActivityModel, nrClusters int, nrCandida
 		randomInt := rand.Intn(len(activities))
 
 		//sample candidates using random number (only done for first centroid)
-		candidateCenters, err = sampleCandidateCentroids(activities, randomInt, candidateCenters)
+		candidateCenters, err = sampleCandidateCentroid(activities, randomInt, candidateCenters)
 
 		if err != nil {
-			return emptyCentroid, err
+			return candidateCenters, err
 		}
 	}
 
@@ -121,12 +121,14 @@ func initCentroids(activities []openapi.ActivityModel, nrClusters int, nrCandida
 			return emptyCentroid, err
 		}
 
-		//choose new candidate centers with bias towards points furtheraway
-		biasRandomInt := chs.Pick()
-		candidateCenters, err := sampleCandidateCentroids(activities, biasRandomInt, candidateCenters)
+		//choose new candidate center with bias towards points furtheraway
+		for i := 0; i < nrCandidateCenters; i++ {
+			biasRandomInt := chs.Pick()
+			candidateCenters, err = sampleCandidateCentroid(activities, biasRandomInt, candidateCenters)
 
-		if err != nil {
-			return emptyCentroid, err
+			if err != nil {
+				return candidateCenters, err
+			}
 		}
 		//calculate candidateCenter with lowest cost
 		lowestCost = lowestcandidateCenterCost(activities, nrCandidateCenters, candidateCenters)
@@ -137,7 +139,8 @@ func initCentroids(activities []openapi.ActivityModel, nrClusters int, nrCandida
 	return centroids, nil
 }
 
-func sampleCandidateCentroids(activities []openapi.ActivityModel, randomInt int, candidateCenters []centroid) ([]centroid, error) {
+// Samples a candidates from activities given a random (or biased) int
+func sampleCandidateCentroid(activities []openapi.ActivityModel, randomInt int, candidateCenter []centroid) ([]centroid, error) {
 	long, err := strconv.ParseFloat(*activities[randomInt].AddressApplied.Longitude, 64)
 
 	//return if converting throws error
@@ -152,7 +155,7 @@ func sampleCandidateCentroids(activities []openapi.ActivityModel, randomInt int,
 		return emptyCentroid, err
 	}
 
-	candidateCenters = append(candidateCenters, centroid{
+	candidateCenter = append(candidateCenters, centroid{
 		center: coordinates{
 			long: long,
 			lat:  lat,
@@ -163,6 +166,7 @@ func sampleCandidateCentroids(activities []openapi.ActivityModel, randomInt int,
 	return candidateCenters, nil
 }
 
+// function to calculate which candidate center has the lowest cost (cummilative distance)
 func lowestcandidateCenterCost(activities []openapi.ActivityModel, nrCandidateCenters int, candidateCenters []centroid) int {
 	var lowIterationCost = 0
 	minCost := math.Inf(0)
