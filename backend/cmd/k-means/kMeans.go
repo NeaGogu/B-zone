@@ -2,9 +2,9 @@ package kMeans
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"math/rand"
+	"reflect"
 	"strconv"
 
 	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
@@ -18,7 +18,7 @@ type coordinates struct {
 
 type centroid struct {
 	center             coordinates
-	AssignedActivities openapi.ActivityModel
+	AssignedActivities []openapi.ActivityModel
 }
 
 var ErrNrActivitiesTooSmall = errors.New("number of activities smaller than number of clusters")
@@ -32,39 +32,50 @@ var emptyCentroid = []centroid{
 			long: 0,
 			lat:  0,
 		},
-		AssignedActivities: openapi.ActivityModel{},
+		AssignedActivities: []openapi.ActivityModel{},
 	},
 }
 
-func kMeans(activities []openapi.ActivityModel, nrClusters int) ([][]openapi.ActivityModel, error) {
+func kMeans(activities []openapi.ActivityModel, nrClusters int) ([]centroid, error) {
 
 	//initialize centroids
-	_, err := initCentroids(activities, nrClusters, 10)
+	centroids, err := initCentroids(activities, nrClusters, 2)
 	if err != nil {
-		return [][]openapi.ActivityModel{
-			{{}, {}},
-			{{}, {}},
-		}, err
+		return centroids, err
 	}
 	converged := false
 
 	//stop if converged
 	for !converged {
-		for range activities {
-			//clear all the assigned activities
-			clearActivities()
+		oldCentroids := centroids
+
+		//clear all the assigned activities
+		centroids, err = clearActivities(centroids)
+
+		if err != nil {
+			return centroids, err
+		}
+
+		for _, activity := range activities {
 			//for each activity calculate the nearest centroid and assign activity to that centroid
-			//closestCluster := nearestCluster()
-			//centroids[closestCluster].AssignedActivities += activities
+			closestCluster := nearestCentroid(activity, centroids)
+			centroids[closestCluster].AssignedActivities = append(centroids[closestCluster].AssignedActivities, activity)
 		}
 		//update the clusters
-		updateCluster()
-		converged = true
+
+		centroids, err := updateCluster(centroids)
+		if err != nil {
+			return centroids, err
+		}
+
+		if reflect.DeepEqual(oldCentroids, centroids) {
+			converged = true
+		}
+
 	}
 
 	//listAssignedActivities := listActivities()
-	return [][]openapi.ActivityModel{
-		{}, {}}, fmt.Errorf("test")
+	return centroids, nil
 }
 
 // initializes cluster by greedy k-means++ seeding
@@ -163,7 +174,7 @@ func sampleCandidateCentroid(activities []openapi.ActivityModel, randomInt int, 
 			long: long,
 			lat:  lat,
 		},
-		AssignedActivities: activities[randomInt],
+		AssignedActivities: []openapi.ActivityModel{activities[randomInt]},
 	})
 
 	return candidateCenter, nil
@@ -211,18 +222,50 @@ func newChoices(activities []openapi.ActivityModel, centroid centroid) []weighte
 }
 
 // Clears all activities from given centroids
-func clearActivities() {
-
+func clearActivities(centroids []centroid) ([]centroid, error) {
+	for i := range centroids {
+		centroids[i].AssignedActivities = make([]openapi.ActivityModel, 0)
+	}
+	return centroids, nil
 }
 
 // Calculates and returns the nearest cluster
-func nearestCluster() int {
-	return 1
+func nearestCentroid(activity openapi.ActivityModel, clusters []centroid) int {
+	lowestDistance := math.Inf(0)
+	var indexCluster int
+	for i, j := range clusters {
+		distance := distanceToCluster(j, activity)
+		if distance < lowestDistance {
+			lowestDistance = distance
+			indexCluster = i
+		}
+	}
+	return indexCluster
 }
 
 // Calculates the center of the cluster (by average of all assigned activities)
-func updateCluster() {
+func updateCluster(clusters []centroid) ([]centroid, error) {
+	for i := range clusters {
+		var long float64 = 0
+		var lat float64 = 0
+		for _, j := range clusters[i].AssignedActivities {
+			tempLong, err := strconv.ParseFloat(*j.AddressApplied.Longitude, 64)
+			if err != nil {
+				return clusters, err
+			}
+			tempLat, err := strconv.ParseFloat(*j.AddressApplied.Latitude, 64)
+			if err != nil {
+				return clusters, err
+			}
+			long += tempLong
+			lat += tempLat
+		}
 
+		//update center
+		clusters[i].center.lat = lat / float64(len(clusters[i].AssignedActivities))
+		clusters[i].center.long = long / float64(len(clusters[i].AssignedActivities))
+	}
+	return clusters, nil
 }
 
 // puts all clusters in a list of list so it can be made into a zone
