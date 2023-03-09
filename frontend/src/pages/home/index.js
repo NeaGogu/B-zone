@@ -2,11 +2,12 @@ import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from
 import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider } from 'antd';
 import React, {useState, useEffect} from 'react';
 import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, Polygon } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
 import './index.css';
+import dumbzones from './tempData/allcases.json'
 
 function getItem(label, key, icon, children, type) {
     return {
@@ -78,7 +79,7 @@ function LocationMarker() {
                         setZipcode(zipcode);
                     }
                 });
-            map.flyTo(e.latlng, map.getZoom());
+            //map.flyTo(e.latlng, map.getZoom());
         },
     });
     return position === null ? null : (
@@ -160,6 +161,15 @@ export default function Home() {
     // for comparison button to split maps
     const [showComparison, setShowComparison] = useState(false);
     const [showMap, setShowMap] = useState(true);
+    // for toggling between zones
+    const [selection, setSelection] = useState([])
+    const [poly, setPoly] = useState([])
+    const [togZone, setTogZone] = useState(true)
+
+    // save which item in menu is selected
+    const menuClick = (e) => {
+        setSelection(e.key);    
+    }
 
     const toggleComparison = () => {
         if (showComparison) {
@@ -173,6 +183,25 @@ export default function Home() {
     const toggleMap = () => {
         setShowMap(!showMap);
         setShowComparison(false); // reset comparison state when switching singular map
+        if (selection === '5' ) {
+            if (togZone) {
+                setPoly(dumbzones.nl)
+                setTogZone(!togZone)
+            } else {
+                setPoly([])
+                setTogZone(!togZone)
+            }
+        }
+        if (selection === '6' ) {
+            if (togZone) {
+                setPoly([])
+                setTogZone(!togZone)
+            } else {
+                setPoly([])
+                setTogZone(!togZone)
+            }
+        }
+        //console.log(selection)
     };
 
     return (
@@ -239,6 +268,7 @@ export default function Home() {
                                 height: '100%',
                                 borderRight: 0,
                             }}
+                            onClick={menuClick}
                         >
                             <div style={{ width: "100%" }}>
                                 <Button style={{ width: "50%" }} type="primary" onClick={toggleMap}>Heat map</Button>
@@ -283,14 +313,14 @@ export default function Home() {
                         >
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
+                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '70vh', flex: "1" }}>
                                         <TileLayer
                                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                         />
                                         <LocationMarker/>
                                     </MapContainer>
-                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: "20px" }}>
+                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '70vh', flex: "1", marginLeft: "20px" }}>
                                         <TileLayer
                                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -299,11 +329,17 @@ export default function Home() {
                                     </MapContainer>
                                 </div>
                             ) : (
-                                <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: showMap ? "20px" : "0" }}>
+                                <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '70vh', flex: "1", marginLeft: showMap ? "20px" : "0" }}>
                                     <TileLayer
                                         attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                     />
+                                    {
+                                        poly.map(zip =>(
+                                            
+                                            <Polygon key={zip.pc4} positions={[zip.coordinates]}/>
+                                        ))
+                                    }
                                     <LocationMarker/>
                                 </MapContainer>
                             )}
