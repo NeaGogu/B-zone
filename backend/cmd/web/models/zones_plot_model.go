@@ -33,23 +33,6 @@ func NewZonesPlotModel() *ZonesPlotModel {
 	return &this
 }
 
-// NewZonesPlotModelWithDefaults instantiates a new ZonesPlotModel object
-// This constructor will only assign default values to properties that have it defined,
-// but it doesn't guarantee that properties required by API are set
-func NewZonesPlotModelWithDefaults() *ZonesPlotModel {
-	this := ZonesPlotModel{}
-	return &this
-}
-
-// GetId returns the Id field value if set, zero value otherwise.
-func (o *ZonesPlotModel) GetId() int64 {
-	if o == nil || o.Id == nil {
-		var ret int64
-		return ret
-	}
-	return *o.Id
-}
-
 // GetIdOk returns a tuple with the Id field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *ZonesPlotModel) GetIdOk() (*int64, bool) {
@@ -71,15 +54,6 @@ func (o *ZonesPlotModel) HasId() bool {
 // SetId gets a reference to the given int64 and assigns it to the Id field.
 func (o *ZonesPlotModel) SetId(v int64) {
 	o.Id = &v
-}
-
-// GetName returns the Name field value if set, zero value otherwise.
-func (o *ZonesPlotModel) GetName() string {
-	if o == nil || o.Name == nil {
-		var ret string
-		return ret
-	}
-	return *o.Name
 }
 
 // GetNameOk returns a tuple with the Name field value if set, nil otherwise
@@ -105,15 +79,6 @@ func (o *ZonesPlotModel) SetName(v string) {
 	o.Name = &v
 }
 
-// GetZones returns the Zones field value if set, zero value otherwise.
-func (o *ZonesPlotModel) GetZones() []ZoneModel {
-	if o == nil || o.Zones == nil {
-		var ret []ZoneModel
-		return ret
-	}
-	return *o.Zones
-}
-
 // GetZonesOk returns a tuple with the ZoneRanges field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *ZonesPlotModel) GetZonesOk() (*[]ZoneModel, bool) {
@@ -137,15 +102,6 @@ func (o *ZonesPlotModel) SetZones(v []ZoneModel) {
 	o.Zones = &v
 }
 
-// GetZonesPlotCreatedAt returns the ZoneCreatedAt field value if set, zero value otherwise.
-func (o *ZonesPlotModel) GetZonesPlotCreatedAt() time.Time {
-	if o == nil || o.ZonesPlotCreatedAt == nil {
-		var ret time.Time
-		return ret
-	}
-	return *o.ZonesPlotCreatedAt
-}
-
 // GetZonesPlotCreatedAtOk returns a tuple with the ZoneCreatedAt field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *ZonesPlotModel) GetZonesPlotCreatedAtOk() (*time.Time, bool) {
@@ -167,15 +123,6 @@ func (o *ZonesPlotModel) HasZonesPlotCreatedAt() bool {
 // SetZonesPlotCreatedAt gets a reference to the given time.Time and assigns it to the ZoneCreatedAt field.
 func (o *ZonesPlotModel) SetZonesPlotCreatedAt(v time.Time) {
 	o.ZonesPlotCreatedAt = &v
-}
-
-// GetZonesPlotSavedAt returns the ZoneCreatedAt field value if set, zero value otherwise.
-func (o *ZonesPlotModel) GetZonesPlotSavedAt() time.Time {
-	if o == nil || o.ZonesPlotSavedAt == nil {
-		var ret time.Time
-		return ret
-	}
-	return *o.ZonesPlotSavedAt
 }
 
 // GetZonesPlotSavedAtOk returns a tuple with the ZoneCreatedAt field value if set, nil otherwise
@@ -225,10 +172,6 @@ func (o ZonesPlotModel) MarshalJSON() ([]byte, error) {
 type NullableZonesPlotModel struct {
 	value *ZonesPlotModel
 	isSet bool
-}
-
-func (v NullableZonesPlotModel) Get() *ZonesPlotModel {
-	return v.value
 }
 
 func (v *NullableZonesPlotModel) Set(val *ZonesPlotModel) {

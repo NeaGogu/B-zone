@@ -30,23 +30,6 @@ func NewZoneModel() *ZoneModel {
 	return &this
 }
 
-// NewZoneModelWithDefaults instantiates a new ZoneModel object
-// This constructor will only assign default values to properties that have it defined,
-// but it doesn't guarantee that properties required by API are set
-func NewZoneModelWithDefaults() *ZoneModel {
-	this := ZoneModel{}
-	return &this
-}
-
-// GetId returns the Id field value if set, zero value otherwise.
-func (o *ZoneModel) GetId() int64 {
-	if o == nil || o.Id == nil {
-		var ret int64
-		return ret
-	}
-	return *o.Id
-}
-
 // GetIdOk returns a tuple with the Id field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *ZoneModel) GetIdOk() (*int64, bool) {
@@ -70,15 +53,6 @@ func (o *ZoneModel) SetId(v int64) {
 	o.Id = &v
 }
 
-// GetZoneRanges returns the ZoneRanges field value if set, zero value otherwise.
-func (o *ZoneModel) GetZoneRanges() []ZoneRangeModel {
-	if o == nil || o.ZoneRanges == nil {
-		var ret []ZoneRangeModel
-		return ret
-	}
-	return *o.ZoneRanges
-}
-
 // GetZoneRangesOk returns a tuple with the ZoneRanges field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *ZoneModel) GetZoneRangesOk() (*[]ZoneRangeModel, bool) {
@@ -100,15 +74,6 @@ func (o *ZoneModel) HasZoneRanges() bool {
 // SetZoneRanges gets a reference to the given []ZoneRangeModel and assigns it to the ZoneRanges field.
 func (o *ZoneModel) SetZoneRanges(v []ZoneRangeModel) {
 	o.ZoneRanges = &v
-}
-
-// GetZoneFuelCost returns the FuelCost field value if set, zero value otherwise.
-func (o *ZoneModel) GetZoneFuelCost() float64 {
-	if o == nil || o.ZoneFuelCost == nil {
-		var ret float64
-		return ret
-	}
-	return *o.ZoneFuelCost
 }
 
 // GetZoneFuelCostOk returns a tuple with the ZoneFuelCost field value if set, nil otherwise
@@ -187,10 +152,6 @@ func (o ZoneModel) MarshalJSON() ([]byte, error) {
 type NullableZoneModel struct {
 	value *ZoneModel
 	isSet bool
-}
-
-func (v NullableZoneModel) Get() *ZoneModel {
-	return v.value
 }
 
 func (v *NullableZoneModel) Set(val *ZoneModel) {

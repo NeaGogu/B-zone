@@ -30,23 +30,6 @@ func NewZoneRangeModel() *ZoneRangeModel {
 	return &this
 }
 
-// NewZoneRangeModelWithDefaults instantiates a new ZoneRangeModel object
-// This constructor will only assign default values to properties that have it defined,
-// but it doesn't guarantee that properties required by API are set
-func NewZoneRangeModelWithDefaults() *ZoneRangeModel {
-	this := ZoneRangeModel{}
-	return &this
-}
-
-// GetId returns the Id field value if set, zero value otherwise.
-func (o *ZoneRangeModel) GetId() int64 {
-	if o == nil || o.Id == nil {
-		var ret int64
-		return ret
-	}
-	return *o.Id
-}
-
 // GetIdOk returns a tuple with the Id field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *ZoneRangeModel) GetIdOk() (*int64, bool) {
@@ -68,15 +51,6 @@ func (o *ZoneRangeModel) HasId() bool {
 // SetId gets a reference to the given int64 and assigns it to the Id field.
 func (o *ZoneRangeModel) SetId(v int64) {
 	o.Id = &v
-}
-
-// GetZipcodeFrom returns the ZipcodeFrom field value if set, zero value otherwise.
-func (o *ZoneRangeModel) GetZipcodeFrom() int64 {
-	if o == nil || o.ZipcodeFrom == nil {
-		var ret int64
-		return ret
-	}
-	return *o.ZipcodeFrom
 }
 
 // GetZipcodeFromOk returns a tuple with the ZipcodeFrom field value if set, nil otherwise
@@ -102,15 +76,6 @@ func (o *ZoneRangeModel) SetZipcodeFrom(v int64) {
 	o.ZipcodeFrom = &v
 }
 
-// GetZipcodeTo returns the ZipcodeTo field value if set, zero value otherwise.
-func (o *ZoneRangeModel) GetZipcodeTo() int64 {
-	if o == nil || o.ZipcodeTo == nil {
-		var ret int64
-		return ret
-	}
-	return *o.ZipcodeTo
-}
-
 // GetZipcodeToOk returns a tuple with the ZipcodeTo field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *ZoneRangeModel) GetZipcodeToOk() (*int64, bool) {
@@ -132,15 +97,6 @@ func (o *ZoneRangeModel) HasZipcodeTo() bool {
 // SetZipcodeTo gets a reference to the given int64 and assigns it to the ZipcodeTo field.
 func (o *ZoneRangeModel) SetZipcodeTo(v int64) {
 	o.ZipcodeTo = &v
-}
-
-// GetIsoCountry returns the IsoCountry field value if set, zero value otherwise.
-func (o *ZoneRangeModel) GetIsoCountry() string {
-	if o == nil || o.IsoCountry == nil {
-		var ret string
-		return ret
-	}
-	return *o.IsoCountry
 }
 
 // GetIsoCountryOk returns a tuple with the IsoCountry field value if set, nil otherwise
@@ -186,10 +142,6 @@ func (o ZoneRangeModel) MarshalJSON() ([]byte, error) {
 type NullableZoneRangeModel struct {
 	value *ZoneRangeModel
 	isSet bool
-}
-
-func (v NullableZoneRangeModel) Get() *ZoneRangeModel {
-	return v.value
 }
 
 func (v *NullableZoneRangeModel) Set(val *ZoneRangeModel) {

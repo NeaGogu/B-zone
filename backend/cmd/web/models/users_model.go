@@ -16,7 +16,7 @@ type UsersModel struct {
 	// unique per user
 	Uuid *string `json:"uuid,omitempty"`
 	// zones plots per user
-	ZonesPlots *[]ZonesPlotModel `json:"user_zones_plots,omitempty"`
+	ZonesPlotIds *[]string `json:"user_zones_plot_ids,omitempty"`
 }
 
 // NewUsersModel instantiates a new UsersModel object
@@ -26,23 +26,6 @@ type UsersModel struct {
 func NewUsersModel() *UsersModel {
 	this := UsersModel{}
 	return &this
-}
-
-// NewUsersModelWithDefaults instantiates a new UsersModel object
-// This constructor will only assign default values to properties that have it defined,
-// but it doesn't guarantee that properties required by API are set
-func NewUsersModelWithDefaults() *UsersModel {
-	this := UsersModel{}
-	return &this
-}
-
-// GetId returns the Id field value if set, zero value otherwise.
-func (o *UsersModel) GetId() int64 {
-	if o == nil || o.Id == nil {
-		var ret int64
-		return ret
-	}
-	return *o.Id
 }
 
 // GetIdOk returns a tuple with the Id field value if set, nil otherwise
@@ -68,15 +51,6 @@ func (o *UsersModel) SetId(v int64) {
 	o.Id = &v
 }
 
-// GetUuid returns the Uuid field value if set, zero value otherwise.
-func (o *UsersModel) GetUuid() string {
-	if o == nil || o.Uuid == nil {
-		var ret string
-		return ret
-	}
-	return *o.Uuid
-}
-
 // GetUuidOk returns a tuple with the Uuid field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *UsersModel) GetUuidOk() (*string, bool) {
@@ -100,27 +74,18 @@ func (o *UsersModel) SetUuid(v string) {
 	o.Uuid = &v
 }
 
-// GetZonesPlots returns the Zones field value if set, zero value otherwise.
-func (o *UsersModel) GetZonesPlots() []ZonesPlotModel {
-	if o == nil || o.ZonesPlots == nil {
-		var ret []ZonesPlotModel
-		return ret
-	}
-	return *o.ZonesPlots
-}
-
 // GetZonesPlotsOk returns a tuple with the ZoneRanges field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *UsersModel) GetZonesPlotsOk() (*[]ZonesPlotModel, bool) {
-	if o == nil || o.ZonesPlots == nil {
+func (o *UsersModel) GetZonesPlotsOk() (*[]string, bool) {
+	if o == nil || o.ZonesPlotIds == nil {
 		return nil, false
 	}
-	return o.ZonesPlots, true
+	return o.ZonesPlotIds, true
 }
 
 // HasZonesPlots returns a boolean if a field has been set.
 func (o *UsersModel) HasZonesPlots() bool {
-	if o != nil && o.ZonesPlots != nil {
+	if o != nil && o.ZonesPlotIds != nil {
 		return true
 	}
 
@@ -128,8 +93,8 @@ func (o *UsersModel) HasZonesPlots() bool {
 }
 
 // SetZonesPlots SetUserZonesPlot gets a reference to the given []ZonesPlotModel and assigns it to the ZonesPlots field.
-func (o *UsersModel) SetZonesPlots(v []ZonesPlotModel) {
-	o.ZonesPlots = &v
+func (o *UsersModel) SetZonesPlots(v []string) {
+	o.ZonesPlotIds = &v
 }
 
 func (o UsersModel) MarshalJSON() ([]byte, error) {
@@ -140,8 +105,8 @@ func (o UsersModel) MarshalJSON() ([]byte, error) {
 	if o.Uuid != nil {
 		toSerialize["uuid"] = o.Uuid
 	}
-	if o.ZonesPlots != nil {
-		toSerialize["user_zones_plots"] = o.ZonesPlots
+	if o.ZonesPlotIds != nil {
+		toSerialize["user_zones_plot_ids"] = o.ZonesPlotIds
 	}
 	return json.Marshal(toSerialize)
 }
@@ -149,10 +114,6 @@ func (o UsersModel) MarshalJSON() ([]byte, error) {
 type NullableUsersModel struct {
 	value *UsersModel
 	isSet bool
-}
-
-func (v NullableUsersModel) Get() *UsersModel {
-	return v.value
 }
 
 func (v *NullableUsersModel) Set(val *UsersModel) {
