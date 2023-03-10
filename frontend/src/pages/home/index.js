@@ -19,9 +19,6 @@ function getItem(label, key, icon, children, type) {
     };
 }
 
-function setEmail() {
-    document.getElementById('email').innerHTML = id_user //gets email for text in item
-}
 
 const { SubMenu } = Menu;
 const { darkAlgorithm } = theme;
