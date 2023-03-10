@@ -1,5 +1,5 @@
 import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider } from 'antd';
+import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select  } from 'antd';
 import React, {useState, useEffect} from 'react';
 import L from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap } from 'react-leaflet';
@@ -25,6 +25,9 @@ function setEmail() {
 const { SubMenu } = Menu;
 const { darkAlgorithm } = theme;
 const { Header, Content, Sider } = Layout;
+const handleChange = (value) => {
+    console.log(`selected ${value}`);
+};
 const item = [
     getItem('Saved zones', 'sub1', null, [
         getItem('Initial Zone', 'g1', null, null, 'group'),
@@ -94,6 +97,13 @@ function LocationMarker() {
         </Marker>
     );
 }
+//
+
+
+// const handleClick = () => {
+//         setShowButton(true);
+//     };
+
 //signOut function
 function signOut() {
     const token = localStorage.getItem('token');
@@ -160,6 +170,7 @@ export default function Home() {
     // for comparison button to split maps
     const [showComparison, setShowComparison] = useState(false);
     const [showMap, setShowMap] = useState(true);
+
 
     const toggleComparison = () => {
         if (showComparison) {
@@ -240,33 +251,32 @@ export default function Home() {
                                 borderRight: 0,
                             }}
                         >
-                            <div style={{ width: "100%" }}>
-                                <Button style={{ width: "50%" }} type="primary" onClick={toggleMap}>Heat map</Button>
-                                <Button style={{ width: "50%" }} type="primary" onClick={toggleMap}>Zones</Button>
-                            </div>
-
-                            <Form name="form_item_path" layout="vertical" onFinish={onFinish}>
-                                <MyFormItemGroup>
-                                    <MyFormItemGroup>
-                                        <MyFormItem name="fuelCost" label="Average fuel cost">
-                                            <Input placeholder="1" />
-                                        </MyFormItem>
-                                        <MyFormItem name="fuelUsage" label="Average fuel usage of car">
-                                            <Input placeholder="1" />
-                                        </MyFormItem>
-                                    </MyFormItemGroup>
-                                </MyFormItemGroup>
-
-                                <Button style={{ width: "100%" }} type="primary">Calculate</Button>
-                                &nbsp;
-                                <Button style={{ width: "100%" }} type="primary">Save</Button>
-                            </Form>
-
-                            <SubMenu key="sub2" title="Saved Zones">
-                                <Menu.Item key="5">Initial Zone</Menu.Item>
-                                <Menu.Item key="6">Saved Zone 1</Menu.Item>
-                                <Button style={{ width: "100%" }} type="primary" onClick={toggleComparison}>Compare</Button>
+                            <SubMenu key="sub3" title="Heatmap settings">
+                                    <Menu.Item key="5">Location based heatmap</Menu.Item>
+                                    <Menu.Item key="6">Time based heatmap</Menu.Item>
                             </SubMenu>
+
+
+                            <SubMenu key="sub4" title="Zones">
+                                    <Form.Item label="Average fuel cost" rules={[{ required: true }]}>
+                                        <Input placeholder="input fuel cost" type="number" step="0.01" />
+                                    </Form.Item>
+                                    <Form.Item label="Average fuel usage of car">
+                                        <Input placeholder="input fuel usage of car"  type="number" step="0.01" />
+                                    </Form.Item>
+                                    <Button style={{ width: "100%" }} type="primary" type="primary">Calculate</Button>
+                            </SubMenu>
+
+
+
+                            {/*<SubMenu key="sub2" title="Saved Zones">*/}
+                            {/*    <Menu.Item key="5" onClick={handleClick}>*/}
+                            {/*        Initial Zone*/}
+                            {/*    </Menu.Item>*/}
+                            {/*    {showButton && <Button>Click me</Button>}*/}
+                            {/*    <Menu.Item key="6">Saved Zone 1</Menu.Item>*/}
+                            {/*    <Button style={{ width: "100%" }} type="primary" onClick={toggleComparison}>Compare</Button>*/}
+                            {/*</SubMenu>*/}
 
                         </Menu>
                     </Sider>
