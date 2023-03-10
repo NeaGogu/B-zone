@@ -1,286 +1,295 @@
+// Package kMeans provides an implementation for the k-means algorithm with greedy initialization
 package kMeans
 
 import (
+	openapi "backend/internal/swag_gen"
 	"errors"
 	"math"
 	"math/rand"
 	"reflect"
 	"strconv"
-
-	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
-	"github.com/mroth/weightedrand/v2"
 )
 
+// A coordinates type contains longtitude and latitude
 type coordinates struct {
-	long float64
-	lat  float64
+	longtitude float64
+	latitude   float64
 }
 
-type centroid struct {
-	center             coordinates
-	AssignedActivities []openapi.ActivityModel
+// Type to store an observation (location of an activity)
+type observation struct {
+	id          string
+	coordinates coordinates
 }
+
+// Type that defines a cluster
+type cluster struct {
+	center       coordinates
+	observations observations
+}
+
+// Type that defines multiple observations
+type observations []observation
+
+// Type that defines multiple clusters
+type clusters []cluster
+
+// Type that defines multiple activity models
+type activities []openapi.ActivityModel
 
 var ErrNrActivitiesTooSmall = errors.New("number of activities smaller than number of clusters")
 var ErrNrCandidateCentersTooSmall = errors.New("number of candidate smaller than or equal to 0")
 var ErrNoActivities = errors.New("number of candidate smaller than or equal to 0")
 
-// refactor since it is used multiple times
-var emptyCentroid = []centroid{
-	{
-		center: coordinates{
-			long: 0,
-			lat:  0,
-		},
-		AssignedActivities: []openapi.ActivityModel{},
-	},
+var zeroCoordinate = coordinates{
+	latitude:   0,
+	longtitude: 0,
 }
 
-func kMeans(activities []openapi.ActivityModel, nrClusters int) ([]centroid, error) {
+var zeroObservation = observation{
+	id:          "zero",
+	coordinates: zeroCoordinate,
+}
 
-	//initialize centroids
-	centroids, err := initCentroids(activities, nrClusters, 2)
-	if err != nil {
-		return centroids, err
-	}
+var zeroObservations = observations{
+	zeroObservation,
+}
+
+var zeroCluster = cluster{
+	center:       zeroCoordinate,
+	observations: zeroObservations,
+}
+
+var emptyClusters = clusters{
+	zeroCluster,
+}
+
+func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clusters, error) {
+	//variable used to store error and return when a function returns an error.
+	var err error
+	var observations = make(observations, 0)
+	err = activitiesToObservations(&activities, &observations)
+	//TODO: implement error handling
+	var clusters = make(clusters, 0, nrClusters)
+	err = initializeClusters(&observations, &clusters, nrClusters, nrCandidateClusters)
+	//TODO: implement error handling
+
 	converged := false
 
 	//stop if converged
 	for !converged {
-		oldCentroids := centroids
 
+		oldClusters := clusters
 		//clear all the assigned activities
-		centroids, err = clearActivities(centroids)
+		clearObservations(&clusters)
 
-		if err != nil {
-			return centroids, err
+		//for each activity calculate the closest cluster and assign activity to that cluster
+		for _, observation := range observations {
+
+			_, closestCenter := distanceToNearestCluster(observation, &clusters)
+			//assign observation to closest cluster
+			clusters[closestCenter].observations = append(clusters[closestCenter].observations, observation)
 		}
 
-		for _, activity := range activities {
-			//for each activity calculate the nearest centroid and assign activity to that centroid
-			closestCluster := nearestCentroid(activity, centroids)
-			centroids[closestCluster].AssignedActivities = append(centroids[closestCluster].AssignedActivities, activity)
-		}
 		//update the clusters
+		updateCluster(&clusters)
 
-		centroids, err := updateCluster(centroids)
-		if err != nil {
-			return centroids, err
-		}
-
-		if reflect.DeepEqual(oldCentroids, centroids) {
+		if reflect.DeepEqual(clusters, oldClusters) {
 			converged = true
 		}
 
 	}
-
-	//listAssignedActivities := listActivities()
-	return centroids, nil
+	return clusters, err
 }
 
-// initializes cluster by greedy k-means++ seeding
-func initCentroids(activities []openapi.ActivityModel, nrClusters int, nrCandidateCenters int) ([]centroid, error) {
-
-	//throw error if nr of activities is smaller than or equal to 0
-	if len(activities) <= 0 {
-		return emptyCentroid, ErrNoActivities
-	}
-	//throw error if nrCluster is larger than length of activities or nrCandidateCenters smaller or equal to 0
-	if nrClusters > len(activities) {
-		return emptyCentroid, ErrNrActivitiesTooSmall
-	}
-	//throw error if nr of candidate centers is smaller or equal to 0
-	if nrCandidateCenters <= 0 {
-		return emptyCentroid, ErrNrCandidateCentersTooSmall
-	}
-
-	//initialize centroids
-	centroids := make([]centroid, 0, nrClusters)
-	//intialize slice to hold candidate centers
-	var candidateCenters []centroid
-	var err error
-	//Sample l candidateCenters
-	candidateCenters = make([]centroid, 0, nrCandidateCenters)
-	for i := 0; i < nrCandidateCenters; i++ {
-		randomInt := rand.Intn(len(activities))
-
-		//sample candidates using random number (only done for first centroid)
-		candidateCenters, err = sampleCandidateCentroid(activities, randomInt, candidateCenters)
-
-		if err != nil {
-			return candidateCenters, err
+// updateCluster requires a pointer to a clusters(list of cluster) and updates all centers of the given clusters.
+func updateCluster(clustersPtr *clusters) {
+	//derefence
+	clusters := *clustersPtr
+	for index, cluster := range clusters {
+		sumLatitude := 0.00
+		sumLongtitude := 0.00
+		//calculate the sum of all longtitude / latitudes of points that are closest to the cluster
+		for _, observation := range cluster.observations {
+			sumLatitude += observation.coordinates.latitude
+			sumLongtitude += observation.coordinates.longtitude
+		}
+		//Set new center equal to the average of all the points
+		clusters[index].center = coordinates{
+			latitude:   sumLatitude / float64(len(cluster.observations)),
+			longtitude: sumLongtitude / float64(len(cluster.observations)),
 		}
 	}
-
-	//calculate iteration with lowest cost
-	lowestCost := lowestcandidateCenterCost(activities, nrCandidateCenters, candidateCenters)
-
-	// long, _ := strconv.ParseFloat(*activities[lowestCost].AddressApplied.Longitude, 64)
-	// lat, _ := strconv.ParseFloat(*activities[lowestCost].AddressApplied.Latitude, 64)
-
-	//append lowestcost centroid
-	addedCentroid := candidateCenters[lowestCost]
-
-	centroids = append(centroids, addedCentroid)
-
-	//Iteratively choose best cluster to add
-	for i := 0; i < nrClusters-1; i++ {
-		//clear old candidateCenters
-		candidateCenters = make([]centroid, 0, nrCandidateCenters)
-		//calculate bias of points with higher bias towards points further away from previous centroid
-		choices := newChoices(activities, centroids[i])
-		//make random chooser with bias
-		chs, err := weightedrand.NewChooser(choices...)
-
-		if err != nil {
-			return emptyCentroid, err
-		}
-
-		//choose new candidate center with bias towards points furtheraway
-		for i := 0; i < nrCandidateCenters; i++ {
-			biasRandomInt := chs.Pick()
-			candidateCenters, err = sampleCandidateCentroid(activities, biasRandomInt, candidateCenters)
-
-			if err != nil {
-				return candidateCenters, err
-			}
-		}
-		//calculate candidateCenter with lowest cost
-		lowestCost = lowestcandidateCenterCost(activities, nrCandidateCenters, candidateCenters)
-
-		//append lowestcost centroid
-		centroids = append(centroids, candidateCenters[lowestCost])
-	}
-	return centroids, nil
 }
 
-// Samples a candidates from activities given a random (or biased) int
-func sampleCandidateCentroid(activities []openapi.ActivityModel, randomInt int, candidateCenter []centroid) ([]centroid, error) {
-	long, err := strconv.ParseFloat(*activities[randomInt].AddressApplied.Longitude, 64)
-	//return if converting throws error
-	if err != nil {
-		return emptyCentroid, err
-	}
-
-	lat, err := strconv.ParseFloat(*activities[randomInt].AddressApplied.Latitude, 64)
-
-	//return if converting throws error
-	if err != nil {
-		return emptyCentroid, err
-	}
-
-	candidateCenter = append(candidateCenter, centroid{
-		center: coordinates{
-			long: long,
-			lat:  lat,
-		},
-		AssignedActivities: []openapi.ActivityModel{activities[randomInt]},
-	})
-
-	return candidateCenter, nil
-}
-
-// function to calculate which candidate center has the lowest cost (cummilative distance)
-func lowestcandidateCenterCost(activities []openapi.ActivityModel, nrCandidateCenters int, candidateCenters []centroid) int {
-	var lowIterationCost = 0
-	minCost := math.Inf(0)
-	for i := 0; i < nrCandidateCenters; i++ {
-		var iterationCost float64
-
-		for j := 0; j < len(activities); j++ {
-			cost := distanceToCluster(candidateCenters[i], activities[i])
-			iterationCost += cost
-		}
-		if iterationCost < minCost {
-			minCost = iterationCost
-			lowIterationCost = i
-		}
-	}
-	return lowIterationCost
-}
-
-func newChoices(activities []openapi.ActivityModel, centroid centroid) []weightedrand.Choice[int, int] {
-	//slice to store distance to given centroid used for sampling with probability
-	distanceToCentroid := make([]float64, len(activities))
-	distanceSum := 0.0
-
-	//choices
-	choices := make([]weightedrand.Choice[int, int], len(activities))
-	//calculate distance to centroid
-	for index := range activities {
-		distanceToCentroid[index] = distanceToCluster(centroid, activities[index])
-		distanceSum += distanceToCentroid[index]
-	}
-
-	//multiply coordinates by 1000 to get a precision of 10 meters
-	for index := range activities {
-		distanceToCentroid[index] = distanceToCentroid[index] / distanceSum
-		tempChoice := weightedrand.NewChoice(index, int(math.Round(distanceToCentroid[index]*1000)))
-		choices[index] = tempChoice
-	}
-	return choices
-}
-
-// Clears all activities from given centroids
-func clearActivities(centroids []centroid) ([]centroid, error) {
-	for i := range centroids {
-		centroids[i].AssignedActivities = make([]openapi.ActivityModel, 0)
-	}
-	return centroids, nil
-}
-
-// Calculates and returns the nearest cluster
-func nearestCentroid(activity openapi.ActivityModel, clusters []centroid) int {
-	lowestDistance := math.Inf(0)
-	var indexCluster int
-	for i, j := range clusters {
-		distance := distanceToCluster(j, activity)
-		if distance < lowestDistance {
-			lowestDistance = distance
-			indexCluster = i
-		}
-	}
-	return indexCluster
-}
-
-// Calculates the center of the cluster (by average of all assigned activities)
-func updateCluster(clusters []centroid) ([]centroid, error) {
+// clearObservations requires a pointer to a clusters (list of cluster) and removes all observations from the cluster
+func clearObservations(clusterPtr *clusters) {
+	//derefence
+	clusters := *clusterPtr
 	for i := range clusters {
-		var long float64 = 0
-		var lat float64 = 0
-		for _, j := range clusters[i].AssignedActivities {
-			tempLong, err := strconv.ParseFloat(*j.AddressApplied.Longitude, 64)
-			if err != nil {
-				return clusters, err
-			}
-			tempLat, err := strconv.ParseFloat(*j.AddressApplied.Latitude, 64)
-			if err != nil {
-				return clusters, err
-			}
-			long += tempLong
-			lat += tempLat
+		clusters[i].observations = make(observations, 0)
+	}
+}
+
+// initializeClusters requires a pointer to an observations (list of observation), a pointer to an clusters (list of cluster) and nrClusters
+// the function will append nrClusters cluster to the clusters list. The centers of the clusters are chosen by the greedy k-means++ algorithm
+// this algorithm is slower in intializing because it has to calculate the cost to the nearest center multiple times, but generally this way of initializing results
+// can ensure that the cluster centers are well-spaced and representative of the data, reducing the chances of getting stuck in suboptimal local minima.
+func initializeClusters(observationsPtr *observations, clustersPtr *clusters, nrClusters int, nrCandidateClusters int) error {
+	//TODO: implement throwing errors
+	observations := *observationsPtr
+	clusters := *clustersPtr
+	//randomly choose first cluster
+	firstClusterIndex := rand.Intn(len(observations))
+	firstObservation := make([]observation, 0)
+	firstCluster := cluster{
+		center:       observations[firstClusterIndex].coordinates,
+		observations: append(firstObservation, observations[firstClusterIndex]),
+	}
+	clusters = append(clusters, firstCluster)
+
+	// Select the next cluster centers one at a time, based on the distance from the existing centers
+
+	// For each point calculate the distance to the nearest cluster center
+	distances := make([]float64, len(observations))
+	closestCluster := make([]int, len(observations))
+	for index, observation := range observations {
+		distances[index], closestCluster[index] = distanceToNearestCluster(observation, clustersPtr)
+	}
+
+	for len(clusters) < nrClusters {
+
+		//calculate probabilities
+		probabilities := make([]float64, len(observations))
+		// Squaring the distance makes the probability of selecting a data point decrease more steeply as the distance increases, compared to using the distance itself.
+		// This has the effect of encouraging the algorithm to select cluster centers that are farther apart and better representative of the data.
+		for index, distance := range distances {
+			probabilities[index] = distance * distance
 		}
 
-		//update center
-		clusters[i].center.lat = lat / float64(len(clusters[i].AssignedActivities))
-		clusters[i].center.long = long / float64(len(clusters[i].AssignedActivities))
+		// Explanation of proporional probability because i failed probability and statistics and don't get it :(
+		// To choose the next cluster center randomly with probability proportional to the distance,
+		// generate a random number r between 0 and the sum of the probabilities, which is r = 38.9.
+		// Then, iterate over the probabilities, subtracting each probability from r until r becomes negative.
+		// The data point corresponding to the first negative value is selected as the next cluster center.
+
+		// For example, suppose that we subtract the probabilities in order from r and reach a negative value after subtracting the sixth probability
+
+		// r = 38.9 - 5.29 = 33.61
+		// r = 33.61 - 2.25 = 31.36
+		// r = 31.36 - 0.64 = 30.72
+		// r = 30.72 - 10.24 = 20.48
+		// r = 20.48 - 1.21 = 19.27
+		// r = 19.27 - 8.41 = 10.86 (negative)
+		// In this case, the data point corresponding to the sixth probability (with distance 2.9) is selected as the next cluster center.
+
+		// Choose the next clusterCandidate centers randomly with probability proportional to the distance
+		candidates := make([]cluster, nrCandidateClusters)
+		for i := 0; i < nrCandidateClusters; i++ {
+			// Algo for running sum this could be used to improve efficiency when observations is really large this has to only loop over probabilties once
+			// sum := 0.0
+			// selectedIdx := -1
+			// for i, p := range probs {
+			// 	sum += p
+			// 	if rand.Float64()*sum < p {
+			// 		selectedIdx = i
+			// 	}
+			// }
+			// If no data point was selected, return a default value
+			// if selectedIdx == -1 {
+			// 	return selectedIdx
+			// }
+			sum := 0.0
+			for _, p := range probabilities {
+				sum += p
+			}
+			r := rand.Float64() * sum
+			for i, p := range probabilities {
+				r -= p
+				if r <= 0.0 {
+					coordinates := coordinates{
+						latitude:   observations[i].coordinates.latitude,
+						longtitude: observations[i].coordinates.longtitude,
+					}
+
+					observationChosen := observations[i : i+1]
+					//cannot go out of bounds since probabilties is the same length as observations and index starts at 0
+					observationChosen = append(observationChosen, observations[i+1])
+					candidates = append(candidates, cluster{
+						center:       coordinates,
+						observations: observationChosen,
+					})
+					break
+				}
+			}
+		}
+
+		// Choose the candidate with the minimum overall distance of all points to their closest center
+		bestCandidate := candidates[0]
+		bestDistance := math.Inf(1)
+		for index, candidate := range candidates {
+			checkCluster := append(clusters, candidate)
+			sumDistance := 0.00
+			for _, x := range observations {
+				distance, err := distanceToNearestCluster(x, &checkCluster)
+				//TODO: error handling
+				sumDistance += distance
+			}
+			if sumDistance < bestDistance {
+				bestDistance = sumDistance
+				bestCandidate = candidates[index]
+			}
+		}
+		clusters = append(clusters, bestCandidate)
+
 	}
-	return clusters, nil
+	return nil
 }
 
-// puts all clusters in a list of list so it can be made into a zone
-func listActivities() []int {
-	return []int{0}
+// distanceToNearestCluster requires a pointer to an observations (list of observation) and a pointer to an clusters (list of cluster)
+// and returns the cluster that is nearest and the index to the cluster
+func distanceToNearestCluster(observation observation, clustersPtr *clusters) (float64, int) {
+	//dereferincing
+	clusters := *clustersPtr
+	// Compute the distance from x to the nearest cluster in clusters
+	minDist := math.Inf(1)
+	minCluster := 0
+	for index, cluster := range clusters {
+		dist := distance(observation, cluster)
+		if dist < minDist {
+			minDist = dist
+			minCluster = index
+		}
+	}
+	return minDist, minCluster
 }
 
-// Returns the distance to given cluster
-func distanceToCluster(centroid centroid, activity openapi.ActivityModel) float64 {
-	longCluster := centroid.center.long
-	latCluster := centroid.center.lat
-	longActivity, _ := strconv.Atoi(*activity.AddressApplied.Longitude)
-	latActivity, _ := strconv.Atoi(*activity.AddressApplied.Latitude)
+// distance takes as input an observation and a cluster and calculates the difference between the observation and the cluster
+func distance(observation observation, cluster cluster) float64 {
+	return math.Sqrt((observation.coordinates.latitude - cluster.center.latitude) * (observation.coordinates.longtitude - cluster.center.longtitude))
+}
 
-	distance := math.Sqrt(math.Pow(longCluster-float64(longActivity), 2) + math.Pow(latCluster-float64(latActivity), 2))
-	return distance
-
+// activitiesToObservations requires a pointer to an activities (list of ActivityModel) and a pointer to an observations (list of observation)
+// converts the activity.AddressApplied latitude and longtitude to an observation langtitude and longtitude and grabs the activity.Id, combines these two into an
+// observation and appends this to the observations.
+func activitiesToObservations(activitiesPtr *activities, observationsPtr *observations) error {
+	observations := *observationsPtr
+	activities := *activitiesPtr
+	for _, activity := range activities {
+		newId := activity.Id
+		newLatitude, err := strconv.ParseFloat(activity.AddressApplied.Latitude, 64)
+		//TODO: implement error handling
+		newLongtitude, err := strconv.ParseFloat(activity.AddressApplied.Longtitude, 64)
+		//TODO: implement error handling
+		newCoordinates := coordinates{
+			latitude:   newLatitude,
+			longtitude: newLongtitude,
+		}
+		newObservation := observation{
+			id:          newId,
+			coordinates: newCoordinates,
+		}
+		observations = append(observations, newObservation)
+	}
+	return nil
 }
