@@ -1,7 +1,29 @@
 
 # How to run
 
-From the `backend` folder, run the following command in the terminal:
+The following steps are going to be the same for both dev teams until one point.
+
+1. First make sure you have docker engine installed on your system ( it should be installed if you installed docker desktop). Follow these instructions for your platform https://docs.docker.com/get-docker/ 
+2. In your terminal, go to `./B-zone/backend`. Run `docker compose up -d`. You should see some nicely coloured text like this
+![image](https://user-images.githubusercontent.com/70640237/224291503-25dc7053-e831-4057-bc54-e18b16e9f87c.png)
+3. If you look into docker desktop you'll also see something like this 
+![image](https://user-images.githubusercontent.com/70640237/224291715-f23d961c-8d5e-4918-962d-27acdb4d5851.png)
+4. Nice. Now if you lick on `b-zone-container` and you see these lines you're good to go
+```bash
+INFO    2023/03/10 10:25:16 Pinged your deployment. You successfully connected to MongoDB!
+INFO    2023/03/10 10:25:16 Starting server on :4000
+```
+
+You can access the backend services at `localhost:4000`.
+
+
+## For backend devs
+
+Backend devs will want to test their changes made to backend, obviously. Instead of rebuilding the image every time, you can do the following.
+
+1. Keep the `mongodb-container` running and stop the other one (and everything that runs on port 4000).
+
+2. From the `backend` folder, run the following command in the terminal:
 
 ```go
 go run ./cmd/web
@@ -10,13 +32,25 @@ go run ./cmd/web
 You should see a line being printed in the terminal that looks like this:
 `INFO	2023/02/28 11:44:50 Starting server on :4000`
 
-By default, the server starts running on address `localhost:4000`. You can pass a different port as an argument like this:
+By default, the server starts running on address `localhost:4000` and it's trying to connect to a mongodb instance accessible at `mongodb://localhost:27017`. You can pass a different port or mongo address as an environment variable like this:
+
+> NOTE: this example only works on Unix systems...for Windows users idfk
 
 ```go
-go run ./cmd/web -addr ":3400"
+ADDR=":3400" MONGO_URL="some_mongo_address" go run ./cmd/web
 ```
 
 This will run the server on port `3400` and you should see it reflected in the terminal.
+
+## For frontend devs 
+
+Normally you should not bother with anything else, you can just run the containers from Docker desktop. However, there might be changes made to backend that you need. In that case you can re-build the backend image with the following command:
+1. go to the `backend` folder in your terminal
+2. run `docker compose up --build --force-recreate b-zone`. **Dont forget the last argument. Otherwise your database instance will be rebuilt and you'll lose all your data**.
+3. Nice 👍
+
+![image](https://user-images.githubusercontent.com/70640237/224294005-238c103f-add2-49f2-9d5d-f7658ad4df92.png)
+
 
 
 # Project structure and organization
