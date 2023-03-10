@@ -12,7 +12,7 @@ type UsersDBModel struct {
 // UsersModel struct for UsersModel
 type UsersModel struct {
 	//
-	Id *int64 `json:"id,omitempty"`
+	Id *int64 `json:"user_id,omitempty"`
 	// unique per user
 	Uuid *string `json:"uuid,omitempty"`
 	// zones plots per user

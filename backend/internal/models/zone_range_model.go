@@ -12,7 +12,7 @@ type ZoneRangeDBModel struct {
 // ZoneRangeModel struct for ZoneRangeModel
 type ZoneRangeModel struct {
 	// Unique Zone type ID
-	Id *int64 `json:"id,omitempty"`
+	Id *int64 `json:"zone_range_id,omitempty"`
 	// Zipcode range start
 	ZipcodeFrom *int64 `json:"zipcode_from,omitempty"`
 	// Zipcode range end

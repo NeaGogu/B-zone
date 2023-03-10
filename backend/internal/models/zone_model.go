@@ -12,9 +12,9 @@ type ZoneDBModel struct {
 // ZoneModel struct for ZoneModel
 type ZoneModel struct {
 	// Unique Zone ID
-	Id *int64 `json:"id,omitempty"`
+	Id *int64 `json:"zone_id,omitempty"`
 	//Zones Ranges
-	ZoneRanges *[]ZoneRangeModel `json:"zone_ranges,omitempty"`
+	ZoneRangesIds *[]int64 `json:"zone_ranges_ids,omitempty"`
 	//Total fuel cost
 	ZoneFuelCost *float64 `json:"zone_fuel_cost,omitempty"`
 	//Total driving time
@@ -55,16 +55,16 @@ func (o *ZoneModel) SetId(v int64) {
 
 // GetZoneRangesOk returns a tuple with the ZoneRanges field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ZoneModel) GetZoneRangesOk() (*[]ZoneRangeModel, bool) {
-	if o == nil || o.ZoneRanges == nil {
+func (o *ZoneModel) GetZoneRangesOk() (*[]int64, bool) {
+	if o == nil || o.ZoneRangesIds == nil {
 		return nil, false
 	}
-	return o.ZoneRanges, true
+	return o.ZoneRangesIds, true
 }
 
 // HasZoneRanges returns a boolean if a field has been set.
 func (o *ZoneModel) HasZoneRanges() bool {
-	if o != nil && o.ZoneRanges != nil {
+	if o != nil && o.ZoneRangesIds != nil {
 		return true
 	}
 
@@ -72,8 +72,8 @@ func (o *ZoneModel) HasZoneRanges() bool {
 }
 
 // SetZoneRanges gets a reference to the given []ZoneRangeModel and assigns it to the ZoneRanges field.
-func (o *ZoneModel) SetZoneRanges(v []ZoneRangeModel) {
-	o.ZoneRanges = &v
+func (o *ZoneModel) SetZoneRanges(v []int64) {
+	o.ZoneRangesIds = &v
 }
 
 // GetZoneFuelCostOk returns a tuple with the ZoneFuelCost field value if set, nil otherwise
@@ -136,8 +136,8 @@ func (o ZoneModel) MarshalJSON() ([]byte, error) {
 	if o.Id != nil {
 		toSerialize["id"] = o.Id
 	}
-	if o.ZoneRanges != nil {
-		toSerialize["zone_ranges"] = o.ZoneRanges
+	if o.ZoneRangesIds != nil {
+		toSerialize["zone_ranges_ids"] = o.ZoneRangesIds
 	}
 	if o.ZoneFuelCost != nil {
 		toSerialize["zone_fuel_cost"] = o.ZoneFuelCost

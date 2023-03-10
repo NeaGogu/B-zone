@@ -13,7 +13,7 @@ type ZonesPlotDBModel struct {
 // ZonesPlotModel struct for ZonesPLotModel
 type ZonesPlotModel struct {
 	// Unique Plot ID
-	Id *int64 `json:"id,omitempty"`
+	Id *int64 `json:"zones_plot_id,omitempty"`
 	// Plot Name
 	Name *string `json:"name,omitempty"`
 	//Zones in the plot
