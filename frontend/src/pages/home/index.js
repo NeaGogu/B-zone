@@ -251,9 +251,9 @@ export default function Home() {
                                 borderRight: 0,
                             }}
                         >
-                            <SubMenu key="sub3" title="Heatmap settings">
-                                    <Menu.Item key="5">Location based heatmap</Menu.Item>
-                                    <Menu.Item key="6">Time based heatmap</Menu.Item>
+                            <SubMenu key="sub3" title="Heat map">
+                                    <Menu.Item key="5">Location based </Menu.Item>
+                                    <Menu.Item key="6">Time based </Menu.Item>
                             </SubMenu>
 
 
