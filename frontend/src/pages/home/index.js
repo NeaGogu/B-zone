@@ -168,6 +168,44 @@ export default function Home() {
         setSelection(e.key);    
     }
 
+    function getInitialZones(userToken) {
+        //get list of zones, question remains how to get the last used zone?
+        //definition of URl, body values, other parameters
+        const zonesURL = "https://sep202302.bumbal.eu/api/v2/zone"
+        const bodyValues = JSON.stringify({
+            "options": {
+                "include_zone_ranges": true,
+                "include_brands": true
+            },
+            "filters": {}
+        })
+
+        //sending fetch request to receive list of user's zones
+        fetch(zonesURL, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userToken}`
+            },
+            body: bodyValues
+        })
+            //testing if response recorded was ok
+            .then((response) => {
+            if(!response.ok) {
+                console.log("Response was not ok ???")
+                alert("Unable to retrieve this zone configuration!")
+            }
+            return response.json();
+        })
+            //dealing with received list of zones
+            .then((data) => {
+                localStorage.setItem('zoneID', data.items[0].id.toString())
+                console.log("ID set to local storage")
+        })
+            .catch(error => console.log(error, 'error'))
+    }
+
     const toggleComparison = () => {
         if (showComparison) {
             return; // If showComparison is already true, do nothing
@@ -182,6 +220,7 @@ export default function Home() {
         setShowComparison(false); // reset comparison state when switching singular map
         if (selection === '5' ) {
             if (togZone) {
+                getInitialZones(localStorage.getItem('token'))
                 setPoly(dumbzones.nl)
                 setTogZone(!togZone)
             } else {
@@ -245,9 +284,7 @@ export default function Home() {
                     </div>
 
                     <Menu theme="dark" mode="horizontal" />
-
-
-
+                    
                 </Header>
                 <Layout>
                     <Sider
