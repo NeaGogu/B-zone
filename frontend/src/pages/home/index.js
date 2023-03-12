@@ -79,6 +79,9 @@ function LocationMarker() {
                         const zipcode = zipcodes.length > 0 ? zipcodes[0].text : null;
                         setAddress(address);
                         setZipcode(zipcode);
+                    } else {
+                        setAddress(null);
+                        setZipcode(null);
                     }
                 });
             map.flyTo(e.latlng, map.getZoom());
@@ -97,12 +100,6 @@ function LocationMarker() {
         </Marker>
     );
 }
-//
-
-
-// const handleClick = () => {
-//         setShowButton(true);
-//     };
 
 //signOut function
 function signOut() {
@@ -245,7 +242,6 @@ export default function Home() {
                         <Menu
                             mode="inline"
                             defaultSelectedKeys={['1']}
-                            defaultOpenKeys={['sub1']}
                             style={{
                                 height: '100%',
                                 borderRight: 0,
@@ -266,17 +262,22 @@ export default function Home() {
                                     </Form.Item>
                                     <Button style={{ width: "100%" }} type="primary" type="primary">Calculate</Button>
                             </SubMenu>
-
-
-
-                            {/*<SubMenu key="sub2" title="Saved Zones">*/}
-                            {/*    <Menu.Item key="5" onClick={handleClick}>*/}
-                            {/*        Initial Zone*/}
-                            {/*    </Menu.Item>*/}
-                            {/*    {showButton && <Button>Click me</Button>}*/}
-                            {/*    <Menu.Item key="6">Saved Zone 1</Menu.Item>*/}
-                            {/*    <Button style={{ width: "100%" }} type="primary" onClick={toggleComparison}>Compare</Button>*/}
-                            {/*</SubMenu>*/}
+                            <SubMenu key="sub2" title="Saved Zones">
+                                <Menu.Item key="5" style={{ height: "80px" , padding: 0 }}>
+                                    <div style={{textAlign: "center"}}>Initial Zone</div>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                                        <Button style={{flex: 1, marginRight: "3px"}}>View</Button>
+                                        <Button style={{flex: 1, marginLeft: "3px"}}  onClick={toggleComparison}>Compare</Button>
+                                    </div>
+                                </Menu.Item>
+                                <Menu.Item key="5" style={{ height: "80px" , padding: 0}}>
+                                    <div style={{textAlign: "center"}}>Saved Zone 1</div>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                                        <Button style={{flex: 1, marginRight: "3px"}}>View</Button>
+                                        <Button style={{flex: 1, marginLeft: "3px"}}  onClick={toggleComparison}>Compare</Button>
+                                    </div>
+                                </Menu.Item>
+                            </SubMenu>
 
                         </Menu>
                     </Sider>
