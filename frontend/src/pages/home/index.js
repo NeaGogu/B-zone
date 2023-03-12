@@ -152,6 +152,52 @@ const MyFormItem = ({ name, ...props }) => {
     const concatName = name !== undefined ? [...prefixPath, ...toArr(name)] : undefined;
     return <Form.Item name={concatName} {...props} />;
 };
+//Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
+const ZoneSubMenu = ({ onSubmit }) => {
+    const [averageFuelCost, setAverageFuelCost] = useState("");
+    const [averageFuelUsage, setAverageFuelUsage] = useState("");
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const isValid = onSubmit(averageFuelCost, averageFuelUsage);
+        if (isValid) {
+            // add calculations
+        }
+    };
+
+    return (
+            <Form onFinish={handleSubmit}>
+                <Form.Item rules={[{ required: true }]}>
+                    Average fuel cost
+                    <Input
+                        placeholder="input fuel cost"
+                        type="number"
+                        step="0.01"
+                        value={averageFuelCost}
+                        onChange={(e) => setAverageFuelCost(e.target.value)}
+                    />
+                </Form.Item>
+                <Form.Item>
+                    Average fuel usage of car
+                    <Input
+                        placeholder="input fuel usage of car"
+                        type="number"
+                        step="0.01"
+                        value={averageFuelUsage}
+                        onChange={(e) => setAverageFuelUsage(e.target.value)}
+                    />
+                </Form.Item>
+                <Button
+                    style={{ width: "100%" }}
+                    type="primary"
+                    htmlType="submit"
+                    disabled={!averageFuelCost || !averageFuelUsage}
+                >
+                    Calculate
+                </Button>
+            </Form>
+    );
+};
 
 localStorage.getItem('token')
 export default function Home() {
@@ -254,13 +300,7 @@ export default function Home() {
 
 
                             <SubMenu key="sub4" title="Zones">
-                                    <Form.Item label="Average fuel cost" rules={[{ required: true }]}>
-                                        <Input placeholder="input fuel cost" type="number" step="0.01" />
-                                    </Form.Item>
-                                    <Form.Item label="Average fuel usage of car">
-                                        <Input placeholder="input fuel usage of car"  type="number" step="0.01" />
-                                    </Form.Item>
-                                    <Button style={{ width: "100%" }} type="primary" type="primary">Calculate</Button>
+                                    <ZoneSubMenu/>
                             </SubMenu>
                             <SubMenu key="sub2" title="Saved Zones">
                                 <Menu.Item key="5" style={{ height: "80px" , padding: 0 }}>
