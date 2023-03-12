@@ -2,7 +2,8 @@ import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from
 import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select  } from 'antd';
 import React, {useState, useEffect} from 'react';
 import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, LayersControl, LayerGroup } from 'react-leaflet';
+import Heatmap from './components/heatmapComponent';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
@@ -355,6 +356,14 @@ export default function Home() {
                                         attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                     />
+                                    <LayersControl position='topright'>
+                                        <LayersControl.Overlay name='Heatmap'>
+                                            <LayerGroup>
+                                                <Heatmap/>
+                                            </LayerGroup>
+                                        </LayersControl.Overlay>
+                                    </LayersControl>
+
                                     <LocationMarker/>
                                 </MapContainer>
                             )}
