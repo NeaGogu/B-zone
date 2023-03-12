@@ -253,16 +253,15 @@ func TestInitializeClusters(t *testing.T) {
 	}
 }
 
-func TestKMeansALot(t *testing.T) {
+func BenchmarkKMeansALot(t *testing.B) {
 	activities := make(activities, 0)
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 100000; i++ {
 		str1 := strconv.Itoa(rand.Intn(1000))
 		str2 := strconv.Itoa(rand.Intn(1000))
 		result := makeActivity(t, int64(i), str1, str2)
 		activities = append(activities, *result)
 	}
-	result, err := kMeans(activities, 100, 30)
-	t.Errorf("err: %q, result:%v", err, result)
+	kMeans(activities, 30, 10)
 }
 
 // AlmostEqual returns true if a and b are equal within a relative error of
