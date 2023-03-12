@@ -4,7 +4,6 @@ package kMeans
 import (
 	openapi "backend/internal/swag_gen"
 	"errors"
-	"fmt"
 	"math"
 	"math/rand"
 	"reflect"
@@ -95,9 +94,6 @@ func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clu
 
 			_, closestCenter := distanceToNearestCluster(observation, clusters)
 			//assign observation to closest cluster
-			fmt.Println(len(clusters))
-
-			fmt.Println(clusters)
 			clusters[closestCenter].observations = append(clusters[closestCenter].observations, observation)
 		}
 
@@ -158,6 +154,7 @@ func initializeClusters(observations observations, clusters clusters, nrClusters
 	if nrCandidateClusters <= 0 {
 		return nil, ErrNrCandidateClustersTooSmall
 	}
+
 	//randomly choose first cluster
 	firstClusterIndex := rand.Intn(len(observations))
 	firstObservation := make([]observation, 0)

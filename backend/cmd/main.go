@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/biogo/cluster/kmeans"
+	//"github.com/biogo/cluster/kmeans"
 	// "github.com/biogo/cluster/kmeans"
 )
 
