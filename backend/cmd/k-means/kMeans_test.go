@@ -46,6 +46,7 @@ func TestKMeans(t *testing.T) {
 			t.Errorf("Error occurred: %v", err)
 		}
 
+		t.Errorf("%v", clusters)
 		if len(clusters) != 3 {
 			t.Errorf("Expected 3 clusters, got %d", len(clusters))
 		}
@@ -99,7 +100,7 @@ func TestDistanceToNearestCluster(t *testing.T) {
 	epsilon := 0.00001
 	t.Run("Center difference on longtitude", func(t *testing.T) {
 		observation := observation{id: 1, coordinates: coordinates{longtitude: 2, latitude: 6}}
-		got, _ := distanceToNearestCluster(observation, &clusters)
+		got, _ := distanceToNearestCluster(observation, clusters)
 		want := 2.0
 		result := AlmostEqual(t, got, want, epsilon)
 		if !result {
@@ -108,7 +109,7 @@ func TestDistanceToNearestCluster(t *testing.T) {
 	})
 	t.Run("Center difference on latitude", func(t *testing.T) {
 		observation := observation{id: 1, coordinates: coordinates{longtitude: 4, latitude: 8}}
-		got, _ := distanceToNearestCluster(observation, &clusters)
+		got, _ := distanceToNearestCluster(observation, clusters)
 		want := 2.0
 		result := AlmostEqual(t, got, want, epsilon)
 		if !result {
@@ -117,7 +118,7 @@ func TestDistanceToNearestCluster(t *testing.T) {
 	})
 	t.Run("point is in the middle of two centers", func(t *testing.T) {
 		observation := observation{id: 1, coordinates: coordinates{longtitude: 2, latitude: 3}}
-		got, _ := distanceToNearestCluster(observation, &clusters)
+		got, _ := distanceToNearestCluster(observation, clusters)
 		want := 3.605551275464
 		result := AlmostEqual(t, got, want, epsilon)
 		if !result {
@@ -126,7 +127,7 @@ func TestDistanceToNearestCluster(t *testing.T) {
 	})
 	t.Run("point is on center", func(t *testing.T) {
 		observation := observation{id: 1, coordinates: coordinates{longtitude: 0, latitude: 0}}
-		got, _ := distanceToNearestCluster(observation, &clusters)
+		got, _ := distanceToNearestCluster(observation, clusters)
 		want := 0.0
 		result := AlmostEqual(t, got, want, epsilon)
 		if !result {
@@ -216,7 +217,7 @@ func TestInitializeClusters(t *testing.T) {
 	nrClusters := 3
 	nrCandidateClusters := 5
 	clusters := make(clusters, 0, nrClusters)
-	clusters, err := initializeClusters(&observations, &clusters, nrClusters, nrCandidateClusters)
+	clusters, err := initializeClusters(observations, clusters, nrClusters, nrCandidateClusters)
 
 	// Check that there is no error
 	if err != nil {

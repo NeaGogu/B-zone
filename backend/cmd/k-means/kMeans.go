@@ -75,7 +75,7 @@ func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clu
 		return zeroClusters, err
 	}
 	var clusters = make(clusters, 0, nrClusters)
-	clusters, err = initializeClusters(&observations, &clusters, nrClusters, nrCandidateClusters)
+	clusters, err = initializeClusters(observations, clusters, nrClusters, nrCandidateClusters)
 	//return if error raises while initializing clusters
 	if err != nil {
 		return zeroClusters, err
@@ -93,7 +93,7 @@ func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clu
 		//for each activity calculate the closest cluster and assign activity to that cluster
 		for _, observation := range observations {
 
-			_, closestCenter := distanceToNearestCluster(observation, &clusters)
+			_, closestCenter := distanceToNearestCluster(observation, clusters)
 			//assign observation to closest cluster
 			fmt.Println(len(clusters))
 
@@ -102,7 +102,7 @@ func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clu
 		}
 
 		//update the clusters
-		updateCluster(&clusters)
+		clusters = updateCluster(clusters)
 
 		if reflect.DeepEqual(clusters, oldClusters) {
 			converged = true
@@ -113,9 +113,7 @@ func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clu
 }
 
 // updateCluster requires a pointer to a clusters(list of cluster) and updates all centers of the given clusters.
-func updateCluster(clustersPtr *clusters) {
-	//derefence
-	clusters := *clustersPtr
+func updateCluster(clusters clusters) clusters {
 	for index, cluster := range clusters {
 		sumLatitude := 0.00
 		sumLongtitude := 0.00
@@ -130,6 +128,7 @@ func updateCluster(clustersPtr *clusters) {
 			longtitude: sumLongtitude / float64(len(cluster.observations)),
 		}
 	}
+	return clusters
 }
 
 // clearObservations requires a pointer to a clusters (list of cluster) and removes all observations from the cluster
@@ -145,10 +144,7 @@ func clearObservations(clusterPtr *clusters) {
 // the function will append nrClusters cluster to the clusters list. The centers of the clusters are chosen by the greedy k-means++ algorithm
 // this algorithm is slower in intializing because it has to calculate the cost to the nearest center multiple times, but generally this way of initializing results
 // can ensure that the cluster centers are well-spaced and representative of the data, reducing the chances of getting stuck in suboptimal local minima.
-func initializeClusters(observationsPtr *observations, clustersPtr *clusters, nrClusters int, nrCandidateClusters int) (clusters, error) {
-
-	observations := *observationsPtr
-	clusters := *clustersPtr
+func initializeClusters(observations observations, clusters clusters, nrClusters int, nrCandidateClusters int) (clusters, error) {
 
 	//throw error if nr of observations is smaller than or equal to 0
 	if len(observations) <= 0 {
@@ -177,7 +173,7 @@ func initializeClusters(observationsPtr *observations, clustersPtr *clusters, nr
 	distances := make([]float64, len(observations))
 	closestCluster := make([]int, len(observations))
 	for index, observation := range observations {
-		distances[index], closestCluster[index] = distanceToNearestCluster(observation, clustersPtr)
+		distances[index], closestCluster[index] = distanceToNearestCluster(observation, clusters)
 	}
 
 	for len(clusters) < nrClusters {
@@ -234,10 +230,9 @@ func initializeClusters(observationsPtr *observations, clustersPtr *clusters, nr
 						latitude:   observations[i].coordinates.latitude,
 						longtitude: observations[i].coordinates.longtitude,
 					}
-
-					observationChosen := observations[i : i+1]
 					//cannot go out of bounds since probabilties is the same length as observations and index starts at 0
-					observationChosen = append(observationChosen, observations[i+1])
+					observationChosen := observations[i : i+1]
+
 					candidates = append(candidates, cluster{
 						center:       coordinates,
 						observations: observationChosen,
@@ -267,7 +262,7 @@ func bestCandidateFunc(candidates clusters, clusters clusters, observations obse
 		sumDistance := 0.00
 		//calculate the sum of distances and if smaller this is the best candidate so far
 		for _, observation := range observations {
-			distance, _ := distanceToNearestCluster(observation, &checkCluster)
+			distance, _ := distanceToNearestCluster(observation, checkCluster)
 			sumDistance += distance
 		}
 		if sumDistance < bestDistance {
@@ -280,9 +275,7 @@ func bestCandidateFunc(candidates clusters, clusters clusters, observations obse
 
 // distanceToNearestCluster requires a pointer to an observations (list of observation) and a pointer to an clusters (list of cluster)
 // and returns the cluster that is nearest and the index to the cluster
-func distanceToNearestCluster(observation observation, clustersPtr *clusters) (float64, int) {
-	//dereferincing
-	clusters := *clustersPtr
+func distanceToNearestCluster(observation observation, clusters clusters) (float64, int) {
 	// Compute the distance from x to the nearest cluster in clusters
 	minDist := math.Inf(1)
 	minCluster := 0
