@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -13,12 +14,10 @@ var MinNormal = math.Float64frombits(0x0010000000000000)
 
 func TestKMeans(t *testing.T) {
 	// Initialize test data
-	activity1 := makeActivity(t, "1.234567", "2.345678")
-	activity1.SetId(1)
-	activity2 := makeActivity(t, "3.456789", "4.567890")
-	activity2.SetId(2)
-	activity3 := makeActivity(t, "5.678901", "6.789012")
-	activity3.SetId(3)
+	activity1 := makeActivity(t, 1, "1.234567", "2.345678")
+
+	activity2 := makeActivity(t, 2, "3.456789", "4.567890")
+	activity3 := makeActivity(t, 3, "5.678901", "6.789012")
 
 	activities := activities{
 		*activity1,
@@ -166,10 +165,8 @@ func TestDistance(t *testing.T) {
 }
 
 func TestActivitiesToObservations(t *testing.T) {
-	activity1 := makeActivity(t, "51.5074", "-0.1278")
-	activity1.SetId(1)
-	activity2 := makeActivity(t, "52.5200", "13.4050")
-	activity2.SetId(2)
+	activity1 := makeActivity(t, 1, "51.5074", "-0.1278")
+	activity2 := makeActivity(t, 2, "52.5200", "13.4050")
 	activities := activities{
 		*activity1,
 		*activity2,
@@ -256,6 +253,18 @@ func TestInitializeClusters(t *testing.T) {
 	}
 }
 
+func TestKMeansALot(t *testing.T) {
+	activities := make(activities, 0)
+	for i := 0; i < 10000; i++ {
+		str1 := strconv.Itoa(rand.Intn(1000))
+		str2 := strconv.Itoa(rand.Intn(1000))
+		result := makeActivity(t, int64(i), str1, str2)
+		activities = append(activities, *result)
+	}
+	result, err := kMeans(activities, 100, 30)
+	t.Errorf("err: %q, result:%v", err, result)
+}
+
 // AlmostEqual returns true if a and b are equal within a relative error of
 // ε. See http://floating-point-gui.de/errors/comparison/ for the details of the
 // applied method.
@@ -321,7 +330,7 @@ func assertEqual[T any](t testing.TB, got, want T, err error) {
 	}
 }
 
-func makeActivity(t testing.TB, lat string, long string) *openapi.ActivityModel {
+func makeActivity(t testing.TB, id int64, lat string, long string) *openapi.ActivityModel {
 	t.Helper()
 
 	//make activity and addressapplied model
@@ -331,6 +340,7 @@ func makeActivity(t testing.TB, lat string, long string) *openapi.ActivityModel 
 	address.SetLatitude(lat)
 	address.SetLongitude(long)
 	activity.SetAddressApplied(*address)
+	activity.SetId(id)
 
 	return activity
 }
