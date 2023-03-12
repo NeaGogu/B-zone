@@ -1,245 +1,300 @@
 package kMeans
 
 import (
+	openapi "backend/internal/swag_gen"
+	"math"
+	"math/rand"
 	"reflect"
-	"strconv"
 	"testing"
-
-	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
-	"github.com/mroth/weightedrand/v2"
 )
 
-func TestInitCentroids(t *testing.T) {
+// MinNormal is the smallest positive normal value of type float64.
+var MinNormal = math.Float64frombits(0x0010000000000000)
 
-	activitiesEmpty := []openapi.ActivityModel{}
-	activitiesTwo := []openapi.ActivityModel{
-		{},
-		{},
-	}
+func TestKMeans(t *testing.T) {
+	// Initialize test data
+	activity1 := makeActivity(t, "1.234567", "2.345678")
+	activity1.SetId(1)
+	activity2 := makeActivity(t, "3.456789", "4.567890")
+	activity2.SetId(2)
+	activity3 := makeActivity(t, "5.678901", "6.789012")
+	activity3.SetId(3)
 
-	t.Run("len activities less than or equal to 0", func(t *testing.T) {
-		nrClusters := 1
-		nrCandidateCenters := 1
-		_, got := initCentroids(activitiesEmpty, nrClusters, nrCandidateCenters)
-		want := ErrNoActivities
-
-		assertError(t, got, want)
-	})
-
-	t.Run("nrClusters larger than number of activities", func(t *testing.T) {
-		nrClusters := 3
-		nrCandidateCenters := 1
-		_, got := initCentroids(activitiesTwo, nrClusters, nrCandidateCenters)
-		want := ErrNrActivitiesTooSmall
-
-		assertError(t, got, want)
-	})
-
-	t.Run("nrCandidateCenters less than or equal to 0", func(t *testing.T) {
-		nrClusters := 2
-		nrCandidateCenters := 0
-		_, got := initCentroids(activitiesTwo, nrClusters, nrCandidateCenters)
-		want := ErrNrCandidateCentersTooSmall
-
-		assertError(t, got, want)
-	})
-
-	t.Run("Valid run one activity", func(t *testing.T) {
-		activity := makeActivity(t, "1", "1")
-
-		nrClusters := 1
-		nrCandidateCenters := 1
-		activities := []openapi.ActivityModel{
-			*activity,
-		}
-		got, err := initCentroids(activities, nrClusters, nrCandidateCenters)
-
-		if err != nil {
-			t.Errorf("didn't want an error but got: %q", err)
-		}
-
-		want := []centroid{
-			makeCentroid(t, 1, 1, []openapi.ActivityModel{*activity}),
-		}
-
-		assertEqual(t, got, want, err)
-	})
-
-	t.Run("Valid run multiple activity", func(t *testing.T) {
-
-		activity := makeActivity(t, "1", "1")
-		activity2 := makeActivity(t, "1", "2")
-		nrClusters := 2
-		nrCandidateCenters := 2
-		activities := []openapi.ActivityModel{
-			*activity,
-			*activity2,
-		}
-		got, err := initCentroids(activities, nrClusters, nrCandidateCenters)
-
-		want := []centroid{
-			makeCentroid(t, 1, 1, []openapi.ActivityModel{*activity}),
-			makeCentroid(t, 1, 2, []openapi.ActivityModel{*activity2}),
-		}
-
-		assertEqual(t, got, want, err)
-	})
-
-}
-
-func TestSampleCandidateCentroid(t *testing.T) {
-
-	//Create first activity
-	activity1 := makeActivity(t, "1", "1")
-	//create second activity
-	activity2 := makeActivity(t, "2", "2")
-	//assign activities to slice
-	activities := []openapi.ActivityModel{
-		*activity1,
-		*activity2,
-	}
-
-	t.Run("valid run empty candidateCenter", func(t *testing.T) {
-		randomInt := 1
-		candidateCenter := []centroid{}
-		got, err := sampleCandidateCentroid(activities, randomInt, candidateCenter)
-
-		want := []centroid{
-			{
-				center: coordinates{
-					lat:  2.00,
-					long: 2.00,
-				},
-				AssignedActivities: []openapi.ActivityModel{*activity2},
-			},
-		}
-
-		assertEqual(t, got, want, err)
-	})
-
-	t.Run("valid run non empty candidateCenter", func(t *testing.T) {
-
-		randomInt := 1
-		candidateCenter := []centroid{
-			{
-				center: coordinates{
-					lat:  1.00,
-					long: 1.00,
-				},
-				AssignedActivities: []openapi.ActivityModel{*activity1},
-			},
-		}
-		got, err := sampleCandidateCentroid(activities, randomInt, candidateCenter)
-
-		want := []centroid{
-			{
-				center: coordinates{
-					lat:  1.00,
-					long: 1.00,
-				},
-				AssignedActivities: []openapi.ActivityModel{*activity1},
-			},
-			{
-				center: coordinates{
-					lat:  2.00,
-					long: 2.00,
-				},
-				AssignedActivities: []openapi.ActivityModel{*activity2},
-			},
-		}
-		assertEqual(t, got, want, err)
-	})
-
-	t.Run("invalid float lat", func(t *testing.T) {
-		activity := makeActivity(t, "a.00", "1.00")
-		activities := []openapi.ActivityModel{
-			*activity,
-		}
-
-		_, got := sampleCandidateCentroid(activities, 0, emptyCentroid)
-		e := got.(*strconv.NumError)
-		want := strconv.ErrSyntax
-
-		assertError(t, e.Err, want)
-
-	})
-
-	t.Run("invalid float long", func(t *testing.T) {
-		activity := makeActivity(t, "1.00", "a.00")
-		activities := []openapi.ActivityModel{
-			*activity,
-		}
-
-		_, got := sampleCandidateCentroid(activities, 0, emptyCentroid)
-		e := got.(*strconv.NumError)
-		want := strconv.ErrSyntax
-
-		assertError(t, e.Err, want)
-	})
-
-}
-
-func TestNewChoices(t *testing.T) {
-
-	//Create first activity
-	activity1 := makeActivity(t, "1", "1")
-	//create second activity
-	activity2 := makeActivity(t, "2", "2")
-	//assign activities to slice
-	activities := []openapi.ActivityModel{
-		*activity1,
-		*activity2,
-	}
-
-	t.Run("Valid run", func(t *testing.T) {
-		got := newChoices(activities, centroid{
-			center: coordinates{
-				lat:  1.00,
-				long: 1.00,
-			},
-			AssignedActivities: []openapi.ActivityModel{*activity1},
-		})
-
-		want := []weightedrand.Choice[int, int]{
-			{Item: 0,
-				Weight: 0 * 1000},
-			{Item: 1,
-				Weight: 1 * 1000},
-		}
-		assertEqual(t, got, want, nil)
-	})
-}
-
-func TestKmeans(t *testing.T) {
-
-	//Create first activity
-	activity1 := makeActivity(t, "1", "1")
-	//create second activity
-	activity2 := makeActivity(t, "1", "1")
-	activity3 := makeActivity(t, "8", "8")
-	activity4 := makeActivity(t, "8", "8")
-	//assign activities to slice
-	activities := []openapi.ActivityModel{
+	activities := activities{
 		*activity1,
 		*activity2,
 		*activity3,
-		*activity4,
-	}
-	wantedCentroid1 := makeCentroid(t, 1.00, 1.00, []openapi.ActivityModel{
-		*activity1, *activity2,
-	})
-	wantedCentroid2 := makeCentroid(t, 8.00, 8.00, []openapi.ActivityModel{
-		*activity3, *activity3,
-	})
-
-	want := []centroid{
-		wantedCentroid1,
-		wantedCentroid2,
 	}
 
-	got, err := kMeans(activities, 2)
+	t.Run("Test kMeans function with 2 clusters", func(t *testing.T) {
+		clusters, err := kMeans(activities, 2, 2)
+
+		if err != nil {
+			t.Errorf("Error occurred: %v", err)
+		}
+
+		if len(clusters) != 2 {
+			t.Errorf("Expected 2 clusters, got %d", len(clusters))
+		}
+	})
+
+	t.Run("Test kMeans function with 3 clusters", func(t *testing.T) {
+		clusters, err := kMeans(activities, 3, 2)
+		//t.Errorf("clusters: %v", clusters)
+
+		if err != nil {
+			t.Errorf("Error occurred: %v", err)
+		}
+
+		if len(clusters) != 3 {
+			t.Errorf("Expected 3 clusters, got %d", len(clusters))
+		}
+	})
+
+}
+
+func TestBestCandidateFunc(t *testing.T) {
+	// Create some test data
+	obs1 := observation{id: 1, coordinates: coordinates{latitude: 1.0, longtitude: 2.0}}
+	obs2 := observation{id: 2, coordinates: coordinates{latitude: 3.0, longtitude: 4.0}}
+	observations := []observation{obs1, obs2}
+
+	cluster1 := cluster{center: obs1.coordinates, observations: []observation{obs1}}
+	cluster2 := cluster{center: obs2.coordinates, observations: []observation{obs2}}
+	clusters := []cluster{cluster1, cluster2}
+
+	candidate1 := cluster{center: coordinates{latitude: 5.0, longtitude: 6.0}, observations: []observation{}}
+	candidate2 := cluster{center: coordinates{latitude: 7.0, longtitude: 8.0}, observations: []observation{}}
+	candidates := []cluster{candidate1, candidate2}
+
+	t.Run("Normal run", func(t *testing.T) {
+		// Call the function and check the result
+		want := candidate1
+		got := bestCandidateFunc(candidates, clusters, observations)
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("bestCandidateFunc() = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("Run in the middle", func(t *testing.T) {
+		middleCandidate := cluster{center: coordinates{latitude: 2.0, longtitude: 3.0}, observations: []observation{}}
+		middleCandidateCopy := cluster{center: coordinates{latitude: 2.0, longtitude: 3.0}, observations: []observation{}}
+		candidates := []cluster{middleCandidate, middleCandidateCopy}
+		//since the comparison is < we expect the first candidate if the result is equal
+		want := middleCandidate
+		// Call the function and check the result
+		got := bestCandidateFunc(candidates, clusters, observations)
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("bestCandidateFunc() = %v, want %v", got, want)
+		}
+	})
+
+}
+func TestDistanceToNearestCluster(t *testing.T) {
+	clusters := clusters{
+		cluster{center: coordinates{longtitude: 4, latitude: 6}, observations: make(observations, 0)},
+		cluster{center: coordinates{longtitude: 0, latitude: 0}, observations: make(observations, 0)},
+	}
+	//GIS/ handheld gps precision
+	epsilon := 0.00001
+	t.Run("Center difference on longtitude", func(t *testing.T) {
+		observation := observation{id: 1, coordinates: coordinates{longtitude: 2, latitude: 6}}
+		got, _ := distanceToNearestCluster(observation, &clusters)
+		want := 2.0
+		result := AlmostEqual(t, got, want, epsilon)
+		if !result {
+			t.Errorf("The difference between got: %f and want: %f is too large", got, want)
+		}
+	})
+	t.Run("Center difference on latitude", func(t *testing.T) {
+		observation := observation{id: 1, coordinates: coordinates{longtitude: 4, latitude: 8}}
+		got, _ := distanceToNearestCluster(observation, &clusters)
+		want := 2.0
+		result := AlmostEqual(t, got, want, epsilon)
+		if !result {
+			t.Errorf("The difference between got: %f and want: %f is too large", got, want)
+		}
+	})
+	t.Run("point is in the middle of two centers", func(t *testing.T) {
+		observation := observation{id: 1, coordinates: coordinates{longtitude: 2, latitude: 3}}
+		got, _ := distanceToNearestCluster(observation, &clusters)
+		want := 3.605551275464
+		result := AlmostEqual(t, got, want, epsilon)
+		if !result {
+			t.Errorf("The difference between got: %f and want: %f is too large", got, want)
+		}
+	})
+	t.Run("point is on center", func(t *testing.T) {
+		observation := observation{id: 1, coordinates: coordinates{longtitude: 0, latitude: 0}}
+		got, _ := distanceToNearestCluster(observation, &clusters)
+		want := 0.0
+		result := AlmostEqual(t, got, want, epsilon)
+		if !result {
+			t.Errorf("The difference between got: %f and want: %f is too large", got, want)
+		}
+	})
+}
+
+func TestDistance(t *testing.T) {
+	//create an observation and a cluster with known coordinates
+	observation := observation{
+		id: 1,
+		coordinates: coordinates{
+			latitude:   10,
+			longtitude: 20,
+		},
+	}
+	cluster := cluster{
+		center: coordinates{
+			latitude:   15,
+			longtitude: 25,
+		},
+	}
+
+	//calculate the expected distance between the observation and the cluster
+	expectedDistance := math.Sqrt((observation.coordinates.latitude-cluster.center.latitude)*(observation.coordinates.latitude-cluster.center.latitude) +
+		(observation.coordinates.longtitude-cluster.center.longtitude)*(observation.coordinates.longtitude-cluster.center.longtitude))
+
+	//call the distance function to calculate the actual distance
+	actualDistance := distance(observation, cluster)
+
+	//check if the actual distance matches the expected distance
+	if actualDistance != expectedDistance {
+		t.Errorf("distance calculation incorrect, expected: %v, got: %v", expectedDistance, actualDistance)
+	}
+}
+
+func TestActivitiesToObservations(t *testing.T) {
+	activity1 := makeActivity(t, "51.5074", "-0.1278")
+	activity1.SetId(1)
+	activity2 := makeActivity(t, "52.5200", "13.4050")
+	activity2.SetId(2)
+	activities := activities{
+		*activity1,
+		*activity2,
+	}
+	want := observations{
+		{
+			id: 1,
+			coordinates: coordinates{
+				latitude:   51.5074,
+				longtitude: -0.1278,
+			},
+		},
+		{
+			id: 2,
+			coordinates: coordinates{
+				latitude:   52.5200,
+				longtitude: 13.4050,
+			},
+		},
+	}
+
+	var observations = make(observations, 0)
+	got, err := activitiesToObservations(activities, observations)
 
 	assertEqual(t, got, want, err)
+
+}
+
+func TestInitializeClusters(t *testing.T) {
+	// Create some dummy observations
+	observations := make(observations, 0)
+	for i := 0; i < 10; i++ {
+		lat := rand.Float64() * 10
+		long := rand.Float64() * 10
+		observations = append(observations, observation{
+			id: int64(i),
+			coordinates: coordinates{
+				latitude:   lat,
+				longtitude: long,
+			},
+		})
+	}
+
+	// Initialize clusters with 3 clusters
+	nrClusters := 3
+	nrCandidateClusters := 5
+	clusters := make(clusters, 0, nrClusters)
+	clusters, err := initializeClusters(&observations, &clusters, nrClusters, nrCandidateClusters)
+
+	// Check that there is no error
+	if err != nil {
+		t.Errorf("Expected no error, but got %v", err)
+	}
+
+	// Check that the number of clusters is correct
+	if len(clusters) != nrClusters {
+		t.Errorf("Expected %d clusters, but got %d", nrClusters, len(clusters))
+	}
+
+	// Check that each cluster has at least one observation
+	for _, cluster := range clusters {
+		if len(cluster.observations) < 1 {
+			t.Errorf("Expected each cluster to have at least one observation, but one cluster has %d observations", len(cluster.observations))
+		}
+	}
+
+	// Check that each observation is assigned to a cluster
+	for _, observation := range observations {
+		assigned := false
+		for _, cluster := range clusters {
+			for _, obs := range cluster.observations {
+				if observation.id == obs.id {
+					assigned = true
+					break
+				}
+			}
+			if assigned {
+				break
+			}
+		}
+		if !assigned {
+			t.Errorf("Expected observation with id %d to be assigned to a cluster, but it wasn't", observation.id)
+		}
+	}
+}
+
+// AlmostEqual returns true if a and b are equal within a relative error of
+// ε. See http://floating-point-gui.de/errors/comparison/ for the details of the
+// applied method.
+func AlmostEqual(t testing.TB, a, b, ε float64) bool {
+	t.Helper()
+	if a == b {
+		return true
+	}
+	absA := math.Abs(a)
+	absB := math.Abs(b)
+	diff := math.Abs(a - b)
+	if a == 0 || b == 0 || absA+absB < MinNormal {
+		return diff < ε*MinNormal
+	}
+	return diff/math.Min(absA+absB, math.MaxFloat64) < ε
+}
+
+func createCoordinate(t testing.TB, lat float64, long float64) coordinates {
+	t.Helper()
+	coord := coordinates{
+		latitude:   lat,
+		longtitude: long,
+	}
+
+	return coord
+}
+
+func createObservations(t testing.TB, coordinatesList []coordinates) observations {
+	t.Helper()
+
+	observations := make(observations, 0)
+
+	for i, coord := range coordinatesList {
+		observations = append(observations, observation{
+			id:          int64(i),
+			coordinates: coord,
+		})
+	}
+
+	return observations
 }
 
 func assertError(t testing.TB, got, want error) {
@@ -277,16 +332,4 @@ func makeActivity(t testing.TB, lat string, long string) *openapi.ActivityModel 
 	activity.SetAddressApplied(*address)
 
 	return activity
-}
-
-func makeCentroid(t testing.TB, lat float64, long float64, assignedActivities []openapi.ActivityModel) centroid {
-	t.Helper()
-	centroid := centroid{
-		center: coordinates{
-			lat:  lat,
-			long: long,
-		},
-		AssignedActivities: assignedActivities,
-	}
-	return centroid
 }

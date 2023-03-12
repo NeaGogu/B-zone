@@ -4,6 +4,7 @@ package kMeans
 import (
 	openapi "backend/internal/swag_gen"
 	"errors"
+	"fmt"
 	"math"
 	"math/rand"
 	"reflect"
@@ -18,7 +19,7 @@ type coordinates struct {
 
 // Type to store an observation (location of an activity)
 type observation struct {
-	id          string
+	id          int64
 	coordinates coordinates
 }
 
@@ -37,9 +38,9 @@ type clusters []cluster
 // Type that defines multiple activity models
 type activities []openapi.ActivityModel
 
-var ErrNrActivitiesTooSmall = errors.New("number of activities smaller than number of clusters")
-var ErrNrCandidateCentersTooSmall = errors.New("number of candidate smaller than or equal to 0")
-var ErrNoActivities = errors.New("number of candidate smaller than or equal to 0")
+var ErrNrObservationsTooSmall = errors.New("number of activities smaller than number of clusters")
+var ErrNrCandidateClustersTooSmall = errors.New("number of candidate smaller than or equal to 0")
+var ErrNoObservations = errors.New("number of candidates smaller than or equal to 0")
 
 var zeroCoordinate = coordinates{
 	latitude:   0,
@@ -47,7 +48,7 @@ var zeroCoordinate = coordinates{
 }
 
 var zeroObservation = observation{
-	id:          "zero",
+	id:          0,
 	coordinates: zeroCoordinate,
 }
 
@@ -60,7 +61,7 @@ var zeroCluster = cluster{
 	observations: zeroObservations,
 }
 
-var emptyClusters = clusters{
+var zeroClusters = clusters{
 	zeroCluster,
 }
 
@@ -68,11 +69,17 @@ func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clu
 	//variable used to store error and return when a function returns an error.
 	var err error
 	var observations = make(observations, 0)
-	err = activitiesToObservations(&activities, &observations)
-	//TODO: implement error handling
+	observations, err = activitiesToObservations(activities, observations)
+	//return if error raises while converting activities to observations
+	if err != nil {
+		return zeroClusters, err
+	}
 	var clusters = make(clusters, 0, nrClusters)
-	err = initializeClusters(&observations, &clusters, nrClusters, nrCandidateClusters)
-	//TODO: implement error handling
+	clusters, err = initializeClusters(&observations, &clusters, nrClusters, nrCandidateClusters)
+	//return if error raises while initializing clusters
+	if err != nil {
+		return zeroClusters, err
+	}
 
 	converged := false
 
@@ -88,6 +95,9 @@ func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clu
 
 			_, closestCenter := distanceToNearestCluster(observation, &clusters)
 			//assign observation to closest cluster
+			fmt.Println(len(clusters))
+
+			fmt.Println(clusters)
 			clusters[closestCenter].observations = append(clusters[closestCenter].observations, observation)
 		}
 
@@ -135,10 +145,23 @@ func clearObservations(clusterPtr *clusters) {
 // the function will append nrClusters cluster to the clusters list. The centers of the clusters are chosen by the greedy k-means++ algorithm
 // this algorithm is slower in intializing because it has to calculate the cost to the nearest center multiple times, but generally this way of initializing results
 // can ensure that the cluster centers are well-spaced and representative of the data, reducing the chances of getting stuck in suboptimal local minima.
-func initializeClusters(observationsPtr *observations, clustersPtr *clusters, nrClusters int, nrCandidateClusters int) error {
-	//TODO: implement throwing errors
+func initializeClusters(observationsPtr *observations, clustersPtr *clusters, nrClusters int, nrCandidateClusters int) (clusters, error) {
+
 	observations := *observationsPtr
 	clusters := *clustersPtr
+
+	//throw error if nr of observations is smaller than or equal to 0
+	if len(observations) <= 0 {
+		return nil, ErrNoObservations
+	}
+	//throw error if nrCluster is larger than length of observations
+	if nrClusters > len(observations) {
+		return nil, ErrNrObservationsTooSmall
+	}
+	//throw error if nr of candidate clusters is smaller or equal to 0
+	if nrCandidateClusters <= 0 {
+		return nil, ErrNrCandidateClustersTooSmall
+	}
 	//randomly choose first cluster
 	firstClusterIndex := rand.Intn(len(observations))
 	firstObservation := make([]observation, 0)
@@ -225,25 +248,34 @@ func initializeClusters(observationsPtr *observations, clustersPtr *clusters, nr
 		}
 
 		// Choose the candidate with the minimum overall distance of all points to their closest center
-		bestCandidate := candidates[0]
-		bestDistance := math.Inf(1)
-		for index, candidate := range candidates {
-			checkCluster := append(clusters, candidate)
-			sumDistance := 0.00
-			for _, x := range observations {
-				distance, err := distanceToNearestCluster(x, &checkCluster)
-				//TODO: error handling
-				sumDistance += distance
-			}
-			if sumDistance < bestDistance {
-				bestDistance = sumDistance
-				bestCandidate = candidates[index]
-			}
-		}
+		bestCandidate := bestCandidateFunc(candidates, clusters, observations)
+		// Append best candidate cluster to clusters
 		clusters = append(clusters, bestCandidate)
 
 	}
-	return nil
+	// If finished without an error return nil
+	return clusters, nil
+}
+
+func bestCandidateFunc(candidates clusters, clusters clusters, observations observations) cluster {
+
+	bestCandidate := candidates[0]
+	bestDistance := math.Inf(1)
+	// Loop over all candidate centers
+	for index, candidate := range candidates {
+		checkCluster := append(clusters, candidate)
+		sumDistance := 0.00
+		//calculate the sum of distances and if smaller this is the best candidate so far
+		for _, observation := range observations {
+			distance, _ := distanceToNearestCluster(observation, &checkCluster)
+			sumDistance += distance
+		}
+		if sumDistance < bestDistance {
+			bestDistance = sumDistance
+			bestCandidate = candidates[index]
+		}
+	}
+	return bestCandidate
 }
 
 // distanceToNearestCluster requires a pointer to an observations (list of observation) and a pointer to an clusters (list of cluster)
@@ -266,30 +298,42 @@ func distanceToNearestCluster(observation observation, clustersPtr *clusters) (f
 
 // distance takes as input an observation and a cluster and calculates the difference between the observation and the cluster
 func distance(observation observation, cluster cluster) float64 {
-	return math.Sqrt((observation.coordinates.latitude - cluster.center.latitude) * (observation.coordinates.longtitude - cluster.center.longtitude))
+	firstArgument := observation.coordinates.latitude - cluster.center.latitude
+	secondArgument := observation.coordinates.longtitude - cluster.center.longtitude
+	return math.Sqrt((firstArgument * firstArgument) + (secondArgument * secondArgument))
 }
 
 // activitiesToObservations requires a pointer to an activities (list of ActivityModel) and a pointer to an observations (list of observation)
 // converts the activity.AddressApplied latitude and longtitude to an observation langtitude and longtitude and grabs the activity.Id, combines these two into an
 // observation and appends this to the observations.
-func activitiesToObservations(activitiesPtr *activities, observationsPtr *observations) error {
-	observations := *observationsPtr
-	activities := *activitiesPtr
+func activitiesToObservations(activities activities, observations observations) (observations, error) {
+	var newId int64
+	//loop over all activities in activities (activities is a list of openapi.ActivityModel)
 	for _, activity := range activities {
-		newId := activity.Id
-		newLatitude, err := strconv.ParseFloat(activity.AddressApplied.Latitude, 64)
-		//TODO: implement error handling
-		newLongtitude, err := strconv.ParseFloat(activity.AddressApplied.Longtitude, 64)
-		//TODO: implement error handling
+		newId = activity.GetId()
+
+		newLatitude, err := strconv.ParseFloat(*activity.AddressApplied.Latitude, 64)
+		//return if error raises while parsing
+		if err != nil {
+			return nil, err
+		}
+		newLongtitude, err := strconv.ParseFloat(*activity.AddressApplied.Longitude, 64)
+		//return if error raises while parsing
+		if err != nil {
+			return nil, err
+		}
+		//create new coordinates using the long and lat we got from the activity
 		newCoordinates := coordinates{
 			latitude:   newLatitude,
 			longtitude: newLongtitude,
 		}
+
+		//create new observation with newCoordinates and id of the activity
 		newObservation := observation{
 			id:          newId,
 			coordinates: newCoordinates,
 		}
 		observations = append(observations, newObservation)
 	}
-	return nil
+	return observations, nil
 }
