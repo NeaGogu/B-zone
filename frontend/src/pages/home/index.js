@@ -65,8 +65,11 @@ async function findAddressesPoints() {
     
     if (response.status === 401) {
         // FIXME Delete after token updated correctly
-        await updateToken( "sep@bumbal.eu", "cW$#Qbph0524");
-        response = await getActivities();
+        // await updateToken( "sep@bumbal.eu", "cW$#Qbph0524");
+        // response = await getActivities();
+        alert('Token has expired!');
+        localStorage.removeItem('token')
+        window.location.reload()
     }
 
     const data = await response.json();
@@ -78,24 +81,6 @@ async function findAddressesPoints() {
     console.log(newData)  
     return newData;
     
-}
-
-async function updateToken(user, passw) {
-    const response = await fetch("https://sep202302.bumbal.eu/api/v2/authenticate/sign-in", {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            "email": user,
-            "password": passw,
-            "return_jwt": true
-        })
-    })
-    const data = await response.json();
-    console.log('new token ' + data.token)
-    localStorage.setItem('token', data.token)
 }
 
 async function getActivities() {
@@ -176,6 +161,7 @@ const items = [
 function signOut() {
     const token = localStorage.getItem('token');
     var valid;
+    var expired;
 
     //1. delete the user token and send sign out GET message
     console.log("Fetching sign out API")
@@ -192,7 +178,9 @@ function signOut() {
             console.log(response)
             if (response.ok) {
                 valid = true;
-
+            }
+            if (response.status === 401) {
+                expired = true;
             }
         }).then((data) => {
         console.log("This is the data:")
@@ -203,7 +191,12 @@ function signOut() {
             //2. re-route user to home page
             window.location.reload()
         } else {
-            alert("You could not be logged out! Please try again later.")
+            if ( expired) {
+                alert('Token has expired')
+                localStorage.removeItem('token')
+            } else {
+                alert("You could not be logged out! Please try again later.")
+            }
         }
     })
 

@@ -43,7 +43,6 @@ function App() {
   } else {
     authenticated = true;
   }
-  console.log(authenticated)
 
   return (
 
