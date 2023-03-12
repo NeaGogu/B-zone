@@ -263,7 +263,8 @@ localStorage.getItem('token')
 export default function Home() {
     const [showResults, setShowResults] = React.useState(false)
    
-    const onClick = () => setShowResults(!showResults)
+    const onClick = () => {setShowResults(!showResults)
+         toggleMap()}
 
     
     const {
