@@ -1,13 +1,13 @@
 import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select  } from 'antd';
+import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider } from 'antd';
 import React, {useState, useEffect} from 'react';
 import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, LayersControl, LayerGroup } from 'react-leaflet';
-import Heatmap from './components/heatmapComponent';
+import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, Polygon } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
 import './index.css';
+import dumbzones from './tempData/allcases.json'
 
 function getItem(label, key, icon, children, type) {
     return {
@@ -19,16 +19,10 @@ function getItem(label, key, icon, children, type) {
     };
 }
 
-function setEmail() {
-    document.getElementById('email').innerHTML = id_user //gets email for text in item
-}
 
 const { SubMenu } = Menu;
 const { darkAlgorithm } = theme;
 const { Header, Content, Sider } = Layout;
-const handleChange = (value) => {
-    console.log(`selected ${value}`);
-};
 const item = [
     getItem('Saved zones', 'sub1', null, [
         getItem('Initial Zone', 'g1', null, null, 'group'),
@@ -80,12 +74,9 @@ function LocationMarker() {
                         const zipcode = zipcodes.length > 0 ? zipcodes[0].text : null;
                         setAddress(address);
                         setZipcode(zipcode);
-                    } else {
-                        setAddress(null);
-                        setZipcode(null);
                     }
                 });
-            map.flyTo(e.latlng, map.getZoom());
+            //map.flyTo(e.latlng, map.getZoom());
         },
     });
     return position === null ? null : (
@@ -101,7 +92,6 @@ function LocationMarker() {
         </Marker>
     );
 }
-
 //signOut function
 function signOut() {
     const token = localStorage.getItem('token');
@@ -153,52 +143,6 @@ const MyFormItem = ({ name, ...props }) => {
     const concatName = name !== undefined ? [...prefixPath, ...toArr(name)] : undefined;
     return <Form.Item name={concatName} {...props} />;
 };
-//Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
-const ZoneSubMenu = ({ onSubmit }) => {
-    const [averageFuelCost, setAverageFuelCost] = useState("");
-    const [averageFuelUsage, setAverageFuelUsage] = useState("");
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const isValid = onSubmit(averageFuelCost, averageFuelUsage);
-        if (isValid) {
-            // add calculations
-        }
-    };
-
-    return (
-            <Form onFinish={handleSubmit}>
-                <Form.Item rules={[{ required: true }]}>
-                    Average fuel cost
-                    <Input
-                        placeholder="input fuel cost"
-                        type="number"
-                        step="0.01"
-                        value={averageFuelCost}
-                        onChange={(e) => setAverageFuelCost(e.target.value)}
-                    />
-                </Form.Item>
-                <Form.Item>
-                    Average fuel usage of car
-                    <Input
-                        placeholder="input fuel usage of car"
-                        type="number"
-                        step="0.01"
-                        value={averageFuelUsage}
-                        onChange={(e) => setAverageFuelUsage(e.target.value)}
-                    />
-                </Form.Item>
-                <Button
-                    style={{ width: "100%" }}
-                    type="primary"
-                    htmlType="submit"
-                    disabled={!averageFuelCost || !averageFuelUsage}
-                >
-                    Calculate
-                </Button>
-            </Form>
-    );
-};
 
 localStorage.getItem('token')
 export default function Home() {
@@ -214,7 +158,53 @@ export default function Home() {
     // for comparison button to split maps
     const [showComparison, setShowComparison] = useState(false);
     const [showMap, setShowMap] = useState(true);
+    // for toggling between zones
+    const [selection, setSelection] = useState([])
+    const [poly, setPoly] = useState([])
+    const [togZone, setTogZone] = useState(true)
 
+    // save which item in menu is selected
+    const menuClick = (e) => {
+        setSelection(e.key);    
+    }
+
+    function getInitialZones(userToken) {
+        //get list of zones, question remains how to get the last used zone?
+        //definition of URl, body values, other parameters
+        const zonesURL = "https://sep202302.bumbal.eu/api/v2/zone"
+        const bodyValues = JSON.stringify({
+            "options": {
+                "include_zone_ranges": true,
+                "include_brands": true
+            },
+            "filters": {}
+        })
+
+        //sending fetch request to receive list of user's zones
+        fetch(zonesURL, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userToken}`
+            },
+            body: bodyValues
+        })
+            //testing if response recorded was ok
+            .then((response) => {
+            if(!response.ok) {
+                console.log("Response was not ok ???")
+                alert("Unable to retrieve this zone configuration!")
+            }
+            return response.json();
+        })
+            //dealing with received list of zones
+            .then((data) => {
+                localStorage.setItem('zoneID', data.items[0].id.toString())
+                console.log("ID set to local storage")
+        })
+            .catch(error => console.log(error, 'error'))
+    }
 
     const toggleComparison = () => {
         if (showComparison) {
@@ -228,6 +218,26 @@ export default function Home() {
     const toggleMap = () => {
         setShowMap(!showMap);
         setShowComparison(false); // reset comparison state when switching singular map
+        if (selection === '5' ) {
+            if (togZone) {
+                getInitialZones(localStorage.getItem('token'))
+                setPoly(dumbzones.nl)
+                setTogZone(!togZone)
+            } else {
+                setPoly([])
+                setTogZone(!togZone)
+            }
+        }
+        if (selection === '6' ) {
+            if (togZone) {
+                setPoly([])
+                setTogZone(!togZone)
+            } else {
+                setPoly([])
+                setTogZone(!togZone)
+            }
+        }
+        //console.log(selection)
     };
 
     return (
@@ -274,9 +284,7 @@ export default function Home() {
                     </div>
 
                     <Menu theme="dark" mode="horizontal" />
-
-
-
+                    
                 </Header>
                 <Layout>
                     <Sider
@@ -289,35 +297,39 @@ export default function Home() {
                         <Menu
                             mode="inline"
                             defaultSelectedKeys={['1']}
+                            defaultOpenKeys={['sub1']}
                             style={{
                                 height: '100%',
                                 borderRight: 0,
                             }}
+                            onClick={menuClick}
                         >
-                            <SubMenu key="sub3" title="Heat map">
-                                    <Menu.Item key="5">Location based </Menu.Item>
-                                    <Menu.Item key="6">Time based </Menu.Item>
-                            </SubMenu>
+                            <div style={{ width: "100%" }}>
+                                <Button style={{ width: "50%" }} type="primary" onClick={toggleMap}>Heat map</Button>
+                                <Button style={{ width: "50%" }} type="primary" onClick={toggleMap}>Zones</Button>
+                            </div>
 
+                            <Form name="form_item_path" layout="vertical" onFinish={onFinish}>
+                                <MyFormItemGroup>
+                                    <MyFormItemGroup>
+                                        <MyFormItem name="fuelCost" label="Average fuel cost">
+                                            <Input placeholder="1" />
+                                        </MyFormItem>
+                                        <MyFormItem name="fuelUsage" label="Average fuel usage of car">
+                                            <Input placeholder="1" />
+                                        </MyFormItem>
+                                    </MyFormItemGroup>
+                                </MyFormItemGroup>
 
-                            <SubMenu key="sub4" title="Zones">
-                                    <ZoneSubMenu/>
-                            </SubMenu>
+                                <Button style={{ width: "100%" }} type="primary">Calculate</Button>
+                                &nbsp;
+                                <Button style={{ width: "100%" }} type="primary">Save</Button>
+                            </Form>
+
                             <SubMenu key="sub2" title="Saved Zones">
-                                <Menu.Item key="5" style={{ height: "80px" , padding: 0 }}>
-                                    <div style={{textAlign: "center"}}>Initial Zone</div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                                        <Button style={{flex: 1, marginRight: "3px"}} onClick={toggleMap}>View</Button>
-                                        <Button style={{flex: 1, marginLeft: "3px"}}  onClick={toggleComparison}>Compare</Button>
-                                    </div>
-                                </Menu.Item>
-                                <Menu.Item key="5" style={{ height: "80px" , padding: 0}}>
-                                    <div style={{textAlign: "center"}}>Saved Zone 1</div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                                        <Button style={{flex: 1, marginRight: "3px"}} onClick={toggleMap}>View</Button>
-                                        <Button style={{flex: 1, marginLeft: "3px"}}  onClick={toggleComparison}>Compare</Button>
-                                    </div>
-                                </Menu.Item>
+                                <Menu.Item key="5">Initial Zone</Menu.Item>
+                                <Menu.Item key="6">Saved Zone 1</Menu.Item>
+                                <Button style={{ width: "100%" }} type="primary" onClick={toggleComparison}>Compare</Button>
                             </SubMenu>
 
                         </Menu>
@@ -335,14 +347,14 @@ export default function Home() {
                         >
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
+                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '70vh', flex: "1" }}>
                                         <TileLayer
                                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                         />
                                         <LocationMarker/>
                                     </MapContainer>
-                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: "20px" }}>
+                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '70vh', flex: "1", marginLeft: "20px" }}>
                                         <TileLayer
                                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -351,19 +363,17 @@ export default function Home() {
                                     </MapContainer>
                                 </div>
                             ) : (
-                                <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: showMap ? "20px" : "0" }}>
+                                <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '70vh', flex: "1", marginLeft: showMap ? "20px" : "0" }}>
                                     <TileLayer
                                         attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                     />
-                                    <LayersControl position='topright'>
-                                        <LayersControl.Overlay name='Heatmap'>
-                                            <LayerGroup>
-                                                <Heatmap/>
-                                            </LayerGroup>
-                                        </LayersControl.Overlay>
-                                    </LayersControl>
-
+                                    {
+                                        poly.map(zip =>(
+                                            
+                                            <Polygon key={zip.pc4} positions={[zip.coordinates]}/>
+                                        ))
+                                    }
                                     <LocationMarker/>
                                 </MapContainer>
                             )}
