@@ -163,6 +163,9 @@ export default function Home() {
     const [poly, setPoly] = useState([])
     const [togZone, setTogZone] = useState(true)
 
+    //set of zipCodes
+    var zipCodes
+
     // save which item in menu is selected
     const menuClick = (e) => {
         setSelection(e.key);    
@@ -192,18 +195,67 @@ export default function Home() {
         })
             //testing if response recorded was ok
             .then((response) => {
-            if(!response.ok) {
-                console.log("Response was not ok ???")
-                alert("Unable to retrieve this zone configuration!")
-            }
-            return response.json();
-        })
+                if(!response.ok) {
+                    console.log("Response was not ok ???")
+                    alert("Unable to retrieve this zone configuration!")
+                }
+                return response.json();
+            })
             //dealing with received list of zones
             .then((data) => {
                 localStorage.setItem('zoneID', data.items[0].id.toString())
+                zipCodes = getZipCodes(data.items)
                 console.log("ID set to local storage")
-        })
+                console.log(zipCodes[0])
+            })
             .catch(error => console.log(error, 'error'))
+    }
+
+    function getZipCodes(zoneList) {
+        //when you retrieve a list of zones from Bumbal API from zone with PUT, you retrieve a list of zone configs which itself includes a list of zones in each zone config
+        let zipCodes = []
+
+        for (let i = 0; i < zoneList.length; i++) {
+            zipCodes[i] = getAreas(zoneList[i].zone_ranges); //per each zone, there are a list of areas with from and to
+        }
+
+        //fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipCodes[0].zipFrom.toString() + '&zip_to=' + zipCodes[0].zipTo.toString(), {
+        fetch('http://localhost:4000/test/zip/coordinates?zip_from=5611&zip_to=5613', {
+            method: 'GET',
+            // headers: {
+            //     'Accept': 'application/json',
+            //     'Content-Type': 'application/json',
+            // },
+            mode: 'cors'
+        })
+            .then((response) => {
+                if(!response.ok) {
+                    console.log("Response to localhost:4000 was not ok ???")
+                    alert("Unable to retrieve zipcodes from backend!")
+                }
+                return response.json();
+            })
+                .then((data) => {
+                    zipCodes[0] = data
+                })
+        return zipCodes
+
+    }
+
+    function getAreas(zoneAreas) {
+        //create zipFrom and zipTo object
+        var object = {
+            zipFrom: "",
+            zipTo: ""
+        };
+        //create array of zipcode ranges
+        let zoneAreaZips = [object]
+        //loop through range items to find zip code ranges
+        for (let j = 0; j < zoneAreas.length; j++) {
+            zoneAreaZips[j].zipFrom = zoneAreas[j].zipcode_from;
+            zoneAreaZips[j].zipTo = zoneAreas[j].zipcode_to;
+        }
+        return zoneAreaZips
     }
 
     const toggleComparison = () => {
