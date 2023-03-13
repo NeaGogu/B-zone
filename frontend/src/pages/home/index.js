@@ -1,114 +1,13 @@
 import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider } from 'antd';
-
-
-import DropdownButton from "antd/es/dropdown/dropdown-button";
+import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select  } from 'antd';
 import React, {useState, useEffect} from 'react';
 import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap } from 'react-leaflet';
-
+import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, LayersControl, LayerGroup } from 'react-leaflet';
+import Heatmap from './components/heatmapComponent';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
 import './index.css';
-import "leaflet.heat"
-
-function HeatmapFunction({show}){
-  const map = useMap()
-  
-
-  if ( show ) {
-    const fetchData = async () => {
-        let addressPoints = await findAddressesPoints();
-        //console.log(addressPoints)
-        const points = addressPoints
-        ? addressPoints.map((p) => {
-        return [p[0], p[1], 500]; // lat lng intensity
-        })
-        : [];
-  
-        var heat = L.heatLayer(points);
-        map.addLayer(heat)
-      };
-  
-      fetchData();
-  } else {
-    map.eachLayer(function(layer) {
-        if (layer._heat != null) {
-            map.removeLayer(layer)
-        }
-    })
-  }
-    
-    
-
-    
-
-}
-/*
-async componentDidMount() {
-    // POST request using fetch with async/await
-    const requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: 'React POST Request Example' })
-    };
-    const response = await fetch('https://reqres.in/api/posts', requestOptions);
-    const data = await response.json();
-    this.setState({ postId: data.id });
-}
-*/
-async function findAddressesPoints() {
-   
-    
-    const response = await getActivities();
-    
-    if (response.status === 401) {
-        // FIXME Delete after token updated correctly
-        // await updateToken( "sep@bumbal.eu", "cW$#Qbph0524");
-        // response = await getActivities();
-        alert('Token has expired!');
-        localStorage.removeItem('token')
-        window.location.reload()
-    }
-
-    const data = await response.json();
-
-    console.log(data) 
-    let newData = data.items.map((i) => {
-        return [i.address.latitude, i.address.longitude]; // lat lng intensity
-        })
-    console.log(newData)  
-    return newData;
-    
-}
-
-async function getActivities() {
-    const token = localStorage.getItem('token')
-    console.log('token ' + token)
-    const requestOptions = {
-        method: 'PUT',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`, // add token to Bearer Authorization when sending GET signOut request
-        },
-        body: JSON.stringify({
-            "options": {
-              "include_address": true
-            },
-            "limit": 10,
-            "offset": 0,
-            "sorting_column": "id",
-            "sorting_direction": "asc",
-            "as_list": true,
-            "count_only": false
-          })
-    };
-    const response = await fetch('https://sep202302.bumbal.eu/api/v2/activity', requestOptions);
-    console.log('getActivities response ' + response.status)
-    return response;
-}
 
 function getItem(label, key, icon, children, type) {
     return {
@@ -127,6 +26,9 @@ function setEmail() {
 const { SubMenu } = Menu;
 const { darkAlgorithm } = theme;
 const { Header, Content, Sider } = Layout;
+const handleChange = (value) => {
+    console.log(`selected ${value}`);
+};
 const item = [
     getItem('Saved zones', 'sub1', null, [
         getItem('Initial Zone', 'g1', null, null, 'group'),
@@ -178,6 +80,9 @@ function LocationMarker() {
                         const zipcode = zipcodes.length > 0 ? zipcodes[0].text : null;
                         setAddress(address);
                         setZipcode(zipcode);
+                    } else {
+                        setAddress(null);
+                        setZipcode(null);
                     }
                 });
             map.flyTo(e.latlng, map.getZoom());
@@ -196,11 +101,11 @@ function LocationMarker() {
         </Marker>
     );
 }
+
 //signOut function
 function signOut() {
     const token = localStorage.getItem('token');
     var valid;
-    var expired;
 
     //1. delete the user token and send sign out GET message
     console.log("Fetching sign out API")
@@ -217,28 +122,20 @@ function signOut() {
             console.log(response)
             if (response.ok) {
                 valid = true;
-            }
-            if (response.status === 401) {
-                expired = true;
+
             }
         }).then((data) => {
-        console.log("This is the data:")
-        console.log(data)
-        if (valid) {
-            localStorage.clear();
-            alert('You have been logged out!')
-            //2. re-route user to home page
-            window.location.reload()
-        } else {
-            if ( expired) {
-                alert('Token has expired')
-                localStorage.removeItem('token')
+            console.log("This is the data:")
+            console.log(data)
+            if (valid) {
+                localStorage.clear();
+                alert('You have been logged out!')
+                //2. re-route user to home page
+                window.location.reload()
             } else {
                 alert("You could not be logged out! Please try again later.")
             }
-        }
-    })
-
+        })
 
 }
 
@@ -256,17 +153,56 @@ const MyFormItem = ({ name, ...props }) => {
     const concatName = name !== undefined ? [...prefixPath, ...toArr(name)] : undefined;
     return <Form.Item name={concatName} {...props} />;
 };
+//Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
+const ZoneSubMenu = ({ onSubmit }) => {
+    const [averageFuelCost, setAverageFuelCost] = useState("");
+    const [averageFuelUsage, setAverageFuelUsage] = useState("");
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const isValid = onSubmit(averageFuelCost, averageFuelUsage);
+        if (isValid) {
+            // add calculations
+        }
+    };
+
+    return (
+            <Form onFinish={handleSubmit}>
+                <Form.Item rules={[{ required: true }]}>
+                    Average fuel cost
+                    <Input
+                        placeholder="input fuel cost"
+                        type="number"
+                        step="0.01"
+                        value={averageFuelCost}
+                        onChange={(e) => setAverageFuelCost(e.target.value)}
+                    />
+                </Form.Item>
+                <Form.Item>
+                    Average fuel usage of car
+                    <Input
+                        placeholder="input fuel usage of car"
+                        type="number"
+                        step="0.01"
+                        value={averageFuelUsage}
+                        onChange={(e) => setAverageFuelUsage(e.target.value)}
+                    />
+                </Form.Item>
+                <Button
+                    style={{ width: "100%" }}
+                    type="primary"
+                    htmlType="submit"
+                    disabled={!averageFuelCost || !averageFuelUsage}
+                >
+                    Calculate
+                </Button>
+            </Form>
+    );
+};
 
 localStorage.getItem('token')
-
-
 export default function Home() {
-    const [showResults, setShowResults] = React.useState(false)
-   
-    const onClick = () => {setShowResults(!showResults)
-         toggleMap()}
 
-    
     const {
         token: { colorBgContainer },
     } = theme.useToken();
@@ -278,6 +214,7 @@ export default function Home() {
     // for comparison button to split maps
     const [showComparison, setShowComparison] = useState(false);
     const [showMap, setShowMap] = useState(true);
+
 
     const toggleComparison = () => {
         if (showComparison) {
@@ -352,38 +289,35 @@ export default function Home() {
                         <Menu
                             mode="inline"
                             defaultSelectedKeys={['1']}
-                            defaultOpenKeys={['sub1']}
                             style={{
                                 height: '100%',
                                 borderRight: 0,
                             }}
                         >
-                            <div style={{ width: "100%" }}>
-                                <Button style={{ width: "50%" }} type="primary" onClick={onClick}>Heat map</Button>
-                                <Button style={{ width: "50%" }} type="primary">Zones</Button>
-                            </div>
+                            <SubMenu key="sub3" title="Heat map">
+                                    <Menu.Item key="5">Location based </Menu.Item>
+                                    <Menu.Item key="6">Time based </Menu.Item>
+                            </SubMenu>
 
-                            <Form name="form_item_path" layout="vertical" onFinish={onFinish}>
-                                <MyFormItemGroup>
-                                    <MyFormItemGroup>
-                                        <MyFormItem name="fuelCost" label="Average fuel cost">
-                                            <Input placeholder="1" />
-                                        </MyFormItem>
-                                        <MyFormItem name="fuelUsage" label="Average fuel usage of car">
-                                            <Input placeholder="1" />
-                                        </MyFormItem>
-                                    </MyFormItemGroup>
-                                </MyFormItemGroup>
 
-                                <Button style={{ width: "100%" }} type="primary">Calculate</Button>
-                                &nbsp;
-                                <Button style={{ width: "100%" }} type="primary">Save</Button>
-                            </Form>
-
+                            <SubMenu key="sub4" title="Zones">
+                                    <ZoneSubMenu/>
+                            </SubMenu>
                             <SubMenu key="sub2" title="Saved Zones">
-                                <Menu.Item key="5">Initial Zone</Menu.Item>
-                                <Menu.Item key="6">Saved Zone 1</Menu.Item>
-                                <Button style={{ width: "100%" }} type="primary" onClick={toggleComparison}>Compare</Button>
+                                <Menu.Item key="5" style={{ height: "80px" , padding: 0 }}>
+                                    <div style={{textAlign: "center"}}>Initial Zone</div>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                                        <Button style={{flex: 1, marginRight: "3px"}} onClick={toggleMap}>View</Button>
+                                        <Button style={{flex: 1, marginLeft: "3px"}}  onClick={toggleComparison}>Compare</Button>
+                                    </div>
+                                </Menu.Item>
+                                <Menu.Item key="5" style={{ height: "80px" , padding: 0}}>
+                                    <div style={{textAlign: "center"}}>Saved Zone 1</div>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                                        <Button style={{flex: 1, marginRight: "3px"}} onClick={toggleMap}>View</Button>
+                                        <Button style={{flex: 1, marginLeft: "3px"}}  onClick={toggleComparison}>Compare</Button>
+                                    </div>
+                                </Menu.Item>
                             </SubMenu>
 
                         </Menu>
@@ -422,8 +356,15 @@ export default function Home() {
                                         attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                     />
+                                    <LayersControl position='topright'>
+                                        <LayersControl.Overlay name='Heatmap'>
+                                            <LayerGroup>
+                                                <Heatmap/>
+                                            </LayerGroup>
+                                        </LayersControl.Overlay>
+                                    </LayersControl>
+
                                     <LocationMarker/>
-                                    <HeatmapFunction show={showResults}/>
                                 </MapContainer>
                             )}
                         </Content>
