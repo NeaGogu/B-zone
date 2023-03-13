@@ -80,7 +80,6 @@ func TestKMeans(t *testing.T) {
 					t.Errorf("kMeans() returned a cluster with 0 observations")
 				}
 			}
-			t.Errorf("result: %v", got)
 		})
 	}
 }
