@@ -3,22 +3,24 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 
 func (app *application) getZipCodeCoords(w http.ResponseWriter, r *http.Request) {
 
-	reqZipCodeFrom := r.URL.Query().Get("zip_from")
-	reqZipCodeTo := r.URL.Query().Get("zip_to")
-	if reqZipCodeFrom== ""{
-		http.Error(w, "Missing zip_from in query", http.StatusBadRequest)
+	reqZipCodeFrom, err := strconv.Atoi(r.URL.Query().Get("zip_from"))
+	if err != nil || reqZipCodeFrom < 0 {
+		http.Error(w, "Invalid zip_from in query", http.StatusBadRequest)
 		return
 	}
 
-	if reqZipCodeTo== ""{
-		http.Error(w, "Missing zip_to in query", http.StatusBadRequest)
+	reqZipCodeTo, err := strconv.Atoi(r.URL.Query().Get("zip_to"))
+	if err != nil || reqZipCodeTo < 0 {
+		http.Error(w, "Invalid zip_to in query", http.StatusBadRequest)
 		return
 	}
+
 
 	reqZipcodes, err := app.zipCodeDbModel.GetZipCodes(reqZipCodeFrom, reqZipCodeTo)
 	if err != nil {

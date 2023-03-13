@@ -2,12 +2,14 @@ package models
 
 import (
 	"context"
+	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const(
+	ZipcodeDatabase = "zipcodes"
 	CoordCollection = "coordinates"
 )
 
@@ -21,25 +23,16 @@ type ZipCode struct {
 	Type string `json:"type" bson:"type, omitempty"`
 }
 
-
-	// queryFilter := bson.D{{Key: "code", Value: reqZipCode}}
-	//
-	// // TODO add this collection as a constant
-	// coll := app.zipCodeDbModel.DB.Collection("coordinates")
-	//
-	// var zipCode models.ZipCode
-	// err := coll.FindOne(context.TODO(), queryFilter).Decode(&zipCode)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-
-func (z *ZipCodeDBModel) GetZipCodes(reqZipCodeFrom string, reqZipCodeTo string) ([]ZipCode, error) {
+// returns a slice of ZipCode structs that are within the range of the zip codes provided
+func (z *ZipCodeDBModel) GetZipCodes(reqZipCodeFrom int, reqZipCodeTo int) ([]ZipCode, error) {
 	// get the coordinates collection
 	coll := z.DB.Collection(CoordCollection)
+	// convert the zip codes to strings because the zip codes are stored as strings in the db
+	zipFrom := strconv.Itoa(reqZipCodeFrom)
+	zipTo := strconv.Itoa(reqZipCodeTo)
 
 
-	queryFilter := bson.M { "code" : bson.M {"$lte": reqZipCodeTo, "$gte": reqZipCodeFrom}}
+	queryFilter := bson.M { "code" : bson.M {"$lte": zipTo, "$gte": zipFrom}}
 	cur, err:= coll.Find(context.TODO(), queryFilter)
 	if err != nil {
 		return nil, err
