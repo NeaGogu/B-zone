@@ -17,6 +17,7 @@ type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
 	zipCodeDbModel *models.ZipCodeDBModel
+	bzoneDbModel *models.BzoneDBModel
 }
 
 func main() {
@@ -63,12 +64,11 @@ func main() {
 		}
 	}()
 
-
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
-		// TODO remove hardcoded value
-		zipCodeDbModel: &models.ZipCodeDBModel{ DB: db.Database("zipcodes") },
+		zipCodeDbModel: &models.ZipCodeDBModel{ DB: db.Database(models.ZipcodeDatabase) },
+		bzoneDbModel: &models.BzoneDBModel{ DB: db.Database(models.BzoneDatabase) },
 	}
 
 	srv := &http.Server{
@@ -100,3 +100,4 @@ func openDB(dsn string) (*mongo.Client, error) {
 
 	return client, nil
 }
+
