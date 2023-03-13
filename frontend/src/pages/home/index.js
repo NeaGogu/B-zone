@@ -1,7 +1,7 @@
 // External dependencies
 import React, { useState, useEffect } from 'react';
 import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, LayersControl, LayerGroup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, LayersControl, LayerGroup, Polygon } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
@@ -251,14 +251,16 @@ export default function Home() {
 
     //set of zipCodes
     var zipCodes
+    var coordinatesFile
 
     // save which item in menu is selected
     const menuClick = (e) => {
         setSelection(e.key);
     }
 
+    //with a user token, fetches initial zones list
     function getInitialZones(userToken) {
-        //get list of zones, question remains how to get the last used zone?
+        //get list of zones
         //definition of URl, body values, other parameters
         const zonesURL = "https://sep202302.bumbal.eu/api/v2/zone"
         const bodyValues = JSON.stringify({
@@ -269,7 +271,7 @@ export default function Home() {
             "filters": {}
         })
 
-        //sending fetch request to receive list of user's zones
+        //sending fetch request to receive list of user's zones and updates their postal codes to zipCodes
         fetch(zonesURL, {
             method: 'PUT',
             headers: {
@@ -289,61 +291,58 @@ export default function Home() {
             })
             //dealing with received list of zones
             .then((data) => {
-                localStorage.setItem('zoneID', data.items[0].id.toString())
+                //retrieving the zipCodes and coordinates from list of zones
                 zipCodes = getZipCodes(data.items)
-                console.log("ID set to local storage")
-                console.log(zipCodes[0])
             })
             .catch(error => console.log(error, 'error'))
     }
 
-    async function getZipCodes(zoneList) {
+    //with a list of zones, fetches their zip codes and updates their polygon coordinates to coordinatesFile
+    function getZipCodes(zoneList) {
         //when you retrieve a list of zones from Bumbal API from zone with PUT, you retrieve a list of zone configs which itself includes a list of zones in each zone config
         let zipCodes = []
 
         for (let i = 0; i < zoneList.length; i++) {
-            zipCodes[i] = getAreas(zoneList[i].zone_ranges); //per each zone, there are a list of areas with from and to
+            zipCodes[i] = getAreas(zoneList[i].zone_ranges, i); //per each zone, there are a list of areas with from and to
+
+            console.log("Sending out fetch to our backend...")
+            //for each zone and area, fetch the coordinates and compile them together
+            for(let j = 0; j < zoneList[i].length; j++) {
+                fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipCodes[i][j].zipFrom.toString() + '&zip_to=' + zipCodes[i][j].zipTo.toString())
+                    .then((response) => {
+                        if(!response.ok) {
+                            console.log("Reponse from our backend is not ok ???")
+                        }
+                        return response.json()
+                    })
+                    .then((data) => {
+                        console.log(data)
+                        coordinatesFile[i][j] = data
+                    }).catch(error => console.log(error))
+            }
+
+            console.log("Set the jsonFile var to be the received zipcode data from our backend")
+
         }
 
-        //fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipCodes[0].zipFrom.toString() + '&zip_to=' + zipCodes[0].zipTo.toString(), {
-        let res = await fetch('http://localhost:4000/test/zip/coordinates?zip_from=5611&zip_to=5613')
-
-        if(!res.ok) {
-            console.error(`Response to localhost:4000 was not ok ??? ${res.status}`)
-            alert("Unable to retrieve zipcodes from backend!")
-            return
-        }
-
-        console.log(res.json())
-
-        console.log("gucci")
-        // .then((response) => {
-        //     if(!response.ok) {
-        //         console.error(`Response to localhost:4000 was not ok ??? ${response.}`)
-        //         alert("Unable to retrieve zipcodes from backend!")
-        //         return
-        //     }
-        //     return response.json();
-        // })
-        //     .then((data) => {
-        //         zipCodes[0] = data
-        //     })
         return zipCodes
 
     }
 
-    function getAreas(zoneAreas) {
+    function getAreas(zoneAreas, index) {
         //create zipFrom and zipTo object
-        var object = {
+        var zips = {
             zipFrom: "",
             zipTo: ""
         };
         //create array of zipcode ranges
-        let zoneAreaZips = [object]
+        let zoneAreaZips = [zips]
         //loop through range items to find zip code ranges
         for (let j = 0; j < zoneAreas.length; j++) {
             zoneAreaZips[j].zipFrom = zoneAreas[j].zipcode_from;
             zoneAreaZips[j].zipTo = zoneAreas[j].zipcode_to;
+
+
         }
         return zoneAreaZips
     }
@@ -362,8 +361,9 @@ export default function Home() {
         setShowComparison(false); // reset comparison state when switching singular map
         if (selection === '5' ) {
             if (togZone) {
+                console.log("initial zone viewed")
                 getInitialZones(localStorage.getItem('token'))
-                setPoly(dumbzones.nl)
+                setPoly([])
                 setTogZone(!togZone)
             } else {
                 setPoly([])
@@ -515,6 +515,13 @@ export default function Home() {
                                             </LayerGroup>
                                         </LayersControl.Overlay>
                                     </LayersControl>
+
+                                    {
+                                        poly.map(zip =>(
+
+                                            <Polygon key={zip.code} positions={[zip.coordinates]}/>
+                                        ))
+                                    }
 
                                     <LocationMarker />
                                 </MapContainer>
