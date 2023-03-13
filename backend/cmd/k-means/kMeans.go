@@ -43,6 +43,8 @@ var ErrNrObservationsTooSmall = errors.New("number of activities smaller than nu
 var ErrNrCandidateClustersTooSmall = errors.New("number of candidate clusters smaller than or equal to 0")
 var ErrNoObservations = errors.New("number of candidates smaller than or equal to 0")
 var ErrNoClusters = errors.New("number of clusters smaller than or equal to 0")
+var ErrNoActivities = errors.New("number of activities smaller than or equal to 0")
+var ErrNrClustersTooSmall = errors.New("nrClusters variable is smaller than or equal to 0")
 
 var zeroCoordinate = coordinates{
 	latitude:  0,
@@ -68,6 +70,13 @@ var zeroClusters = clusters{
 }
 
 func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clusters, error) {
+	if len(activities) <= 0 {
+		return clusters{}, ErrNoActivities
+	}
+
+	if nrClusters <= 0 {
+		return clusters{}, ErrNrClustersTooSmall
+	}
 	//variable used to store error and return when a function returns an error.
 	var err error
 	var observations = make(observations, 0)
@@ -77,7 +86,7 @@ func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clu
 		return zeroClusters, err
 	}
 	var clusters = make(clusters, 0, nrClusters)
-	clusters, err = initializeClusters(observations, clusters, nrClusters, nrCandidateClusters)
+	clusters, err = initializeClusters(observations, clusters, nrClusters, nrCandidateClusters, rand.New(rand.NewSource(time.Now().UnixNano())))
 	//return if error raises while initializing clusters
 	if err != nil {
 		return zeroClusters, err
@@ -146,7 +155,7 @@ func clearObservations(clusterPtr *clusters) {
 // the function will append nrClusters cluster to the clusters list. The centers of the clusters are chosen by the greedy k-means++ algorithm
 // this algorithm is slower in intializing because it has to calculate the cost to the nearest center multiple times, but generally this way of initializing results
 // can ensure that the cluster centers are well-spaced and representative of the data, reducing the chances of getting stuck in suboptimal local minima.
-func initializeClusters(observations observations, clusters clusters, nrClusters int, nrCandidateClusters int) (clusters, error) {
+func initializeClusters(observations observations, clusters clusters, nrClusters int, nrCandidateClusters int, rand *rand.Rand) (clusters, error) {
 
 	//throw error if nrCluster is larger than length of observations
 	if nrClusters > len(observations) {
@@ -155,6 +164,9 @@ func initializeClusters(observations observations, clusters clusters, nrClusters
 	//throw error if nr of candidate clusters is smaller or equal to 0
 	if nrCandidateClusters <= 0 {
 		return nil, ErrNrCandidateClustersTooSmall
+	}
+	if nrCandidateClusters > len(observations) {
+		return nil, ErrNrObservationsTooSmall
 	}
 
 	//randomly choose first cluster
@@ -168,17 +180,17 @@ func initializeClusters(observations observations, clusters clusters, nrClusters
 
 	// Select the next cluster centers one at a time, based on the distance from the existing centers
 
-	// For each point calculate the distance to the nearest cluster center
-	distances, _, err := totalListDistance(observations, clusters)
+	// For each point calculate the distance to the last chosen candidate center
+	distances, err := totalListDistance(observations, clusters[len(clusters)-1])
 	if err != nil {
 		return zeroClusters, fmt.Errorf("got an error in totalListDistance: %v", err)
 	}
 
 	for len(clusters) < nrClusters {
 
-		probabilities := Probabilities(observations, distances)
+		probabilities := Probabilities(distances)
 
-		candidates := chooseCandidates(observations, probabilities, nrCandidateClusters, rand.New(rand.NewSource(time.Now().UnixNano())))
+		candidates := chooseCandidates(observations, probabilities, nrCandidateClusters, rand)
 
 		// Choose the candidate with the minimum overall distance of all points to their closest center
 		bestCandidate, err := bestCandidateFunc(candidates, clusters, observations)
@@ -193,7 +205,7 @@ func initializeClusters(observations observations, clusters clusters, nrClusters
 	return clusters, nil
 }
 
-func chooseCandidates(observations observations, probabilities []float64, nrCandidateClusters int, rand *rand.Rand) clusters {
+func chooseCandidates(observations observations, probabilities []float64, nrCandidateClusters int, r *rand.Rand) clusters {
 	// Choose the next clusterCandidate centers randomly with probability proportional to the distance
 	candidates := make([]cluster, 0, nrCandidateClusters)
 	for i := 0; i < nrCandidateClusters; i++ {
@@ -257,26 +269,23 @@ func totalSumDistance(observations observations, checkCluster clusters) (float64
 
 // totalListDistance takes observations (list of observation) and clusters (list of cluster) as input and returns a list that contains for each observation the distance to the closest cluster and
 // a list that contains for each observation the index of the closest cluster
-func totalListDistance(observations observations, clusters clusters) ([]float64, []int, error) {
-	if len(clusters) <= 0 {
-		return []float64{}, []int{}, ErrNoClusters
-	}
+func totalListDistance(observations observations, cluster cluster) ([]float64, error) {
 	// For each point calculate the distance to the nearest cluster center
 	distances := make([]float64, len(observations))
-	closestCluster := make([]int, len(observations))
 	for index, observation := range observations {
 		var err error
-		distances[index], closestCluster[index], err = distanceToNearestCluster(observation, clusters)
+		distances[index] = distance(observation, cluster)
 		if err != nil {
-			return []float64{}, []int{}, fmt.Errorf("got an error in distanceToNearestCluster: %v", err)
+			return []float64{}, fmt.Errorf("got an error in distanceToNearestCluster: %v", err)
 		}
 	}
-	return distances, closestCluster, nil
+	return distances, nil
 }
 
-func Probabilities(observations observations, distances []float64) []float64 {
+// Probabilities takes observations (list of observation) and distances (list of float64) as input and calculates the probability of an observation being chosen as proportional probability to the distance
+func Probabilities(distances []float64) []float64 {
 	//calculate probabilities
-	probabilities := make([]float64, len(observations))
+	probabilities := make([]float64, len(distances))
 	// Squaring the distance makes the probability of selecting a data point decrease more steeply as the distance increases, compared to using the distance itself.
 	// This has the effect of encouraging the algorithm to select cluster centers that are farther apart and better representative of the data.
 	for index, distance := range distances {

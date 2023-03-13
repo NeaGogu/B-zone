@@ -12,44 +12,77 @@ import (
 // MinNormal is the smallest positive normal value of type float64.
 var MinNormal = math.Float64frombits(0x0010000000000000)
 
-func TestKMeans(t *testing.T) {
-	// Initialize test data
-	activity1 := makeActivity(t, 1, "1.234567", "2.345678")
-	activity2 := makeActivity(t, 2, "3.456789", "4.567890")
-	activity3 := makeActivity(t, 3, "5.678901", "6.789012")
+// Define some test data
 
-	activities := activities{
-		*activity1,
-		*activity2,
-		*activity3,
+func TestKMeans(t *testing.T) {
+	// Define some test data
+	activity1 := makeActivity(t, 1, "1", "1")
+	activity2 := makeActivity(t, 1, "3", "4")
+	activity3 := makeActivity(t, 1, "5", "6")
+	activities := []openapi.ActivityModel{*activity1, *activity2, *activity3}
+
+	testCases := []struct {
+		name                string
+		activities          []openapi.ActivityModel
+		nrClusters          int
+		nrCandidateClusters int
+		expectedError       error
+	}{
+		{
+			name:                "NrClusters smaller than 1",
+			activities:          activities,
+			nrClusters:          0,
+			nrCandidateClusters: 2,
+			expectedError:       ErrNrClustersTooSmall,
+		},
+		{
+			name:                "NrCandidateClusters smaller or equal to 0",
+			activities:          activities,
+			nrClusters:          2,
+			nrCandidateClusters: 0,
+			expectedError:       ErrNrCandidateClustersTooSmall,
+		},
+		{
+			name:                "Happy path",
+			activities:          activities,
+			nrClusters:          2,
+			nrCandidateClusters: 2,
+			expectedError:       nil,
+		},
+		{
+			name:                "No activities",
+			activities:          []openapi.ActivityModel{},
+			nrClusters:          2,
+			nrCandidateClusters: 2,
+			expectedError:       ErrNoActivities,
+		},
 	}
 
-	t.Run("Test kMeans function with 2 clusters", func(t *testing.T) {
-		clusters, err := kMeans(activities, 2, 2)
+	// Loop over test cases and run each one
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Call the function
+			got, err := kMeans(tc.activities, tc.nrClusters, tc.nrCandidateClusters)
 
-		if err != nil {
-			t.Errorf("Error occurred: %v", err)
-		}
+			// Check the result
+			if err != tc.expectedError {
+				t.Errorf("kMeans() error = %v, want %v", err, tc.expectedError)
+			}
 
-		if len(clusters) != 2 {
-			t.Errorf("Expected 2 clusters, got %d", len(clusters))
-		}
-	})
+			// If there was no error, check that the number of clusters matches the input
+			if err == nil && len(got) != tc.nrClusters {
+				t.Errorf("kMeans() returned %v clusters, want %v clusters", len(got), tc.nrClusters)
+			}
 
-	t.Run("Test kMeans function with 3 clusters", func(t *testing.T) {
-		clusters, err := kMeans(activities, 3, 3)
-		//t.Errorf("clusters: %v", clusters)
-
-		if err != nil {
-			t.Errorf("Error occurred: %v", err)
-		}
-
-		t.Errorf("%v", clusters)
-		if len(clusters) != 3 {
-			t.Errorf("Expected 3 clusters, got %d", len(clusters))
-		}
-	})
-
+			// Check that each cluster has at least one observation
+			for _, c := range got {
+				if len(c.observations) == 0 {
+					t.Errorf("kMeans() returned a cluster with 0 observations")
+				}
+			}
+			t.Errorf("result: %v", got)
+		})
+	}
 }
 
 func TestChooseCandidates(t *testing.T) {
@@ -72,6 +105,18 @@ func TestChooseCandidates(t *testing.T) {
 	got := chooseCandidates(observations, probabilities, nrCandidateClusters, randSeed)
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got: %v, want: %v\n type of got1.observation %v, type of got2.observation %v\n type of want1.observation %v, type of want2.observation %v\n ", got, want, reflect.TypeOf(got[0].observations), reflect.TypeOf(got[1].observations), reflect.TypeOf(want[0].observations), reflect.TypeOf(want[1].observations))
+	}
+}
+
+func TestProbabilities(t *testing.T) {
+	// Define some test data
+	distances := []float64{1.0, 2.0, 3.0}
+
+	// Call the function and check the result
+	want := []float64{1.0, 4.0, 9.0}
+	got := Probabilities(distances)
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Probabilities() = %v, want %v", got, want)
 	}
 }
 
@@ -156,7 +201,6 @@ func TestTotalListDistance(t *testing.T) {
 		observations  []observation
 		clusters      []cluster
 		wantDistances []float64
-		wantClusters  []int
 		wantErr       bool
 		err           error
 	}{
@@ -164,35 +208,40 @@ func TestTotalListDistance(t *testing.T) {
 			name:          "normal case",
 			observations:  observations,
 			clusters:      clusters,
-			wantDistances: []float64{0, 0, math.Sqrt(8)},
-			wantClusters:  []int{0, 1, 1},
+			wantDistances: []float64{math.Sqrt(8), 0, math.Sqrt(8)},
 			wantErr:       false,
 			err:           nil,
 		},
 		{
+			//since the makes a list based on the length of observations and loops over observations we want to recieve an empty list back
 			name:          "empty observations",
 			observations:  []observation{},
 			clusters:      clusters,
 			wantDistances: []float64{},
-			wantClusters:  []int{},
 			wantErr:       false,
 			err:           nil,
 		},
 		{
+			//because empty cluster defaults to center {0,0} we want the distances measured to 0
 			name:          "empty clusters",
 			observations:  observations,
 			clusters:      []cluster{},
-			wantDistances: []float64{},
-			wantClusters:  []int{},
-			wantErr:       true,
-			err:           ErrNoClusters,
+			wantDistances: []float64{2.23606797749979, 5, 7.810249675906654},
+			wantErr:       false,
+			err:           nil,
 		},
 	}
 
 	// Run the tests
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotDistances, gotClusters, err := totalListDistance(tt.observations, tt.clusters)
+			var gotDistances []float64
+			var err error
+			if len(tt.clusters) > 0 {
+				gotDistances, err = totalListDistance(tt.observations, tt.clusters[len(tt.clusters)-1])
+			} else {
+				gotDistances, err = totalListDistance(tt.observations, cluster{})
+			}
 
 			if tt.wantErr && err == nil {
 				t.Errorf("totalListDistance() error = nil, wantErr = true")
@@ -202,10 +251,6 @@ func TestTotalListDistance(t *testing.T) {
 
 			if !reflect.DeepEqual(gotDistances, tt.wantDistances) {
 				t.Errorf("totalListDistance() distances = %v, want %v", gotDistances, tt.wantDistances)
-			}
-
-			if !reflect.DeepEqual(gotClusters, tt.wantClusters) {
-				t.Errorf("totalListDistance() clusters = %v, want %v", gotClusters, tt.wantClusters)
 			}
 		})
 	}
@@ -221,16 +266,16 @@ func TestBestCandidateFunc(t *testing.T) {
 	cluster2 := createCluster(t, obs2.coordinates, []observation{obs2})
 	clusters := []cluster{cluster1, cluster2}
 
-	//candidate1 := cluster{center: coordinates{latitude: 5.0, longitude: 6.0}, observations: []observation{}}
-	//candidate2 := cluster{center: coordinates{latitude: 7.0, longitude: 8.0}, observations: []observation{}}
-	//candidates := []cluster{candidate1, candidate2}
+	candidate1 := cluster{center: coordinates{latitude: 5.0, longitude: 6.0}, observations: []observation{}}
+	candidate2 := cluster{center: coordinates{latitude: 7.0, longitude: 8.0}, observations: []observation{}}
+	candidates := []cluster{candidate1, candidate2}
 
-	// t.Run("Normal run", func(t *testing.T) {
-	// 	// Call the function and check the result
-	// 	want := candidate1
-	// 	got, err := bestCandidateFunc(candidates, clusters, observations)
-	// 	assertEqual(t, got, want, err)
-	// })
+	t.Run("Normal run", func(t *testing.T) {
+		// Call the function and check the result
+		want := candidate1
+		got, err := bestCandidateFunc(candidates, clusters, observations)
+		assertEqual(t, got, want, err)
+	})
 
 	t.Run("Two candidates have the same distance", func(t *testing.T) {
 		// Create some test data
@@ -447,60 +492,86 @@ func TestActivitiesToObservations(t *testing.T) {
 }
 
 func TestInitializeClusters(t *testing.T) {
-	// Create some dummy observations
-	observations := make(observations, 0)
-	for i := 0; i < 10; i++ {
-		lat := rand.Float64() * 10
-		long := rand.Float64() * 10
-		observations = append(observations, observation{
-			id: int64(i),
-			coordinates: coordinates{
-				latitude:  lat,
-				longitude: long,
+	// Define some test data
+	obs1 := createObservation(t, createCoordinate(t, 1, 2), 1)
+	obs2 := createObservation(t, createCoordinate(t, 3, 4), 2)
+	obs3 := createObservation(t, createCoordinate(t, 5, 6), 3)
+	observations := []observation{obs1, obs2, obs3}
+
+	testCases := []struct {
+		name                string
+		nrClusters          int
+		nrCandidateClusters int
+		wantError           bool
+		expectedError       error
+		expectedClusters    clusters
+	}{
+		{
+			name:                "NrClusters larger than length of observations",
+			nrClusters:          4,
+			nrCandidateClusters: 2,
+			expectedError:       ErrNrObservationsTooSmall,
+			wantError:           true,
+			expectedClusters:    clusters{},
+		},
+		{
+			name:                "NrCandidateClusters smaller or equal to 0",
+			nrClusters:          2,
+			nrCandidateClusters: 0,
+			expectedError:       ErrNrCandidateClustersTooSmall,
+			wantError:           true,
+			expectedClusters:    clusters{},
+		},
+		{
+			name:                "NrCandidateClusters larger than length of observations",
+			nrClusters:          2,
+			nrCandidateClusters: 4,
+			expectedError:       ErrNrObservationsTooSmall,
+			wantError:           true,
+			expectedClusters:    clusters{},
+		},
+		{
+			name:                "NrClusters equal to length of observations",
+			nrClusters:          3,
+			nrCandidateClusters: 2,
+			expectedError:       nil,
+			wantError:           false,
+			expectedClusters: clusters{
+				createCluster(t, obs3.coordinates, []observation{obs3}),
+				createCluster(t, obs1.coordinates, []observation{obs1}),
+				createCluster(t, obs2.coordinates, []observation{obs2}),
 			},
+		},
+		{
+			name:                "Happy path",
+			nrClusters:          2,
+			nrCandidateClusters: 2,
+			expectedError:       nil,
+			wantError:           false,
+			expectedClusters: clusters{
+				createCluster(t, obs2.coordinates, []observation{obs2}),
+				createCluster(t, obs3.coordinates, []observation{obs3}),
+			},
+		},
+	}
+
+	// Loop over test cases and run each one
+	// Seed the random number generator to ensure reproducibility
+	randSeed := rand.New(rand.NewSource(12345))
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Call the function
+			clusters := clusters{}
+			got, err := initializeClusters(observations, clusters, tc.nrClusters, tc.nrCandidateClusters, randSeed)
+
+			// Check the result
+			if err != tc.expectedError {
+				t.Errorf("initializeClusters() error = %v, want %v", err, tc.expectedError)
+			}
+			if !tc.wantError && !reflect.DeepEqual(got, tc.expectedClusters) {
+				t.Errorf("initializeClusters() = %v, want %v", got, tc.expectedClusters)
+			}
 		})
-	}
-
-	// Initialize clusters with 3 clusters
-	nrClusters := 3
-	nrCandidateClusters := 5
-	clusters := make(clusters, 0, nrClusters)
-	clusters, err := initializeClusters(observations, clusters, nrClusters, nrCandidateClusters)
-
-	// Check that there is no error
-	if err != nil {
-		t.Errorf("Expected no error, but got %v", err)
-	}
-
-	// Check that the number of clusters is correct
-	if len(clusters) != nrClusters {
-		t.Errorf("Expected %d clusters, but got %d", nrClusters, len(clusters))
-	}
-
-	// Check that each cluster has at least one observation
-	for _, cluster := range clusters {
-		if len(cluster.observations) < 1 {
-			t.Errorf("Expected each cluster to have at least one observation, but one cluster has %d observations", len(cluster.observations))
-		}
-	}
-
-	// Check that each observation is assigned to a cluster
-	for _, observation := range observations {
-		assigned := false
-		for _, cluster := range clusters {
-			for _, obs := range cluster.observations {
-				if observation.id == obs.id {
-					assigned = true
-					break
-				}
-			}
-			if assigned {
-				break
-			}
-		}
-		if !assigned {
-			t.Errorf("Expected observation with id %d to be assigned to a cluster, but it wasn't", observation.id)
-		}
 	}
 }
 
