@@ -258,6 +258,19 @@ export default function Home() {
     function handleSaveClick() {
         const name = window.prompt('Enter a name for the save:');
         setSaveName(name);
+        if (name) {
+            addSavedZone(name);
+        }
+    }
+
+    const [savedZones, setSavedZones] = useState([
+        { key: 'initial', name: 'Initial Zone' },
+    ]);
+
+    function addSavedZone(name) {
+        const key = `saved-${savedZones.length}`;
+        const newZone = { key, name };
+        setSavedZones([...savedZones, newZone]);
     }
 
     return (
@@ -292,7 +305,7 @@ export default function Home() {
                             >
                                 <SaveOutlined style={{ color: '#ffd369' }} />
                             </Button>
-                            
+
                             <Dropdown
                                 menu={{
                                     items: user_items,
@@ -338,20 +351,19 @@ export default function Home() {
                             </SubMenu>
 
                             <SubMenu key="sub2" title="Saved Zones">
-                                <Menu.Item key="5" style={{ height: "80px", padding: 0 }}>
-                                    <div style={{ textAlign: "center" }}>Initial Zone</div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                                        <Button style={{ flex: 1, marginRight: "3px" }} onClick={toggleMap}>View</Button>
-                                        <Button style={{ flex: 1, marginLeft: "3px" }} onClick={toggleComparison}>Compare</Button>
-                                    </div>
-                                </Menu.Item>
-                                <Menu.Item key="5" style={{ height: "80px", padding: 0 }}>
-                                    <div style={{ textAlign: "center" }}>Saved Zone 1</div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                                        <Button style={{ flex: 1, marginRight: "3px" }} onClick={toggleMap}>View</Button>
-                                        <Button style={{ flex: 1, marginLeft: "3px" }} onClick={toggleComparison}>Compare</Button>
-                                    </div>
-                                </Menu.Item>
+                                {savedZones.map((zone) => (
+                                    <Menu.Item key={zone.key} style={{ height: '80px', padding: 0 }}>
+                                        <div style={{ textAlign: 'center' }}>{zone.name}</div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                            <Button style={{ flex: 1, marginRight: '3px' }} onClick={toggleMap}>
+                                                View
+                                            </Button>
+                                            <Button style={{ flex: 1, marginLeft: '3px' }} onClick={toggleComparison}>
+                                                Compare
+                                            </Button>
+                                        </div>
+                                    </Menu.Item>
+                                ))}
                             </SubMenu>
                         </Menu>
                     </Sider>
