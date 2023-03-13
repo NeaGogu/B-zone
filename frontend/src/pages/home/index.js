@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import L from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, LayersControl, LayerGroup } from 'react-leaflet';
-import Heatmap from './components/heatmapComponent';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
@@ -12,7 +11,7 @@ import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, 
 import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
 
 // Components
-import Heatmap from './components/heatmapComponent';
+// import Heatmap from './components/heatmapComponent';
 
 // CSS
 import './index.css';
@@ -298,7 +297,7 @@ export default function Home() {
             .catch(error => console.log(error, 'error'))
     }
 
-    function getZipCodes(zoneList) {
+    async function getZipCodes(zoneList) {
         //when you retrieve a list of zones from Bumbal API from zone with PUT, you retrieve a list of zone configs which itself includes a list of zones in each zone config
         let zipCodes = []
 
@@ -307,24 +306,28 @@ export default function Home() {
         }
 
         //fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipCodes[0].zipFrom.toString() + '&zip_to=' + zipCodes[0].zipTo.toString(), {
-        fetch('http://localhost:4000/test/zip/coordinates?zip_from=5611&zip_to=5613', {
-            method: 'GET',
-            // headers: {
-            //     'Accept': 'application/json',
-            //     'Content-Type': 'application/json',
-            // },
-            mode: 'cors'
-        })
-            .then((response) => {
-                if(!response.ok) {
-                    console.log("Response to localhost:4000 was not ok ???")
-                    alert("Unable to retrieve zipcodes from backend!")
-                }
-                return response.json();
-            })
-                .then((data) => {
-                    zipCodes[0] = data
-                })
+        let res = await fetch('http://localhost:4000/test/zip/coordinates?zip_from=5611&zip_to=5613')
+
+        if(!res.ok) {
+            console.error(`Response to localhost:4000 was not ok ??? ${res.status}`)
+            alert("Unable to retrieve zipcodes from backend!")
+            return
+        }
+
+        console.log(res.json())
+
+        console.log("gucci")
+        // .then((response) => {
+        //     if(!response.ok) {
+        //         console.error(`Response to localhost:4000 was not ok ??? ${response.}`)
+        //         alert("Unable to retrieve zipcodes from backend!")
+        //         return
+        //     }
+        //     return response.json();
+        // })
+        //     .then((data) => {
+        //         zipCodes[0] = data
+        //     })
         return zipCodes
 
     }
@@ -460,7 +463,7 @@ export default function Home() {
                                         <Button style={{ flex: 1, marginLeft: "3px" }} onClick={toggleComparison}>Compare</Button>
                                     </div>
                                 </Menu.Item>
-                                <Menu.Item key="5" style={{ height: "80px", padding: 0 }}>
+                                <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>
                                     <div style={{ textAlign: "center" }}>Saved Zone 1</div>
                                     <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
                                         <Button style={{ flex: 1, marginRight: "3px" }} onClick={toggleMap}>View</Button>
@@ -508,7 +511,7 @@ export default function Home() {
                                     <LayersControl position='topright'>
                                         <LayersControl.Overlay name='Heatmap'>
                                             <LayerGroup>
-                                                <Heatmap />
+                                                {/*<Heatmap />*/}
                                             </LayerGroup>
                                         </LayersControl.Overlay>
                                     </LayersControl>
