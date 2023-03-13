@@ -253,6 +253,13 @@ export default function Home() {
         setShowComparison(false); // reset comparison state when switching singular map
     };
 
+    const [saveName, setSaveName] = useState('');
+
+    function handleSaveClick() {
+        const name = window.prompt('Enter a name for the save:');
+        setSaveName(name);
+    }
+
     return (
         <ConfigProvider
             // theme which we should use
@@ -278,7 +285,14 @@ export default function Home() {
                         </div>
 
                         <Space >
-                            <Button type="primary"  style={{ verticalAlign: 'middle', background: 'transparent' }}><SaveOutlined style={{color: '#ffd369'}}/></Button>
+                            <Button
+                                type="primary"
+                                style={{ verticalAlign: 'middle', background: 'transparent' }}
+                                onClick={handleSaveClick}
+                            >
+                                <SaveOutlined style={{ color: '#ffd369' }} />
+                            </Button>
+                            
                             <Dropdown
                                 menu={{
                                     items: user_items,
@@ -289,25 +303,16 @@ export default function Home() {
                                         {/*<button type="button" variant="contained" style={{ float: 'right' }} >*/}
                                         {/*    <UserOutlined />*/}
                                         {/*</button>*/}
-                                        <UserOutlined  style={{ verticalAlign: 'middle', color: '#ffd369' }} />
+                                        <UserOutlined style={{ verticalAlign: 'middle', color: '#ffd369' }} />
                                     </Space>
                                 </a>
                             </Dropdown>
-
                         </Space>
-
-
-
-
-
-
                     </div>
 
                     <Menu theme="dark" mode="horizontal" />
-
-
-
                 </Header>
+
                 <Layout>
                     <Sider
                         width={200}
@@ -315,7 +320,6 @@ export default function Home() {
                             background: colorBgContainer,
                         }}
                     >
-
                         <Menu
                             mode="inline"
                             defaultSelectedKeys={['1']}
@@ -329,10 +333,10 @@ export default function Home() {
                                 <Menu.Item key="6">Time based </Menu.Item>
                             </SubMenu>
 
-
                             <SubMenu key="sub4" title="Zones">
                                 <ZoneSubMenu />
                             </SubMenu>
+
                             <SubMenu key="sub2" title="Saved Zones">
                                 <Menu.Item key="5" style={{ height: "80px", padding: 0 }}>
                                     <div style={{ textAlign: "center" }}>Initial Zone</div>
@@ -349,15 +353,14 @@ export default function Home() {
                                     </div>
                                 </Menu.Item>
                             </SubMenu>
-
                         </Menu>
                     </Sider>
+
                     <Layout style={{
 
                         padding: 30
                     }}
                     >
-
                         <Content className="map" id="map"
                             style={{
                                 minHeight: 500,
@@ -401,9 +404,6 @@ export default function Home() {
                     </Layout>
                 </Layout>
             </Layout>
-
         </ConfigProvider>
-
-
     );
 }
