@@ -1,5 +1,6 @@
 # B-zone
 SEP-2023/Q3 Bumbal zone management
+![image](https://user-images.githubusercontent.com/70640237/224542185-2df8e2c0-0232-4ef2-b148-8a0e0cc7b423.png)
 
 
 ### Setting up Frontend
