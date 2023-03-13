@@ -1,14 +1,24 @@
-import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider } from 'antd';
-import React, {useState, useEffect} from 'react';
+// External dependencies
+import React, { useState, useEffect } from 'react';
 import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, Polygon } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, LayersControl, LayerGroup } from 'react-leaflet';
+import Heatmap from './components/heatmapComponent';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
+import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select } from 'antd';
+
+// Icons
+import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
+
+// Components
+import Heatmap from './components/heatmapComponent';
+
+// CSS
 import './index.css';
 import dumbzones from './tempData/allcases.json'
 
+// Helper function
 function getItem(label, key, icon, children, type) {
     return {
         key,
@@ -19,7 +29,27 @@ function getItem(label, key, icon, children, type) {
     };
 }
 
+// Function to convert a string to an array
+function toArr(str) {
+    return Array.isArray(str) ? str : [str];
+}
 
+// Context
+const MyFormItemContext = React.createContext([]);
+
+const MyFormItemGroup = ({ prefix, children }) => {
+    const prefixPath = React.useContext(MyFormItemContext);
+    const concatPath = React.useMemo(() => [...prefixPath, ...toArr(prefix)], [prefixPath, prefix]);
+    return <MyFormItemContext.Provider value={concatPath}>{children}</MyFormItemContext.Provider>;
+};
+
+const MyFormItem = ({ name, ...props }) => {
+    const prefixPath = React.useContext(MyFormItemContext);
+    const concatName = name !== undefined ? [...prefixPath, ...toArr(name)] : undefined;
+    return <Form.Item name={concatName} {...props} />;
+};
+
+// Components from Ant Design
 const { SubMenu } = Menu;
 const { darkAlgorithm } = theme;
 const { Header, Content, Sider } = Layout;
@@ -31,14 +61,25 @@ const item = [
     getItem('Filter', 'sub2', null, null)
 ];
 
-const id_user = localStorage.getItem('email')
+// Form handling
+const handleChange = (value) => {
+    console.log(`selected ${value}`);
+};
 
-const items = [
+function setEmail() {
+    document.getElementById('email').innerHTML = user_id //gets email for text in item
+}
+
+// User details
+const user_id = localStorage.getItem('email')
+
+// User menu items
+const user_items = [
     {
         key: '1',
         label: (
             <p target="_blank" rel="noopener noreferrer" id="email" style={{ color: '#ffd369' }}>
-                <var>{id_user}</var>
+                <var>{user_id}</var>
 
             </p>
         )
@@ -53,11 +94,21 @@ const items = [
     },
 ];
 
+// Menu items
+const menu = [
+    getItem('Saved zones', 'sub1', null, [
+        getItem('Initial Zone', 'g1', null, null, 'group'),
+        getItem('Saved Zone 1', 'g2', null, null, 'group'),
+    ]),
+    getItem('Filter', 'sub2', null, null)
+];
+
 //function for map which shows address, zipcode and coordinates when clicking on the map
 function LocationMarker() {
     const [position, setPosition] = useState(null);
     const [address, setAddress] = useState(null);
     const [zipcode, setZipcode] = useState(null);
+
     const map = useMapEvents({
         click(e) {
             const { lat, lng } = e.latlng;
@@ -74,11 +125,15 @@ function LocationMarker() {
                         const zipcode = zipcodes.length > 0 ? zipcodes[0].text : null;
                         setAddress(address);
                         setZipcode(zipcode);
+                    } else {
+                        setAddress(null);
+                        setZipcode(null);
                     }
                 });
-            //map.flyTo(e.latlng, map.getZoom());
+            map.flyTo(e.latlng, map.getZoom());
         },
     });
+
     return position === null ? null : (
         <Marker position={position}>
             <Popup>
@@ -129,19 +184,51 @@ function signOut() {
 
 }
 
-const MyFormItemContext = React.createContext([]);
-function toArr(str) {
-    return Array.isArray(str) ? str : [str];
-}
-const MyFormItemGroup = ({ prefix, children }) => {
-    const prefixPath = React.useContext(MyFormItemContext);
-    const concatPath = React.useMemo(() => [...prefixPath, ...toArr(prefix)], [prefixPath, prefix]);
-    return <MyFormItemContext.Provider value={concatPath}>{children}</MyFormItemContext.Provider>;
-};
-const MyFormItem = ({ name, ...props }) => {
-    const prefixPath = React.useContext(MyFormItemContext);
-    const concatName = name !== undefined ? [...prefixPath, ...toArr(name)] : undefined;
-    return <Form.Item name={concatName} {...props} />;
+//Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
+const ZoneSubMenu = ({ onSubmit }) => {
+    const [averageFuelCost, setAverageFuelCost] = useState("");
+    const [averageFuelUsage, setAverageFuelUsage] = useState("");
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const isValid = onSubmit(averageFuelCost, averageFuelUsage);
+        if (isValid) {
+            // add calculations
+        }
+    };
+
+    return (
+        <Form onFinish={handleSubmit}>
+            <Form.Item rules={[{ required: true }]}>
+                Average fuel cost
+                <Input
+                    placeholder="input fuel cost"
+                    type="number"
+                    step="0.01"
+                    value={averageFuelCost}
+                    onChange={(e) => setAverageFuelCost(e.target.value)}
+                />
+            </Form.Item>
+            <Form.Item>
+                Average fuel usage of car
+                <Input
+                    placeholder="input fuel usage of car"
+                    type="number"
+                    step="0.01"
+                    value={averageFuelUsage}
+                    onChange={(e) => setAverageFuelUsage(e.target.value)}
+                />
+            </Form.Item>
+            <Button
+                style={{ width: "100%" }}
+                type="primary"
+                htmlType="submit"
+                disabled={!averageFuelCost || !averageFuelUsage}
+            >
+                Calculate
+            </Button>
+        </Form>
+    );
 };
 
 localStorage.getItem('token')
@@ -168,7 +255,7 @@ export default function Home() {
 
     // save which item in menu is selected
     const menuClick = (e) => {
-        setSelection(e.key);    
+        setSelection(e.key);
     }
 
     function getInitialZones(userToken) {
@@ -318,7 +405,7 @@ export default function Home() {
 
                         <Dropdown
                             menu={{
-                                items,
+                                items: user_items,
                             }}
                         >
                             <a onClick={(e) => e.preventDefault()}>
@@ -336,7 +423,7 @@ export default function Home() {
                     </div>
 
                     <Menu theme="dark" mode="horizontal" />
-                    
+
                 </Header>
                 <Layout>
                     <Sider
@@ -356,32 +443,30 @@ export default function Home() {
                             }}
                             onClick={menuClick}
                         >
-                            <div style={{ width: "100%" }}>
-                                <Button style={{ width: "50%" }} type="primary" onClick={toggleMap}>Heat map</Button>
-                                <Button style={{ width: "50%" }} type="primary" onClick={toggleMap}>Zones</Button>
-                            </div>
+                            <SubMenu key="sub3" title="Heat map">
+                                <Menu.Item key="5">Location based </Menu.Item>
+                                <Menu.Item key="6">Time based </Menu.Item>
+                            </SubMenu>
 
-                            <Form name="form_item_path" layout="vertical" onFinish={onFinish}>
-                                <MyFormItemGroup>
-                                    <MyFormItemGroup>
-                                        <MyFormItem name="fuelCost" label="Average fuel cost">
-                                            <Input placeholder="1" />
-                                        </MyFormItem>
-                                        <MyFormItem name="fuelUsage" label="Average fuel usage of car">
-                                            <Input placeholder="1" />
-                                        </MyFormItem>
-                                    </MyFormItemGroup>
-                                </MyFormItemGroup>
 
-                                <Button style={{ width: "100%" }} type="primary">Calculate</Button>
-                                &nbsp;
-                                <Button style={{ width: "100%" }} type="primary">Save</Button>
-                            </Form>
-
+                            <SubMenu key="sub4" title="Zones">
+                                <ZoneSubMenu />
+                            </SubMenu>
                             <SubMenu key="sub2" title="Saved Zones">
-                                <Menu.Item key="5">Initial Zone</Menu.Item>
-                                <Menu.Item key="6">Saved Zone 1</Menu.Item>
-                                <Button style={{ width: "100%" }} type="primary" onClick={toggleComparison}>Compare</Button>
+                                <Menu.Item key="5" style={{ height: "80px", padding: 0 }}>
+                                    <div style={{ textAlign: "center" }}>Initial Zone</div>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                                        <Button style={{ flex: 1, marginRight: "3px" }} onClick={toggleMap}>View</Button>
+                                        <Button style={{ flex: 1, marginLeft: "3px" }} onClick={toggleComparison}>Compare</Button>
+                                    </div>
+                                </Menu.Item>
+                                <Menu.Item key="5" style={{ height: "80px", padding: 0 }}>
+                                    <div style={{ textAlign: "center" }}>Saved Zone 1</div>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                                        <Button style={{ flex: 1, marginRight: "3px" }} onClick={toggleMap}>View</Button>
+                                        <Button style={{ flex: 1, marginLeft: "3px" }} onClick={toggleComparison}>Compare</Button>
+                                    </div>
+                                </Menu.Item>
                             </SubMenu>
 
                         </Menu>
@@ -399,34 +484,36 @@ export default function Home() {
                         >
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '70vh', flex: "1" }}>
+                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
                                         <TileLayer
                                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                         />
-                                        <LocationMarker/>
+                                        <LocationMarker />
                                     </MapContainer>
-                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '70vh', flex: "1", marginLeft: "20px" }}>
+                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: "20px" }}>
                                         <TileLayer
                                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                         />
-                                        <LocationMarker/>
+                                        <LocationMarker />
                                     </MapContainer>
                                 </div>
                             ) : (
-                                <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '70vh', flex: "1", marginLeft: showMap ? "20px" : "0" }}>
+                                <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: showMap ? "20px" : "0" }}>
                                     <TileLayer
                                         attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                     />
-                                    {
-                                        poly.map(zip =>(
-                                            
-                                            <Polygon key={zip.pc4} positions={[zip.coordinates]}/>
-                                        ))
-                                    }
-                                    <LocationMarker/>
+                                    <LayersControl position='topright'>
+                                        <LayersControl.Overlay name='Heatmap'>
+                                            <LayerGroup>
+                                                <Heatmap />
+                                            </LayerGroup>
+                                        </LayersControl.Overlay>
+                                    </LayersControl>
+
+                                    <LocationMarker />
                                 </MapContainer>
                             )}
                         </Content>
