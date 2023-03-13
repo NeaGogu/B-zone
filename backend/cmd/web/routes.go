@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "bzone/backend/cmd/web/api_endpoints"
 	"net/http"
 
 	"github.com/go-chi/chi/middleware"
@@ -70,19 +69,30 @@ func (app *application) routes() http.Handler {
 	router.Use(middleware.Recoverer)
 
 	// for testing purposes, does not require JWT authorization
+	// should not be used in production
 	router.Route("/test", func(r chi.Router) {
 		r.Get("/", hello)
+
 		r.Route("/zip", func(r chi.Router) {
 			
 			r.Get("/coordinates", app.getZipCodeCoords)
 		})
+
+		r.Route("/zone/{zone_id}", func(r chi.Router) {
+			r.Get("/ranges", app.getZoneRanges)
+		})
 	})
 
+	// authorized routes
 	router.Group(func(r chi.Router) {
 		r.Use(JwtChecker)
 
 		r.Route("/zip", func(r chi.Router) {
 			r.Get("/coordinates", app.getZipCodeCoords)
+		})
+
+		r.Route("/zone/{zoneId}", func(r chi.Router) {
+			r.Get("/ranges", app.getZoneRanges)
 		})
 	})
 

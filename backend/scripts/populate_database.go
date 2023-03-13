@@ -1,4 +1,4 @@
-package scripts
+package main 
 
 import (
 	"context"
@@ -14,8 +14,6 @@ import (
 
 	"bzone/backend/internal/models" 
 )
-
-const uri = "mongodb://localhost:27017"
 
 
 // BE CAREFUL WITH THIS FUNCTION, IT WILL DELETE ALL THE DATA IN THE DATABASE

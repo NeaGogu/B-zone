@@ -7,6 +7,8 @@ require (
 	go.mongodb.org/mongo-driver v1.11.2
 )
 
+require github.com/google/uuid v1.3.0 // indirect
+
 require (
 	github.com/go-chi/chi/v5 v5.0.8 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
