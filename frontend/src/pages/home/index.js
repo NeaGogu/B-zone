@@ -47,10 +47,6 @@ const MyFormItem = ({ name, ...props }) => {
     return <Form.Item name={concatName} {...props} />;
 };
 
-function setEmail() {
-    document.getElementById('email').innerHTML = user_id //gets email for text in item
-}
-
 // Components from Ant Design
 const { SubMenu } = Menu;
 const { darkAlgorithm } = theme;
@@ -60,6 +56,10 @@ const { Header, Content, Sider } = Layout;
 const handleChange = (value) => {
     console.log(`selected ${value}`);
 };
+
+function setEmail() {
+    document.getElementById('email').innerHTML = user_id //gets email for text in item
+}
 
 // User details
 const user_id = localStorage.getItem('email')
@@ -175,7 +175,6 @@ function signOut() {
         })
 
 }
-
 
 //Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
 const ZoneSubMenu = ({ onSubmit }) => {
