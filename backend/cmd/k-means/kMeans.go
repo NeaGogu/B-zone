@@ -39,6 +39,9 @@ type clusters []cluster
 // Type that defines multiple activity models
 type activities []openapi.ActivityModel
 
+// radius of the Earth in kilometers (for haversine distance)
+const earthRadius = 6371
+
 var ErrNrObservationsTooSmall = errors.New("number of activities smaller than number of clusters")
 var ErrNrCandidateClustersTooSmall = errors.New("number of candidate clusters smaller than or equal to 0")
 var ErrNoObservations = errors.New("number of candidates smaller than or equal to 0")
@@ -363,16 +366,20 @@ func distanceToNearestCluster(observation observation, clusters clusters) (float
 
 // distance takes as input an observation and a cluster and calculates the difference between the observation and the cluster
 func distance(observation observation, cluster cluster) float64 {
-	firstArgument := observation.coordinates.latitude - cluster.center.latitude
-	secondArgument := observation.coordinates.longitude - cluster.center.longitude
-	return math.Sqrt((firstArgument * firstArgument) + (secondArgument * secondArgument))
+	latitudeDifference := observation.coordinates.latitude - cluster.center.latitude
+	longitudeDifference := observation.coordinates.longitude - cluster.center.longitude
+	return math.Sqrt((latitudeDifference * latitudeDifference) + (longitudeDifference * longitudeDifference))
+}
+
+func distanceKilometers(observation observation, cluster cluster) float64 {
+	resultHaverstine := haversineDistance(observation.coordinates, cluster.center)
+	return resultHaverstine
 }
 
 // activitiesToObservations requires a pointer to an activities (list of ActivityModel) and a pointer to an observations (list of observation)
 // converts the activity.AddressApplied latitude and longitude to an observation langtitude and longitude and grabs the activity.Id, combines these two into an
 // observation and appends this to the observations.
 func activitiesToObservations(activities activities, observations observations) (observations, error) {
-
 	//throw error if nr of observations is smaller than or equal to 0
 	if len(activities) <= 0 {
 		return nil, ErrNoObservations
@@ -407,4 +414,29 @@ func activitiesToObservations(activities activities, observations observations) 
 		observations = append(observations, newObservation)
 	}
 	return observations, nil
+}
+
+func toRadians(degrees float64) float64 {
+	return degrees * math.Pi / 180
+}
+
+func haversineDistance(point1, point2 coordinates) float64 {
+	// Convert latitude and longitude to radians
+	lat1 := toRadians(point1.latitude)
+	lon1 := toRadians(point1.longitude)
+	lat2 := toRadians(point2.latitude)
+	lon2 := toRadians(point2.longitude)
+
+	// Calculate differences in latitude and longitude
+	deltaLat := lat2 - lat1
+	deltaLon := lon2 - lon1
+
+	// Calculate the central angle between the two points
+	a := math.Pow(math.Sin(deltaLat/2), 2) + math.Cos(lat1)*math.Cos(lat2)*math.Pow(math.Sin(deltaLon/2), 2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+
+	// Calculate the distance using the Haversine formula
+	distance := earthRadius * c
+
+	return distance
 }

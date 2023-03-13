@@ -574,6 +574,21 @@ func TestInitializeClusters(t *testing.T) {
 	}
 }
 
+func TestHaversineDistance(t *testing.T) {
+	// Define some test data
+	point1 := coordinates{latitude: 51.4416, longitude: 5.4697} // btw Eindhoven :D
+	point2 := coordinates{latitude: 48.8566, longitude: 2.3522} // OUI Paris
+
+	// Call the function
+	got := haversineDistance(point1, point2)
+
+	// Check the result
+	expected := 363.2 // expected distance in kilometers
+	if !AlmostEqual(t, got, expected, 0.01) {
+		t.Errorf("haversineDistance() returned %v km, want %v km", got, expected)
+	}
+}
+
 func BenchmarkKMeansALot(t *testing.B) {
 	activities := make(activities, 0)
 	for i := 0; i < 100000; i++ {
