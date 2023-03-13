@@ -8,7 +8,7 @@ import "leaflet-defaulticon-compatibility";
 import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select } from 'antd';
 
 // Icons
-import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
+import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined, SaveOutlined, CheckSquareFilled } from '@ant-design/icons';
 
 // Components
 import Heatmap from './components/heatmapComponent';
@@ -277,20 +277,27 @@ export default function Home() {
                             B-ZONE
                         </div>
 
-                        <Dropdown
-                            menu={{
-                                items: user_items,
-                            }}
-                        >
-                            <a onClick={(e) => e.preventDefault()}>
-                                <Space>
-                                    <button type="button" variant="contained" style={{ float: 'right' }} >
-                                        <UserOutlined />
-                                    </button>
-                                    <DownOutlined style={{ color: '#ffd369' }} />
-                                </Space>
-                            </a>
-                        </Dropdown>
+                        <Space >
+                            <Button type="primary"  style={{ verticalAlign: 'middle', background: 'transparent' }}><SaveOutlined style={{color: '#ffd369'}}/></Button>
+                            <Dropdown
+                                menu={{
+                                    items: user_items,
+                                }}
+                            >
+                                <a onClick={(e) => e.preventDefault()}>
+                                    <Space>
+                                        {/*<button type="button" variant="contained" style={{ float: 'right' }} >*/}
+                                        {/*    <UserOutlined />*/}
+                                        {/*</button>*/}
+                                        <UserOutlined  style={{ verticalAlign: 'middle', color: '#ffd369' }} />
+                                    </Space>
+                                </a>
+                            </Dropdown>
+
+                        </Space>
+
+
+
 
 
 
