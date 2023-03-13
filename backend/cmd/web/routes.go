@@ -68,15 +68,24 @@ func (app *application) routes() http.Handler {
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
-	router.Use(JwtChecker)
 
-	router.Route("/test_route", func(r chi.Router) {
+	// for testing purposes, does not require JWT authorization
+	router.Route("/test", func(r chi.Router) {
 		r.Get("/", hello)
+		r.Route("/zip", func(r chi.Router) {
+			
+			r.Get("/coordinates", app.getZipCodeCoords)
+		})
 	})
 
-	router.Route("/zip", func(r chi.Router) {
-		r.Get("/coordinates", app.getZipCodeCoords)
+	router.Group(func(r chi.Router) {
+		r.Use(JwtChecker)
+
+		r.Route("/zip", func(r chi.Router) {
+			r.Get("/coordinates", app.getZipCodeCoords)
+		})
 	})
+
 
 	return router
 }
