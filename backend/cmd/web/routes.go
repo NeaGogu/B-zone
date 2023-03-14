@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "bzone/backend/cmd/web/api_endpoints"
 	"net/http"
 
 	"github.com/go-chi/chi/middleware"
@@ -73,9 +72,14 @@ func (app *application) routes() http.Handler {
 	router.Route("/test", func(r chi.Router) {
 		r.Get("/", hello)
 		r.Route("/zip", func(r chi.Router) {
-			
+
 			r.Get("/coordinates", app.getZipCodeCoords)
 		})
+		//testing bzone plot getter
+		r.Route("/bzone", func(r chi.Router) {
+			r.Get("/plot", app.getBZonePlot)
+		})
+
 	})
 
 	router.Group(func(r chi.Router) {
@@ -86,6 +90,14 @@ func (app *application) routes() http.Handler {
 		})
 	})
 
+	//Get BZone plot model
+	router.Group(func(r chi.Router) {
+		r.Use(JwtChecker)
+
+		r.Route("/bzone", func(r chi.Router) {
+			r.Get("/plot", app.getBZonePlot)
+		})
+	})
 
 	return router
 }

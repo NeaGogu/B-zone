@@ -7,6 +7,7 @@ import (
 )
 
 const BzoneDatabase = "Bzone"
+
 // collection names for the bzone database
 const (
 	UserCollection = "users"
@@ -19,21 +20,19 @@ type BzoneDBModel struct {
 	DB *mongo.Database
 }
 
-
 // PlotModel struct for ZonesPLotModel
 type PlotModel struct {
 	// Unique Plot ID
-	PlotId int64 `json:"plot_id,omitempty"`
+	PlotId int64 `json:"plot_id,omitempty" bson:"plot_id"`
 	// Plot Name
-	Name string `json:"plot_name,omitempty"`
+	Name string `json:"plot_name,omitempty" bson:"plot_name"`
 	//Zones in the plot
-	ZoneIds []int64 `json:"plot_zone_ids,omitempty"`
+	ZoneIds []int64 `json:"plot_zone_ids,omitempty" bson:"plot_zone_ids"`
 	//created_at date time
-	PlotCreatedAt time.Time `json:"plot_created_at,omitempty"`
+	PlotCreatedAt time.Time `json:"plot_created_at,omitempty" bson:"plot_created_at"`
 	//saved_at date time
-	PlotSavedAt time.Time `json:"plot_saved_at,omitempty"`
+	PlotSavedAt time.Time `json:"plot_saved_at,omitempty" bson:"plot_saved_at"`
 }
-
 
 // ZoneModel struct for ZoneModel
 type ZoneModel struct {
@@ -47,7 +46,6 @@ type ZoneModel struct {
 	ZoneDrivingTime int64 `json:"zone_driving_time,omitempty"`
 }
 
-
 // UserModel struct for UsersModel
 type UserModel struct {
 	//B-Zone User ID
@@ -57,7 +55,6 @@ type UserModel struct {
 	// plots per user
 	PlotIds []int64 `json:"user_plot_ids,omitempty"`
 }
-
 
 // ZoneRangeModel struct for ZoneRangeModel
 type ZoneRangeModel struct {
@@ -71,5 +68,3 @@ type ZoneRangeModel struct {
 	IsoCountry string `json:"iso_country,omitempty"`
 	//array of coordinates?
 }
-
-
