@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "bzone/backend/cmd/web/api_endpoints"
 	"net/http"
 
 	"github.com/go-chi/chi/middleware"
@@ -73,7 +72,7 @@ func (app *application) routes() http.Handler {
 	router.Route("/test", func(r chi.Router) {
 		r.Get("/", hello)
 		r.Route("/zip", func(r chi.Router) {
-			
+
 			r.Get("/coordinates", app.getZipCodeCoords)
 		})
 	})
@@ -86,6 +85,13 @@ func (app *application) routes() http.Handler {
 		})
 	})
 
+	router.Group(func(r chi.Router) {
+		r.Use(JwtChecker)
+
+		r.Route("/user", func(r chi.Router) {
+			r.Get("/plotidnames", app.getUserPlotIDs)
+		})
+	})
 
 	return router
 }
