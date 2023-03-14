@@ -264,15 +264,26 @@ export default function Home() {
     }
 
     const [savedZones, setSavedZones] = useState([
-        { key: 'initial', name: 'Initial Zone' },
-    ]);
+        { key: 'saved-initial', name: 'Initial Zone' },
+
+]);
+    localStorage.setItem('saved-initial', 'Initial Zone');
 
     function addSavedZone(name) {
         const key = `saved-${savedZones.length}`;
         const newZone = { key, name };
         setSavedZones([...savedZones, newZone]);
+        localStorage.setItem(key, name); // save the input to local storage
     }
-
+    useEffect(() => {
+        const savedZones = Object.keys(localStorage)
+            .filter(key => key.startsWith('saved-'))
+            .map(key => ({
+                key,
+                name: localStorage.getItem(key)
+            }));
+        setSavedZones(savedZones);
+    }, []);
     return (
         <ConfigProvider
             // theme which we should use
@@ -313,9 +324,6 @@ export default function Home() {
                             >
                                 <a onClick={(e) => e.preventDefault()}>
                                     <Space>
-                                        {/*<button type="button" variant="contained" style={{ float: 'right' }} >*/}
-                                        {/*    <UserOutlined />*/}
-                                        {/*</button>*/}
                                         <UserOutlined style={{ verticalAlign: 'middle', color: '#ffd369' }} />
                                     </Space>
                                 </a>
@@ -353,7 +361,10 @@ export default function Home() {
                             <SubMenu key="sub2" title="Saved Zones">
                                 {savedZones.map((zone) => (
                                     <Menu.Item key={zone.key} style={{ height: '80px', padding: 0 }}>
-                                        <div style={{ textAlign: 'center' }}>{zone.name}</div>
+                                        <div style={{ textAlign: 'center' }}>
+                                            {zone.name}
+                                            
+                                        </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                                             <Button style={{ flex: 1, marginRight: '3px' }} onClick={toggleMap}>
                                                 View
