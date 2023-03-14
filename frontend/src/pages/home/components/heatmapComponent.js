@@ -3,7 +3,11 @@ import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
 import 'leaflet.heat'
 
-// retrieves list of activities
+/**
+Sends a request to the Bumbal API to retrieve a list of activities.
+@returns {Promise<Response>} - The response from the API containing a list of activities.
+*/
+
 async function getActivities() {
   const token = localStorage.getItem('token')
   console.log('token ' + token)
@@ -31,7 +35,10 @@ async function getActivities() {
   return response;
 }
 
-// sets address points based on data
+/**
+Finds the latitude and longitude of each activity address and returns the data as an array.
+@returns {Promise<Array>} - The array containing latitude, longitude, and intensity for each address.
+*/
 async function findAddressesPoints() {
   const response = await getActivities();
 
@@ -51,6 +58,11 @@ async function findAddressesPoints() {
   console.log(newData)
   return newData;
 }
+  
+/**
+Renders a Leaflet Heatmap based on the data retrieved from the Bumbal API.
+@returns {JSX.Element} - The Leaflet Heatmap component.
+*/
 
 // Hatmap component
 const Heatmap = ({ value, intensity }) => {

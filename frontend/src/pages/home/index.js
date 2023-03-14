@@ -8,7 +8,7 @@ import "leaflet-defaulticon-compatibility";
 import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select, Radio, InputNumber } from 'antd';
 
 // Icons
-import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
+import { LaptopOutlined, NotificationOutlined, UserOutlined, DeleteOutlined, SaveOutlined, CheckSquareFilled } from '@ant-design/icons';
 
 // Components
 import Heatmap from './components/heatmapComponent';
@@ -17,6 +17,15 @@ import Heatmap from './components/heatmapComponent';
 import './index.css';
 
 // Helper function
+/**
+ * Returns an object with the specified properties for an item.
+ * @param {string} label - The label of the item.
+ * @param {string} key - The key of the item.
+ * @param {string} icon - The icon of the item.
+ * @param {Array} children - The children of the item.
+ * @param {string} type - The type of the item.
+ * @return {Object} An object representing the item.
+ */
 function getItem(label, key, icon, children, type) {
     return {
         key,
@@ -188,7 +197,7 @@ const ZoneSubMenu = ({ onSubmit }) => {
             // add calculations
         }
     };
-
+    // input fields for home page (fuel , cost)
     return (
         <Form onFinish={handleSubmit}>
             <Form.Item rules={[{ required: true }]}>
@@ -263,7 +272,38 @@ export default function Home() {
         setShowMap(!showMap);
         setShowComparison(false); // reset comparison state when switching singular map
     };
+    // Contains the map aswell as buttons for zones(saved,initial,compare) , button for heatmap.
+    const [saveName, setSaveName] = useState('');
 
+    function handleSaveClick() {
+        const name = window.prompt('Enter a name for the save:');
+        setSaveName(name);
+        if (name) {
+            addSavedZone(name);
+        }
+    }
+
+    const [savedZones, setSavedZones] = useState([
+        { key: 'saved-initial', name: 'Initial Zone' },
+
+]);
+    localStorage.setItem('saved-initial', 'Initial Zone');
+
+    function addSavedZone(name) {
+        const key = `saved-${savedZones.length}`;
+        const newZone = { key, name };
+        setSavedZones([...savedZones, newZone]);
+        localStorage.setItem(key, name); // save the input to local storage
+    }
+    useEffect(() => {
+        const savedZones = Object.keys(localStorage)
+            .filter(key => key.startsWith('saved-'))
+            .map(key => ({
+                key,
+                name: localStorage.getItem(key)
+            }));
+        setSavedZones(savedZones);
+    }, []);
     return (
         <ConfigProvider
             // theme which we should use
@@ -288,31 +328,32 @@ export default function Home() {
                             B-ZONE
                         </div>
 
-                        <Dropdown
-                            menu={{
-                                items: user_items,
-                            }}
-                        >
+                        <Space >
+                            <Button
+                                type="primary"
+                                style={{ verticalAlign: 'middle', background: 'transparent' }}
+                                onClick={handleSaveClick}
+                            >
+                                <SaveOutlined style={{ color: '#ffd369' }} />
+                            </Button>
 
-                            <a onClick={(e) => e.preventDefault()}>
-                                <Space>
-                                    <button type="button" variant="contained" style={{ float: 'right' }} >
-                                        <UserOutlined />
-                                    </button>
-                                    <DownOutlined style={{ color: '#ffd369' }} />
-                                </Space>
-                            </a>
-                        </Dropdown>
-
-
-
+                            <Dropdown
+                                menu={{
+                                    items: user_items,
+                                }}
+                            >
+                                <a onClick={(e) => e.preventDefault()}>
+                                    <Space>
+                                        <UserOutlined style={{ verticalAlign: 'middle', color: '#ffd369' }} />
+                                    </Space>
+                                </a>
+                            </Dropdown>
+                        </Space>
                     </div>
 
                     <Menu theme="dark" mode="horizontal" />
-
-
-
                 </Header>
+
                 <Layout>
                     <Sider
                         width={"200"}
@@ -320,7 +361,6 @@ export default function Home() {
                             background: colorBgContainer,
                         }}
                     >
-
                         <Menu
                             mode="inline"
                             defaultSelectedKeys={['1']}
@@ -350,35 +390,47 @@ export default function Home() {
                                 </Menu.Item>
                             </SubMenu>
 
-
                             <SubMenu key="sub4" title="Zones">
                                 <ZoneSubMenu />
                             </SubMenu>
-                            <SubMenu key="sub2" title="Saved Zones">
-                                <Menu.Item key="7" style={{ height: "80px", padding: 0 }}>
-                                    <div style={{ textAlign: "center" }}>Initial Zone</div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                                        <Button style={{ flex: 1, marginRight: "3px" }} onClick={toggleMap}>View</Button>
-                                        <Button style={{ flex: 1, marginLeft: "3px" }} onClick={toggleComparison}>Compare</Button>
-                                    </div>
-                                </Menu.Item>
-                                <Menu.Item key="8" style={{ height: "80px", padding: 0 }}>
-                                    <div style={{ textAlign: "center" }}>Saved Zone 1</div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                                        <Button style={{ flex: 1, marginRight: "3px" }} onClick={toggleMap}>View</Button>
-                                        <Button style={{ flex: 1, marginLeft: "3px" }} onClick={toggleComparison}>Compare</Button>
-                                    </div>
-                                </Menu.Item>
-                            </SubMenu>
 
+                            <SubMenu key="sub2" title="Saved Zones">
+                                {savedZones.map((zone) => (
+                                    <Menu.Item key={zone.key} style={{ height: '80px', padding: 0 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ paddingLeft: '10px' }}>{zone.name}</span>
+                                            {zone.name !== 'Initial Zone' && (
+                                                <Button
+                                                    style={{ float: 'right' }}
+                                                    onClick={() => {
+                                                        localStorage.removeItem(zone.key);
+                                                        const newSavedZones = savedZones.filter((item) => item.key !== zone.key);
+                                                        setSavedZones(newSavedZones);
+                                                    }}
+                                                >
+                                                    <DeleteOutlined />
+                                                </Button>
+                                            )}
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                            <Button style={{ flex: 1, marginRight: '3px' }} onClick={toggleMap}>
+                                                View
+                                            </Button>
+                                            <Button style={{ flex: 1, marginLeft: '3px' }} onClick={toggleComparison}>
+                                                Compare
+                                            </Button>
+                                        </div>
+                                    </Menu.Item>
+                                ))}
+                            </SubMenu>
                         </Menu>
                     </Sider>
+
                     <Layout style={{
 
                         padding: 30
                     }}
                     >
-
                         <Content className="map" id="map"
                             style={{
                                 minHeight: 500,
@@ -422,9 +474,6 @@ export default function Home() {
                     </Layout>
                 </Layout>
             </Layout>
-
         </ConfigProvider>
-
-
     );
 }
