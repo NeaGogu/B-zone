@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, LayersCon
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
-import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select } from 'antd';
+import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select, Radio, InputNumber } from 'antd';
 
 // Icons
 import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
@@ -237,7 +237,18 @@ export default function Home() {
     // for comparison button to split maps
     const [showComparison, setShowComparison] = useState(false);
     const [showMap, setShowMap] = useState(true);
-
+    // for radio
+    const [value, setValue] = useState(1);
+    const onChange = (e) => {
+        setValue(e.target.value);
+      };
+    // for number
+    const [intensity, setIntensity] = useState(500)
+    const onChangeNumber = (e) => {
+        console.log(intensity)
+        setIntensity(e)
+        
+    }
 
     const toggleComparison = () => {
         if (showComparison) {
@@ -282,6 +293,7 @@ export default function Home() {
                                 items: user_items,
                             }}
                         >
+
                             <a onClick={(e) => e.preventDefault()}>
                                 <Space>
                                     <button type="button" variant="contained" style={{ float: 'right' }} >
@@ -316,10 +328,22 @@ export default function Home() {
                                 height: '100%',
                                 borderRight: 0,
                             }}
+
                         >
-                            <SubMenu key="sub3" title="Heat map">
-                                <Menu.Item key="5">Location based </Menu.Item>
-                                <Menu.Item key="6">Time based </Menu.Item>
+                            <SubMenu key="sub3" title="Heat map" style={{}}>
+                                <Menu.Item key="5" style={{}}> 
+                                    <Radio.Group value={value} onChange={onChange} size='small'  >
+                                        <Radio.Button  value={1}> 
+                                            Time based
+                                        </Radio.Button>
+                                        <Radio.Button  value={2}>
+                                            Activity based
+                                        </Radio.Button>
+                                    </Radio.Group>
+                                </Menu.Item>
+                                <Menu.Item key="6">
+                                    <InputNumber min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={value === 1? true : false}/>    
+                                </Menu.Item>
                             </SubMenu>
 
 
@@ -327,14 +351,14 @@ export default function Home() {
                                 <ZoneSubMenu />
                             </SubMenu>
                             <SubMenu key="sub2" title="Saved Zones">
-                                <Menu.Item key="5" style={{ height: "80px", padding: 0 }}>
+                                <Menu.Item key="7" style={{ height: "80px", padding: 0 }}>
                                     <div style={{ textAlign: "center" }}>Initial Zone</div>
                                     <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
                                         <Button style={{ flex: 1, marginRight: "3px" }} onClick={toggleMap}>View</Button>
                                         <Button style={{ flex: 1, marginLeft: "3px" }} onClick={toggleComparison}>Compare</Button>
                                     </div>
                                 </Menu.Item>
-                                <Menu.Item key="5" style={{ height: "80px", padding: 0 }}>
+                                <Menu.Item key="8" style={{ height: "80px", padding: 0 }}>
                                     <div style={{ textAlign: "center" }}>Saved Zone 1</div>
                                     <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
                                         <Button style={{ flex: 1, marginRight: "3px" }} onClick={toggleMap}>View</Button>
@@ -382,7 +406,7 @@ export default function Home() {
                                     <LayersControl position='topright'>
                                         <LayersControl.Overlay name='Heatmap'>
                                             <LayerGroup>
-                                                <Heatmap />
+                                                <Heatmap value={value} intensity={intensity} />
                                             </LayerGroup>
                                         </LayersControl.Overlay>
                                     </LayersControl>

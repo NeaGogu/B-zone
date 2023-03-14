@@ -62,35 +62,42 @@ async function findAddressesPoints() {
 
     console.log(data) 
     let newData = data.items.map((i) => {
-        return [i.address.latitude, i.address.longitude, 500]; // lat lng intensity
+        return [i.address.latitude, i.address.longitude, i.duration]; // lat lng intensity
         })
     console.log(newData) 
     return newData;
 }
   
 
-const Heatmap = () => {
+const Heatmap = ({value, intensity}) => {
   const context = useLeafletContext() 
   //var intense = props
   
 
   useEffect(() => {
     const fetchData = async () => {
-        console.log('ran')
+      // delete old heat layer if it existed
+        context.layerContainer.eachLayer(function(layer){
+          if (layer._heat != null) {
+            context.layerContainer.removeLayer(layer)
+          }
+        })
         let addressPoints = await findAddressesPoints();
+        
         
         const points = addressPoints
         ? addressPoints.map((p) => {
-        return [p[0], p[1], 300]; // lat lng intensity
+        if (value===1) {
+          return [p[0], p[1], p[2]];
+        } 
+        
+        return [p[0], p[1], intensity];
         })
         : [];
 
         const ellipse = new L.heatLayer(points)
         const container = context.layerContainer || context.map
-        // console.log(context.map.eachLayer(function(layer){
-        //   console.log("hello")
-        //   console.log(layer._heat + 'hello')
-        // }))
+
         
         container.addLayer(ellipse)
     
