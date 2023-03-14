@@ -315,7 +315,7 @@ export default function Home() {
                 </Header>
                 <Layout>
                     <Sider
-                        width={200}
+                        width={"200"}
                         style={{
                             background: colorBgContainer,
                         }}
@@ -331,7 +331,7 @@ export default function Home() {
 
                         >
                             <SubMenu key="sub3" title="Heat map" style={{}}>
-                                <Menu.Item key="5" style={{}}> 
+                                <Menu.Item key="5" style={{padding:0}}> 
                                     <Radio.Group value={value} onChange={onChange} size='small'  >
                                         <Radio.Button  value={1}> 
                                             Time based
@@ -341,8 +341,12 @@ export default function Home() {
                                         </Radio.Button>
                                     </Radio.Group>
                                 </Menu.Item>
-                                <Menu.Item key="6">
-                                    <InputNumber min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={value === 1? true : false}/>    
+                                <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>
+                                    <div style={{ textAlign: "center" }}>Intensity</div>
+                                    <div style={{paddingLeft:50}}>
+                                        <InputNumber min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={value === 1? true : false}/> 
+                                    </div>
+                                           
                                 </Menu.Item>
                             </SubMenu>
 
