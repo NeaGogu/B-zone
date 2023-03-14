@@ -36,8 +36,15 @@ async function isTokenValid(token) {
   }
 }
 
+/**
+ * The main component of the application.
+ * @return {JSX.Element} The JSX element representing the application.
+ */
+
 function App() {
+  
   var authenticated
+  // check whether a token exists in local storage.
   if ((localStorage.getItem("token") === null)) {
     authenticated = false;
   } else {
@@ -45,7 +52,7 @@ function App() {
   }
 
   return (
-
+    // If user is authenticated navigates to home page otherwise navigates to login page.
       <Router>
         <Routes>
           <Route path='/home' element={authenticated ? <Home /> : <Navigate replace to={'/'}/>}  />
@@ -60,5 +67,44 @@ function App() {
       </Router>
   );
 }
+
+
+
+/**
+ * The Navigate component from the React Router library.
+ *
+ * @typedef {Object} Navigate
+ * @property {string} to The URL to navigate to.
+ * @property {boolean} replace Whether to replace the current URL in the history stack.
+ */
+
+/**
+ * The Router component from the React Router library.
+ *
+ * @typedef {Object} Router
+ * @property {function} Router The Router component.
+ */
+
+/**
+ * The Route component from the React Router library.
+ *
+ * @typedef {Object} Route
+ * @property {string} path The URL path to match.
+ * @property {JSX.Element} element The JSX element to render when the path matches.
+ */
+
+/**
+ * The Routes component from the React Router library.
+ *
+ * @typedef {Object} Routes
+ * @property {JSX.Element} children The child elements to render.
+ */
+
+/**
+ * The localStorage object from the API.
+ *
+ * @typedef {Object} localStorage
+ * @property {function} getItem The getItem method to retrieve an item(token) from local storage.
+ */ 
 
 export default App;
