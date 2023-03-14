@@ -17,6 +17,15 @@ import Heatmap from './components/heatmapComponent';
 import './index.css';
 
 // Helper function
+/**
+ * Returns an object with the specified properties for an item.
+ * @param {string} label - The label of the item.
+ * @param {string} key - The key of the item.
+ * @param {string} icon - The icon of the item.
+ * @param {Array} children - The children of the item.
+ * @param {string} type - The type of the item.
+ * @return {Object} An object representing the item.
+ */
 function getItem(label, key, icon, children, type) {
     return {
         key,
@@ -188,7 +197,7 @@ const ZoneSubMenu = ({ onSubmit }) => {
             // add calculations
         }
     };
-
+    // input fields for home page (fuel , cost)
     return (
         <Form onFinish={handleSubmit}>
             <Form.Item rules={[{ required: true }]}>
@@ -252,7 +261,7 @@ export default function Home() {
         setShowMap(!showMap);
         setShowComparison(false); // reset comparison state when switching singular map
     };
-
+    // Contains the map aswell as buttons for zones(saved,initial,compare) , button for heatmap.
     const [saveName, setSaveName] = useState('');
 
     function handleSaveClick() {
