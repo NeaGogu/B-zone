@@ -8,7 +8,7 @@ import "leaflet-defaulticon-compatibility";
 import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select } from 'antd';
 
 // Icons
-import { LaptopOutlined, NotificationOutlined, UserOutlined, DownOutlined, SaveOutlined, CheckSquareFilled } from '@ant-design/icons';
+import { LaptopOutlined, NotificationOutlined, UserOutlined, DeleteOutlined, SaveOutlined, CheckSquareFilled } from '@ant-design/icons';
 
 // Components
 import Heatmap from './components/heatmapComponent';
@@ -361,9 +361,20 @@ export default function Home() {
                             <SubMenu key="sub2" title="Saved Zones">
                                 {savedZones.map((zone) => (
                                     <Menu.Item key={zone.key} style={{ height: '80px', padding: 0 }}>
-                                        <div style={{ textAlign: 'center' }}>
-                                            {zone.name}
-                                            
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ paddingLeft: '10px' }}>{zone.name}</span>
+                                            {zone.name !== 'Initial Zone' && (
+                                                <Button
+                                                    style={{ float: 'right' }}
+                                                    onClick={() => {
+                                                        localStorage.removeItem(zone.key);
+                                                        const newSavedZones = savedZones.filter((item) => item.key !== zone.key);
+                                                        setSavedZones(newSavedZones);
+                                                    }}
+                                                >
+                                                    <DeleteOutlined />
+                                                </Button>
+                                            )}
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                                             <Button style={{ flex: 1, marginRight: '3px' }} onClick={toggleMap}>
