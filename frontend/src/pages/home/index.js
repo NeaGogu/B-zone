@@ -298,17 +298,18 @@ export default function Home() {
     }
 
     //with a list of zones, fetches their zip codes and updates their polygon coordinates to coordinatesFile
-    function getZipCodes(zoneList) {
+    async function getZipCodes(zoneList) {
         //when you retrieve a list of zones from Bumbal API from zone with PUT, you retrieve a list of zone configs which itself includes a list of zones in each zone config
         let zipCodes = []
+        console.log(zoneList[0].zone_ranges.length)
+        console.log("Coordinates file is: ")
+        console.log(coordinatesFile)
 
         for (let i = 0; i < zoneList.length; i++) {
             zipCodes[i] = getAreas(zoneList[i].zone_ranges, i); //per each zone, there are a list of areas with from and to
-
-            console.log("Sending out fetch to our backend...")
-            //for each zone and area, fetch the coordinates and compile them together
-            for(let j = 0; j < zoneList[i].length; j++) {
-                fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipCodes[i][j].zipFrom.toString() + '&zip_to=' + zipCodes[i][j].zipTo.toString())
+            //for each zone and an area, fetch the coordinates and compile them together
+            for(let j = 0; j < zoneList[i].zone_ranges.length; j++) {
+                await fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipCodes[i][j].zipFrom.toString() + '&zip_to=' + zipCodes[i][j].zipTo.toString())
                     .then((response) => {
                         if(!response.ok) {
                             console.log("Reponse from our backend is not ok ???")
@@ -361,7 +362,6 @@ export default function Home() {
         setShowComparison(false); // reset comparison state when switching singular map
         if (selection === '5' ) {
             if (togZone) {
-                console.log("initial zone viewed")
                 getInitialZones(localStorage.getItem('token'))
                 setPoly([])
                 setTogZone(!togZone)
