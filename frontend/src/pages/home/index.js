@@ -11,7 +11,7 @@ import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, 
 import { LaptopOutlined, NotificationOutlined, UserOutlined, DeleteOutlined, SaveOutlined, CheckSquareFilled } from '@ant-design/icons';
 
 // Components
-// import Heatmap from './components/heatmapComponent';
+import Heatmap from './components/heatmapComponent';
 // import PolygonVis from './components/polygonComponents'
 // CSS
 import './index.css';
@@ -267,11 +267,6 @@ export default function Home() {
         
     }
 
-    // save which item in menu is selected
-    const menuClick = (e) => {
-        setSelection(e.key);
-    }
-
     const toggleComparison = () => {
         if (showComparison) {
             return; // If showComparison is already true, do nothing
@@ -284,25 +279,6 @@ export default function Home() {
     const toggleMap = () => {
         setShowMap(!showMap);
         setShowComparison(false); // reset comparison state when switching singular map
-        if (selection === '5' ) {
-            if (togZone) {
-                setPoly([])
-                setTogZone(!togZone)
-            } else {
-                setPoly([])
-                setTogZone(!togZone)
-            }
-        }
-        if (selection === '6' ) {
-            if (togZone) {
-                setPoly([])
-                setTogZone(!togZone)
-            } else {
-                setPoly([])
-                setTogZone(!togZone)
-            }
-        }
-        //console.log(selection)
     };
     // Contains the map aswell as buttons for zones(saved,initial,compare) , button for heatmap.
     const [saveName, setSaveName] = useState('');
