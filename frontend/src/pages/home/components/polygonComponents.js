@@ -47,7 +47,7 @@ async function getInitialZones() {
         })
         //dealing with received list of zones
         .then(async (data) => {
-            console.log("returning data items from bumbal (this is from getInitialZones)")
+            //console.log("returning data items from bumbal (this is from getInitialZones)")
             return data.items
         })
         .catch(error => console.log(error, 'error'))
@@ -94,8 +94,8 @@ async function getCoordinates(zipsList) {
             .then((data) => {
                 return data
             }).catch(error => console.log(error))
-        console.log("verifying output of await for coordinatesList (from getCoordinates)")
-        console.log(coordinatesList[j])
+        //console.log("verifying output of await for coordinatesList (from getCoordinates)")
+        //console.log(coordinatesList[j])
     }
 
     return coordinatesList
@@ -121,28 +121,16 @@ const PolygonVis = () => {
             zipCodes = await getZipCodes(initialZones);
             console.log("Getting coordinates for first zone area... (from fetchData)")
             coordinatesList = await getCoordinates(zipCodes[0]);
-            console.log(coordinatesList[0])
-            return zipCodes
+            coordinatesList = coordinatesList[0]
+            for (let i = 0; i < coordinatesList.length; i++) {
+                //console.log(coordinatesList[i].zone_coordinates)
+                context.layerContainer.addLayer(L.polygon(coordinatesList[i].zone_coordinates))
+            }
+            
 
-            // map those points to something interpretable for the heatmap
-            // const points = addressPoints
-            //     ? addressPoints.map((p) => {
-            //         // if activity time is selected
-            //         if (value === 1) {
-            //             return [p[0], p[1], p[2]];
-            //         }
-            //         // if location is selected
-            //         return [p[0], p[1], intensity];
-            //     })
-            //     : [];
-
-            const points = [
-                [51.515, -0.09],
-                [51.52, -0.1],
-                [51.52, -0.12],
-            ]
+         
             // create new layer and add it to the map context
-            context.layerContainer.addLayer(L.polygon(points))
+            //context.layerContainer.addLayer(L.polygon(points))
 
         };
 
