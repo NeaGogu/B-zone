@@ -5,11 +5,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-//type PlotIDName struct {
-//	PlotId int64  `json:"user_plot_id" bson:"user_plot_id"`
-//	Name   string `json:"user_plot_name" bson:"user_plot_name"`
-//}
-
 type PlotIDName struct {
 	IDNamePairs []PlotIDNamePair `json:"user_id_name" bson:"user_id_name"`
 }
