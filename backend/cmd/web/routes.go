@@ -88,6 +88,10 @@ func (app *application) routes() http.Handler {
 		r.Route("/zip", func(r chi.Router) {
 			r.Get("/coordinates", app.getZipCodeCoords)
 		})
+
+		r.Route("/user", func(r chi.Router) {
+			r.Get("/plotidnames", app.getUserPlotIDs)
+		})
 	})
 
 	//Get BZone plot model
