@@ -12,7 +12,7 @@ import { LaptopOutlined, NotificationOutlined, UserOutlined, DeleteOutlined, Sav
 
 // Components
 import Heatmap from './components/heatmapComponent';
-// import PolygonVis from './components/polygonComponents'
+import PolygonVis from './components/polygonComponents'
 // CSS
 import './index.css';
 import dumbzones from './tempData/allcases.json'
@@ -471,6 +471,12 @@ export default function Home() {
                                         <LayersControl.Overlay name='Heatmap'>
                                             <LayerGroup>
                                                 <Heatmap value={value} intensity={intensity} />
+                                            </LayerGroup>
+                                        </LayersControl.Overlay>
+
+                                        <LayersControl.Overlay name='Polygon'>
+                                            <LayerGroup>
+                                                <PolygonVis  />
                                             </LayerGroup>
                                         </LayersControl.Overlay>
                                     </LayersControl>

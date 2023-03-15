@@ -2,16 +2,21 @@
 import React, { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
+import {wait} from "@testing-library/user-event/dist/utils";
 
 
-//set of zipCodes
-var zipCodes
-var coordinatesFile
+//create zipFrom and zipTo object
+var zips = {
+    zipFrom: "",
+    zipTo: ""
+};
+var zipCodes = []
+var coordinatesList = []
 
-//with a user token, fetches initial zones list
-function getInitialZones(userToken) {
-    //get list of zones
-    //definition of URl, body values, other parameters
+//fetches the initial zone configuration a user has from Bumbal, returns promise of the response from Bumbal API
+async function getInitialZones() {
+    //gets list of zones
+    //definition of URl, body values, and userToken
     const zonesURL = "https://sep202302.bumbal.eu/api/v2/zone"
     const bodyValues = JSON.stringify({
         "options": {
@@ -20,9 +25,10 @@ function getInitialZones(userToken) {
         },
         "filters": {}
     })
+    const userToken = localStorage.getItem('token')
+    let initialZones = []
 
-    //sending fetch request to receive list of user's zones and updates their postal codes to zipCodes
-    fetch(zonesURL, {
+    initialZones = await fetch(zonesURL, {
         method: 'PUT',
         headers: {
             'Accept': 'application/json',
@@ -40,52 +46,29 @@ function getInitialZones(userToken) {
             return response.json();
         })
         //dealing with received list of zones
-        .then((data) => {
-            //retrieving the zipCodes and coordinates from list of zones
-            zipCodes = getZipCodes(data.items)
+        .then(async (data) => {
+            console.log("returning data items from bumbal (this is from getInitialZones)")
+            return data.items
         })
         .catch(error => console.log(error, 'error'))
+
+    return initialZones
 }
 
 //with a list of zones, fetches their zip codes and updates their polygon coordinates to coordinatesFile
 async function getZipCodes(zoneList) {
     //when you retrieve a list of zones from Bumbal API from zone with PUT, you retrieve a list of zone configs which itself includes a list of zones in each zone config
+
     let zipCodes = []
-    console.log(zoneList[0].zone_ranges.length)
-    console.log("Coordinates file is: ")
-    console.log(coordinatesFile)
-
     for (let i = 0; i < zoneList.length; i++) {
-        zipCodes[i] = getAreas(zoneList[i].zone_ranges, i); //per each zone, there are a list of areas with from and to
-        //for each zone and an area, fetch the coordinates and compile them together
-        for(let j = 0; j < zoneList[i].zone_ranges.length; j++) {
-            await fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipCodes[i][j].zipFrom.toString() + '&zip_to=' + zipCodes[i][j].zipTo.toString())
-                .then((response) => {
-                    if(!response.ok) {
-                        console.log("Reponse from our backend is not ok ???")
-                    }
-                    return response.json()
-                })
-                .then((data) => {
-                    console.log(data)
-                    return data
-                }).catch(error => console.log(error))
-        }
-
-        console.log("Set the jsonFile var to be the received zipcode data from our backend")
-
+        zipCodes[i] = await getAreas(zoneList[i].zone_ranges); //per each zone, there are a list of areas with from and to
     }
 
     return zipCodes
 
 }
 
-function getAreas(zoneAreas, index) {
-    //create zipFrom and zipTo object
-    var zips = {
-        zipFrom: "",
-        zipTo: ""
-    };
+async function getAreas(zoneAreas) {
     //create array of zipcode ranges
     let zoneAreaZips = [zips]
     //loop through range items to find zip code ranges
@@ -93,15 +76,79 @@ function getAreas(zoneAreas, index) {
         zoneAreaZips[j].zipFrom = zoneAreas[j].zipcode_from;
         zoneAreaZips[j].zipTo = zoneAreas[j].zipcode_to;
 
-
     }
     return zoneAreaZips
 }
 
+async function getCoordinates(zipsList) {
+    let coordinatesList = []
+    //for each zone area, fetch the coordinates and compile them together
+    for(let j = 0; j < zipsList.length; j++) {
+        coordinatesList[j] = await fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipsList[j].zipFrom.toString() + '&zip_to=' + zipsList[j].zipTo.toString())
+            .then((response) => {
+                if(!response.ok) {
+                    console.log("Response from our backend is not ok ???")
+                }
+                return response.json()
+            })
+            .then((data) => {
+                return data
+            }).catch(error => console.log(error))
+        console.log("verifying output of await for coordinatesList (from getCoordinates)")
+        console.log(coordinatesList[j])
+    }
 
-//main fucntion
+    return coordinatesList
+}
+
+
+//main function
 const PolygonVis = () => {
+    // map context
+    const context = useLeafletContext()
+    //const zoneList = getInitialZones()
 
+    useEffect(() => {
+        // async function in order to wait for response from api
+        const fetchData = async () => {
+            // delete old heat layer if it exists
+            context.layerContainer.eachLayer(function (layer) {
+                console.log(layer)
+            })
+
+            //get initial zones from Bumbal
+            let initialZones = await getInitialZones();
+            zipCodes = await getZipCodes(initialZones);
+            console.log("Getting coordinates for first zone area... (from fetchData)")
+            coordinatesList = await getCoordinates(zipCodes[0]);
+            console.log(coordinatesList[0])
+            return zipCodes
+
+            // map those points to something interpretable for the heatmap
+            // const points = addressPoints
+            //     ? addressPoints.map((p) => {
+            //         // if activity time is selected
+            //         if (value === 1) {
+            //             return [p[0], p[1], p[2]];
+            //         }
+            //         // if location is selected
+            //         return [p[0], p[1], intensity];
+            //     })
+            //     : [];
+
+            const points = [
+                [51.515, -0.09],
+                [51.52, -0.1],
+                [51.52, -0.12],
+            ]
+            // create new layer and add it to the map context
+            context.layerContainer.addLayer(L.polygon(points))
+
+        };
+
+        fetchData()
+
+    })
 }
 
 export default PolygonVis
