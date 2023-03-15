@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, LayersCo
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
-import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select } from 'antd';
+import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select, Radio, InputNumber } from 'antd';
 
 // Icons
 import { LaptopOutlined, NotificationOutlined, UserOutlined, DeleteOutlined, SaveOutlined, CheckSquareFilled } from '@ant-design/icons';
@@ -254,11 +254,18 @@ export default function Home() {
     // for comparison button to split maps
     const [showComparison, setShowComparison] = useState(false);
     const [showMap, setShowMap] = useState(true);
-    // for toggling between zones
-    const [selection, setSelection] = useState([])
-    const [poly, setPoly] = useState([])
-    const [togZone, setTogZone] = useState(true)
-
+    // for radio
+    const [value, setValue] = useState(1);
+    const onChange = (e) => {
+        setValue(e.target.value);
+      };
+    // for number
+    const [intensity, setIntensity] = useState(500)
+    const onChangeNumber = (e) => {
+        console.log(intensity)
+        setIntensity(e)
+        
+    }
 
     // save which item in menu is selected
     const menuClick = (e) => {
@@ -381,7 +388,7 @@ export default function Home() {
 
                 <Layout>
                     <Sider
-                        width={200}
+                        width={"200"}
                         style={{
                             background: colorBgContainer,
                         }}
@@ -394,11 +401,25 @@ export default function Home() {
                                 height: '100%',
                                 borderRight: 0,
                             }}
-                            onClick={menuClick}
                         >
-                            <SubMenu key="sub3" title="Heat map">
-                                <Menu.Item key="5">Location based </Menu.Item>
-                                <Menu.Item key="6">Time based </Menu.Item>
+                            <SubMenu key="sub3" title="Heat map" style={{}}>
+                                <Menu.Item key="5" style={{padding:0}}> 
+                                    <Radio.Group value={value} onChange={onChange} size='small'  >
+                                        <Radio.Button  value={1}> 
+                                            Time based
+                                        </Radio.Button>
+                                        <Radio.Button  value={2}>
+                                            Activity based
+                                        </Radio.Button>
+                                    </Radio.Group>
+                                </Menu.Item>
+                                <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>
+                                    <div style={{ textAlign: "center" }}>Intensity</div>
+                                    <div style={{paddingLeft:50}}>
+                                        <InputNumber min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={value === 1? true : false}/> 
+                                    </div>
+                                           
+                                </Menu.Item>
                             </SubMenu>
 
                             <SubMenu key="sub4" title="Zones">
@@ -473,7 +494,7 @@ export default function Home() {
                                     <LayersControl position='topright'>
                                         <LayersControl.Overlay name='Heatmap'>
                                             <LayerGroup>
-                                                {/*<Heatmap />*/}
+                                                <Heatmap value={value} intensity={intensity} />
                                             </LayerGroup>
                                         </LayersControl.Overlay>
                                     </LayersControl>
