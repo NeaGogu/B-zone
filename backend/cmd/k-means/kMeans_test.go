@@ -103,7 +103,7 @@ func TestChooseCandidates(t *testing.T) {
 	}
 	got := chooseCandidates(observations, probabilities, nrCandidateClusters, randSeed)
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got: %v, want: %v\n type of got1.observation %v, type of got2.observation %v\n type of want1.observation %v, type of want2.observation %v\n ", got, want, reflect.TypeOf(got[0].observations), reflect.TypeOf(got[1].observations), reflect.TypeOf(want[0].observations), reflect.TypeOf(want[1].observations))
+		t.Errorf("got: %v,\n want: %v\n type of got1.observation %v, type of got2.observation %v\n type of want1.observation %v, type of want2.observation %v\n ", got, want, reflect.TypeOf(got[0].observations), reflect.TypeOf(got[1].observations), reflect.TypeOf(want[0].observations), reflect.TypeOf(want[1].observations))
 	}
 }
 
@@ -538,7 +538,7 @@ func TestInitializeClusters(t *testing.T) {
 			expectedClusters: clusters{
 				createCluster(t, obs3.coordinates, []observation{obs3}),
 				createCluster(t, obs1.coordinates, []observation{obs1}),
-				createCluster(t, obs2.coordinates, []observation{obs2}),
+				createCluster(t, obs1.coordinates, []observation{obs2}),
 			},
 		},
 		{
@@ -548,17 +548,17 @@ func TestInitializeClusters(t *testing.T) {
 			expectedError:       nil,
 			wantError:           false,
 			expectedClusters: clusters{
-				createCluster(t, obs2.coordinates, []observation{obs2}),
-				createCluster(t, obs3.coordinates, []observation{obs3}),
+				createCluster(t, obs3.coordinates, []observation{obs2}),
+				createCluster(t, obs1.coordinates, []observation{obs3}),
 			},
 		},
 	}
 
 	// Loop over test cases and run each one
 	// Seed the random number generator to ensure reproducibility
-	randSeed := rand.New(rand.NewSource(12345))
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			randSeed := rand.New(rand.NewSource(12345))
 			// Call the function
 			clusters := clusters{}
 			got, err := initializeClusters(observations, clusters, tc.nrClusters, tc.nrCandidateClusters, randSeed)

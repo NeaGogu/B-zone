@@ -229,10 +229,10 @@ func chooseCandidates(observations observations, probabilities []float64, nrCand
 		for _, p := range probabilities {
 			sum += p
 		}
-		r := rand.Float64() * sum
+		randomNumber := r.Float64() * sum
 		for i, p := range probabilities {
-			r -= p
-			if r <= 0.0 {
+			randomNumber -= p
+			if randomNumber <= 0.0 {
 				coordinates := coordinates{
 					latitude:  observations[i].coordinates.latitude,
 					longitude: observations[i].coordinates.longitude,
