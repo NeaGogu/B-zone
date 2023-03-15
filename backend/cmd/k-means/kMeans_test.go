@@ -538,7 +538,7 @@ func TestInitializeClusters(t *testing.T) {
 			expectedClusters: clusters{
 				createCluster(t, obs3.coordinates, []observation{obs3}),
 				createCluster(t, obs1.coordinates, []observation{obs1}),
-				createCluster(t, obs1.coordinates, []observation{obs2}),
+				createCluster(t, obs1.coordinates, []observation{obs1}),
 			},
 		},
 		{
@@ -548,8 +548,8 @@ func TestInitializeClusters(t *testing.T) {
 			expectedError:       nil,
 			wantError:           false,
 			expectedClusters: clusters{
-				createCluster(t, obs3.coordinates, []observation{obs2}),
-				createCluster(t, obs1.coordinates, []observation{obs3}),
+				createCluster(t, obs3.coordinates, []observation{obs3}),
+				createCluster(t, obs1.coordinates, []observation{obs1}),
 			},
 		},
 	}
