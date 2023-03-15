@@ -11,7 +11,7 @@ var zips = {
     zipTo: ""
 };
 var zipCodes = []
-var coordinatesList = []
+
 
 //fetches the initial zone configuration a user has from Bumbal, returns promise of the response from Bumbal API
 async function getInitialZones() {
@@ -47,7 +47,6 @@ async function getInitialZones() {
         })
         //dealing with received list of zones
         .then(async (data) => {
-            //console.log("returning data items from bumbal (this is from getInitialZones)")
             return data.items
         })
         .catch(error => console.log(error, 'error'))
@@ -61,7 +60,18 @@ async function getZipCodes(zoneList) {
 
     let zipCodes = []
     for (let i = 0; i < zoneList.length; i++) {
-        zipCodes[i] = await getAreas(zoneList[i].zone_ranges); //per each zone, there are a list of areas with from and to
+        // console.log("zoneList[i]")
+        // console.log(zoneList[i])
+        
+        for (let j = 0; j < zoneList[i].zone_ranges.length; j++) {
+            var curr = {
+                zipFrom: zoneList[i].zone_ranges[j].zipcode_from,
+                zipTo: zoneList[i].zone_ranges[j].zipcode_to
+            }
+            zipCodes.push(curr)
+        }
+        //console.log(zipCodes)
+        //zipCodes[i] = await getAreas(zoneList[i].zone_ranges); //per each zone, there are a list of areas with from and to
     }
 
     return zipCodes
@@ -73,17 +83,24 @@ async function getAreas(zoneAreas) {
     let zoneAreaZips = [zips]
     //loop through range items to find zip code ranges
     for (let j = 0; j < zoneAreas.length; j++) {
+        
         zoneAreaZips[j].zipFrom = zoneAreas[j].zipcode_from;
         zoneAreaZips[j].zipTo = zoneAreas[j].zipcode_to;
+        console.log("zoneAreaZips")
+        console.log(zoneAreaZips)
 
     }
     return zoneAreaZips
 }
 
 async function getCoordinates(zipsList) {
+    // console.log('zipsgetcoords')
+    // console.log(zipsList)
     let coordinatesList = []
     //for each zone area, fetch the coordinates and compile them together
     for(let j = 0; j < zipsList.length; j++) {
+        // console.log('hello')
+        // console.log(zipsList[j].zipFrom.toString() + " " + zipsList[j].zipTo.toString())
         coordinatesList[j] = await fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipsList[j].zipFrom.toString() + '&zip_to=' + zipsList[j].zipTo.toString())
             .then((response) => {
                 if(!response.ok) {
@@ -110,7 +127,10 @@ const PolygonVis = () => {
 
     useEffect(() => {
         // async function in order to wait for response from api
+        
         const fetchData = async () => {
+            var coordinatesList = []
+
             // delete old heat layer if it exists
             context.layerContainer.eachLayer(function (layer) {
                 console.log(layer)
@@ -118,13 +138,21 @@ const PolygonVis = () => {
 
             //get initial zones from Bumbal
             let initialZones = await getInitialZones();
+            // console.log('init')
+            // console.log(initialZones)
             zipCodes = await getZipCodes(initialZones);
-            console.log("Getting coordinates for first zone area... (from fetchData)")
-            coordinatesList = await getCoordinates(zipCodes[0]);
-            coordinatesList = coordinatesList[0]
+            console.log('zipcodes')
+            console.log(zipCodes)
+            //console.log("Getting coordinates for first zone area... (from fetchData)")
+            coordinatesList = await getCoordinates(zipCodes)
+            console.log(coordinatesList)
+            
+            
             for (let i = 0; i < coordinatesList.length; i++) {
-                //console.log(coordinatesList[i].zone_coordinates)
-                context.layerContainer.addLayer(L.polygon(coordinatesList[i].zone_coordinates))
+                for (let j = 0; j < coordinatesList[i].length; j++){
+                    context.layerContainer.addLayer(L.polygon(coordinatesList[i][j].zone_coordinates))    
+                }
+                
             }
             
 
