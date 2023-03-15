@@ -42,6 +42,28 @@
     width: 100%;
     /*margin-left: 0 !important;*/
 }
+.my-button {
+    color: #393E46;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.my-icon {
+    font-size: 16px;
+    color: #393E46;
+    margin-left: 5px;
+    background-color: #ffd369;
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 16px;
+}
+.my-button:hover, .my-icon:hover {
+    background-color: #393E46;
+    color: #ffd369;
+}
 
 .headerText {
     display: flex;
