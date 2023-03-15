@@ -12,7 +12,6 @@ var zips = {
 };
 var zipCodes = []
 var coordinatesList = []
-var zoneCoordinates = []
 
 //fetches the initial zone configuration a user has from Bumbal, returns promise of the response from Bumbal API
 async function getInitialZones() {
@@ -120,13 +119,9 @@ const PolygonVis = () => {
             //get initial zones from Bumbal
             let initialZones = await getInitialZones();
             zipCodes = await getZipCodes(initialZones);
-            console.log(zipCodes)
             console.log("Getting coordinates for first zone area... (from fetchData)")
-            for(let i = 0; i<zipCodes.length; i++) {
-                zoneCoordinates[i] = await getCoordinates(zipCodes[i]);
-            }
-            //coordinatesList = await getCoordinates(zipCodes[0]);
-            //coordinatesList = coordinatesList[0]
+            coordinatesList = await getCoordinates(zipCodes[0]);
+            coordinatesList = coordinatesList[0]
             for (let i = 0; i < coordinatesList.length; i++) {
                 //console.log(coordinatesList[i].zone_coordinates)
                 context.layerContainer.addLayer(L.polygon(coordinatesList[i].zone_coordinates))
