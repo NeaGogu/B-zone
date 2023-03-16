@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bzone/backend/internal/bumbal"
 	"net/http"
 
 	"github.com/go-chi/chi/middleware"
@@ -100,9 +101,9 @@ func (app *application) routes() http.Handler {
 			r.Get("/plotidnames", app.getUserPlotIDs)
 		})
 
-		//r.Route("/bumbal", func(r chi.Router) {
-		//	r.Get("/activity", bzone.ReceiveActivities)
-		//})
+		r.Route("/bumbal", func(r chi.Router) {
+			r.Get("/activity", bumbal.ReceiveActivities)
+		})
 
 	})
 

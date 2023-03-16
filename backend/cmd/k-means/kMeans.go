@@ -2,7 +2,7 @@
 package kMeans
 
 import (
-	openapi "backend/internal/swag_gen"
+	openapi "bzone/backend/internal/swag_gen"
 	"errors"
 	"fmt"
 	"math"

@@ -8,14 +8,14 @@ import (
 
 const BzoneDatabase = "Bzone"
 
-// collection names for the bzone database
+// collection names for the bumbal database
 const (
 	UserCollection = "users"
 	PlotCollection = "plots"
 	ZoneCollection = "zones"
 )
 
-// BzoneDBModel is a wrapper for the mongo database that refers to the bzone database
+// BzoneDBModel is a wrapper for the mongo database that refers to the bumbal database
 type BzoneDBModel struct {
 	DB *mongo.Database
 }
