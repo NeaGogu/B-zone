@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-const(
+const (
 	ZipcodeDatabase = "zipcodes"
 	CoordCollection = "coordinates"
 )
@@ -18,9 +18,9 @@ type ZipCodeDBModel struct {
 }
 
 type ZipCode struct {
-	Code string `json:"code" bson:"code"`
+	Code        string      `json:"code" bson:"code"`
 	Coordinates interface{} `json:"zone_coordinates" bson:"zone_coordinates"`
-	Type string `json:"type" bson:"type, omitempty"`
+	Type        string      `json:"type" bson:"type, omitempty"`
 }
 
 // returns a slice of ZipCode structs that are within the range of the zip codes provided
@@ -31,9 +31,8 @@ func (z *ZipCodeDBModel) GetZipCodes(reqZipCodeFrom int, reqZipCodeTo int) ([]Zi
 	zipFrom := strconv.Itoa(reqZipCodeFrom)
 	zipTo := strconv.Itoa(reqZipCodeTo)
 
-
-	queryFilter := bson.M { "code" : bson.M {"$lte": zipTo, "$gte": zipFrom}}
-	cur, err:= coll.Find(context.TODO(), queryFilter)
+	queryFilter := bson.M{"code": bson.M{"$lte": zipTo, "$gte": zipFrom}}
+	cur, err := coll.Find(context.TODO(), queryFilter)
 	if err != nil {
 		return nil, err
 	}

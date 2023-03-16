@@ -1,7 +1,7 @@
 // External dependencies
 import React, { useState, useEffect } from 'react';
 import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, LayersControl, LayerGroup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, LayersControl, LayerGroup, Polygon } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
@@ -12,9 +12,11 @@ import { LaptopOutlined, NotificationOutlined, UserOutlined, DeleteOutlined, Sav
 
 // Components
 import Heatmap from './components/heatmapComponent';
-
+import PolygonVis from './components/polygonComponents'
 // CSS
 import './index.css';
+import dumbzones from './tempData/allcases.json'
+
 
 // Helper function
 /**
@@ -60,6 +62,13 @@ const MyFormItem = ({ name, ...props }) => {
 const { SubMenu } = Menu;
 const { darkAlgorithm } = theme;
 const { Header, Content, Sider } = Layout;
+const item = [
+    getItem('Saved zones', 'sub1', null, [
+        getItem('Initial Zone', 'g1', null, null, 'group'),
+        getItem('Saved Zone 1', 'g2', null, null, 'group'),
+    ]),
+    getItem('Filter', 'sub2', null, null)
+];
 
 // Form handling
 const handleChange = (value) => {
@@ -147,7 +156,6 @@ function LocationMarker() {
         </Marker>
     );
 }
-
 //signOut function
 function signOut() {
     const token = localStorage.getItem('token');
@@ -364,11 +372,11 @@ export default function Home() {
                         <Menu
                             mode="inline"
                             defaultSelectedKeys={['1']}
+                            defaultOpenKeys={['sub1']}
                             style={{
                                 height: '100%',
                                 borderRight: 0,
                             }}
-
                         >
                             <SubMenu key="sub3" title="Heat map" style={{}}>
                                 <Menu.Item key="5" style={{padding:0}}> 
@@ -459,13 +467,22 @@ export default function Home() {
                                         attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                     />
+                                    
                                     <LayersControl position='topright'>
                                         <LayersControl.Overlay name='Heatmap'>
                                             <LayerGroup>
                                                 <Heatmap value={value} intensity={intensity} />
                                             </LayerGroup>
                                         </LayersControl.Overlay>
+
+                                        <LayersControl.Overlay name='Polygon'>
+                                            <LayerGroup>
+                                                <PolygonVis  />
+                                            </LayerGroup>
+                                        </LayersControl.Overlay>
                                     </LayersControl>
+
+                                            {/*PolygonVis*/}
 
                                     <LocationMarker />
                                 </MapContainer>
