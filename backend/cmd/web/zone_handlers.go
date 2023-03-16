@@ -16,14 +16,23 @@ type zoneRangesRequestBody struct {
 // of type zoneRangeRequestBody
 func (app *application) getZoneRanges(w http.ResponseWriter, r *http.Request) {
 
+
 	// get the list of zoneIds from the request body
 	var reqBody zoneRangesRequestBody
 
-	// Try to decode the request body into the struct. If there is an error,
-	// respond to the client with the error message and a 400 status code.
-	err := json.NewDecoder(r.Body).Decode(&reqBody)
+	// Try to decode the request body into the struct. If there is one of our custom error types
+	// return the appropriate status code 
+	err := decodeJSONBody(w, r, &reqBody)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		var mr *malformedRequest
+
+		if errors.As(err, &mr) {
+			http.Error(w, mr.msg, mr.status)
+			return
+		}
+
+		app.errorLog.Println(err.Error())
+		app.serverError(w, err)
 		return
 	}
 

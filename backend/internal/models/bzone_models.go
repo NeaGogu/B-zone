@@ -81,6 +81,8 @@ type ZoneRangeModel struct {
 }
 
 // helper method to query the database for a zone by id
+// pretty much obsolete because GetZonesListById can behave in the same way
+// if passed only one id
 func (m *BzoneDBModel) GetZoneById(zoneId string) (*ZoneModel, error) {
 
 	// Get the zones collection
@@ -128,6 +130,10 @@ func (m *BzoneDBModel) GetZonesListById(zoneIds ...string) ([]*ZoneModel, error)
 	var result []*ZoneModel
 	if err = cur.All(context.TODO(), &result); err != nil {
 		return nil, err
+	}
+
+	if len(result) == 0 {
+		return nil, ErrDocumentNotFound
 	}
 
 	return result, nil
