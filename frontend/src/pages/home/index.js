@@ -1,58 +1,27 @@
 // External dependencies
 import React, { useState, useEffect } from 'react';
-import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup,  useMapEvents, useMap, LayersControl, LayerGroup, Polygon } from 'react-leaflet';
+import { LayersControl, LayerGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
-import { Breadcrumb, Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Select, Radio, InputNumber } from 'antd';
+import { Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Radio, InputNumber } from 'antd';
 
 // Icons
-import { LaptopOutlined, NotificationOutlined, UserOutlined, DeleteOutlined, SaveOutlined, CheckSquareFilled } from '@ant-design/icons';
+import { UserOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 
 // Components
 import Heatmap from './components/heatmapComponent';
 import PolygonVis from './components/polygonComponents'
+import Map from './components/mapComponent';
+
 // CSS
 import './index.css';
-import dumbzones from './tempData/allcases.json'
-
-/**
- * Returns an object with the specified properties for an item.
- * @param {string} label - The label of the item.
- * @param {string} key - The key of the item.
- * @param {string} icon - The icon of the item.
- * @param {Array} children - The children of the item.
- * @param {string} type - The type of the item.
- * @return {Object} An object representing the item.
- */
-function getItem(label, key, icon, children, type) {
-    return {
-        key,
-        icon,
-        children,
-        label,
-        type,
-    };
-}
-
-/** 
- * Context for the form items
- * @constant {React} 
-*/
-const MyFormItemContext = React.createContext([]);
+//import dumbzones from './tempData/allcases.json'
 
 // Components from Ant Design
 const { SubMenu } = Menu;
 const { darkAlgorithm } = theme;
 const { Header, Content, Sider } = Layout;
-const item = [
-    getItem('Saved zones', 'sub1', null, [
-        getItem('Initial Zone', 'g1', null, null, 'group'),
-        getItem('Saved Zone 1', 'g2', null, null, 'group'),
-    ]),
-    getItem('Filter', 'sub2', null, null)
-];
 
 // User details
 const user_id = localStorage.getItem('email')
@@ -71,66 +40,12 @@ const user_items = [
     {
         key: '2',
         label: (
-            <a style={{ color: '#ffd369' }} target="_blank" rel="noopener noreferrer" onClick={() => signOut()}>
-                Log Out
-            </a>
+            <button style={{ color: '#ffd369', textDecoration: 'underline', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }} onClick={() => signOut()}>
+                Sign Out
+            </button>
         )
     },
 ];
-
-// Menu items
-const menu = [
-    getItem('Saved zones', 'sub1', null, [
-        getItem('Initial Zone', 'g1', null, null, 'group'),
-        getItem('Saved Zone 1', 'g2', null, null, 'group'),
-    ]),
-    getItem('Filter', 'sub2', null, null)
-];
-
-//function for map which shows address, zipcode and coordinates when clicking on the map
-function LocationMarker() {
-    const [position, setPosition] = useState(null);
-    const [address, setAddress] = useState(null);
-    const [zipcode, setZipcode] = useState(null);
-
-    const map = useMapEvents({
-        click(e) {
-            const { lat, lng } = e.latlng;
-            setPosition(e.latlng);
-            const API_KEY = 'pk.eyJ1IjoidGFuaWFnb2lhMTEiLCJhIjoiY2xleTRrYm02MDlmMTN4bzVsZTR4cWp4OCJ9.hmT59q-Q1IcEjC6mdY2R9w';
-            const API_URL = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${API_KEY}&types=postcode,address`;
-            fetch(API_URL)
-                .then(response => response.json())
-                .then(data => {
-                    const features = data.features;
-                    if (features.length > 0) {
-                        const address = features[0].place_name;
-                        const zipcodes = features.filter(feature => feature.place_type[0] === 'postcode');
-                        const zipcode = zipcodes.length > 0 ? zipcodes[0].text : null;
-                        setAddress(address);
-                        setZipcode(zipcode);
-                    } else {
-                        setAddress(null);
-                        setZipcode(null);
-                    }
-                });
-            map.flyTo(e.latlng, map.getZoom());
-        },
-    });
-
-    return position === null ? null : (
-        <Marker position={position}>
-            <Popup>
-                <div>
-                    <div>Latitude: {position.lat.toFixed(4)}</div>
-                    <div>Longitude: {position.lng.toFixed(4)}</div>
-                    {address && <div>Address: {address}</div>}
-                    {zipcode && <div>Zipcode: {zipcode}</div>}
-                </div>
-            </Popup>
-        </Marker>
-    );
-}
 
 //signOut function
 function signOut() {
@@ -229,13 +144,13 @@ export default function Home() {
     const [value, setValue] = useState(1);
     const onChange = (e) => {
         setValue(e.target.value);
-      };
+    };
     // for number
     const [intensity, setIntensity] = useState(500)
     const onChangeNumber = (e) => {
         console.log(intensity)
         setIntensity(e)
-        
+
     }
 
     const toggleComparison = () => {
@@ -251,8 +166,9 @@ export default function Home() {
         setShowMap(!showMap);
         setShowComparison(false); // reset comparison state when switching singular map
     };
-    // Contains the map aswell as buttons for zones(saved,initial,compare) , button for heatmap.
-    const [saveName, setSaveName] = useState('');
+
+    // Contains the map aswell as buttons for zones(saved,initial,compare), button for heatmap.
+    const [setSaveName] = useState('');
 
     function handleSaveClick() {
         const name = window.prompt('Enter a name for the save:');
@@ -265,15 +181,16 @@ export default function Home() {
     const [savedZones, setSavedZones] = useState([
         { key: 'saved-initial', name: 'Initial Zone' },
 
-]);
+    ]);
     localStorage.setItem('saved-initial', 'Initial Zone');
 
     function addSavedZone(name) {
-        const key = `saved-${savedZones.length}`;
+        const key = `saved-${Date.now()}-${Math.random()}`;
         const newZone = { key, name };
         setSavedZones([...savedZones, newZone]);
-        localStorage.setItem(key, name); // save the input to local storage
-    }
+        localStorage.setItem(key, name);
+      }
+      
     useEffect(() => {
         const savedZones = Object.keys(localStorage)
             .filter(key => key.startsWith('saved-'))
@@ -283,6 +200,7 @@ export default function Home() {
             }));
         setSavedZones(savedZones);
     }, []);
+
     return (
         <ConfigProvider
             // theme which we should use
@@ -321,11 +239,11 @@ export default function Home() {
                                     items: user_items,
                                 }}
                             >
-                                <a onClick={(e) => e.preventDefault()}>
+                                <button type="button" onClick={signOut} style={{ color: '#ffd369', backgroundColor: 'transparent', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>
                                     <Space>
-                                        <UserOutlined style={{ verticalAlign: 'middle', color: '#ffd369' }} />
+                                        <UserOutlined style={{ verticalAlign: 'middle' }} />
                                     </Space>
-                                </a>
+                                </button>
                             </Dropdown>
                         </Space>
                     </div>
@@ -350,22 +268,22 @@ export default function Home() {
                             }}
                         >
                             <SubMenu key="sub3" title="Heat map" style={{}}>
-                                <Menu.Item key="5" style={{padding:0}}> 
+                                <Menu.Item key="5" style={{ padding: 0 }}>
                                     <Radio.Group value={value} onChange={onChange} size='small'  >
-                                        <Radio.Button  value={1}> 
+                                        <Radio.Button value={1}>
                                             Time based
                                         </Radio.Button>
-                                        <Radio.Button  value={2}>
+                                        <Radio.Button value={2}>
                                             Activity based
                                         </Radio.Button>
                                     </Radio.Group>
                                 </Menu.Item>
+
                                 <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>
                                     <div style={{ textAlign: "center" }}>Intensity</div>
-                                    <div style={{paddingLeft:50}}>
-                                        <InputNumber min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={value === 1? true : false}/> 
+                                    <div style={{ paddingLeft: 50 }}>
+                                        <InputNumber min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={value === 1 ? true : false} />
                                     </div>
-                                           
                                 </Menu.Item>
                             </SubMenu>
 
@@ -417,46 +335,26 @@ export default function Home() {
                         >
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
-                                        <TileLayer
-                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                        />
-                                        <LocationMarker />
-                                    </MapContainer>
-                                    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: "20px" }}>
-                                        <TileLayer
-                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                        />
-                                        <LocationMarker />
-                                    </MapContainer>
+                                    <Map />
+                                    <Map />
                                 </div>
                             ) : (
-                                <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1", marginLeft: showMap ? "20px" : "0" }}>
-                                    <TileLayer
-                                        attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                    />
-                                    
+
+                                <Map>
                                     <LayersControl position='topright'>
                                         <LayersControl.Overlay name='Heatmap'>
                                             <LayerGroup>
                                                 <Heatmap value={value} intensity={intensity} />
                                             </LayerGroup>
                                         </LayersControl.Overlay>
-
                                         <LayersControl.Overlay name='Polygon'>
                                             <LayerGroup>
-                                                <PolygonVis  />
+                                                <PolygonVis />
                                             </LayerGroup>
                                         </LayersControl.Overlay>
                                     </LayersControl>
-
-                                            {/*PolygonVis*/}
-
-                                    <LocationMarker />
-                                </MapContainer>
+                                    {/*PolygonVis*/}
+                                </Map>
                             )}
                         </Content>
                     </Layout>
