@@ -142,7 +142,7 @@ const PolygonVis = () => {
             var arr = []
             for (let i = 0; i < coordinatesList.length; i++) {
                 //itterates through zone ranges inside of zones
-                let color = randomColor();
+                let color = randomColor({luminosity: 'dark'});
                 for (let j =0; j < coordinatesList[i].length; j++){
                     // itteratres through coordinates in zone ranges
                     for (let k =0; k<coordinatesList[i][j].length; k++){
