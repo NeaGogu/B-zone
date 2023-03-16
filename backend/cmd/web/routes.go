@@ -69,16 +69,15 @@ func (app *application) routes() http.Handler {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(cors.Handler(cors.Options{
-    // AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
-    AllowedOrigins:   []string{"https://*", "http://*", "*"},
-    // AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
-    AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-    AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "*"},
-    ExposedHeaders:   []string{"Link"},
-    AllowCredentials: false,
-    MaxAge:           300, // Maximum value not ignored by any of major browsers
-  }))
-
+		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+		AllowedOrigins: []string{"https://*", "http://*", "*"},
+		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "*"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
 
 	app.infoLog.Println("CORS enabled!")
 	// for testing purposes, does not require JWT authorization
@@ -91,8 +90,8 @@ func (app *application) routes() http.Handler {
 			r.Get("/coordinates", app.getZipCodeCoords)
 		})
 
-		r.Route("/zone/{zone_id}", func(r chi.Router) {
-			r.Get("/ranges", app.getZoneRanges)
+		r.Route("/zone/", func(r chi.Router) {
+			r.Post("/ranges", app.getZoneRanges)
 		})
 	})
 
@@ -108,8 +107,8 @@ func (app *application) routes() http.Handler {
 			r.Get("/plotidnames", app.getUserPlotIDs)
 		})
 
-		r.Route("/zone/{zoneId}", func(r chi.Router) {
-			r.Get("/ranges", app.getZoneRanges)
+		r.Route("/zone/", func(r chi.Router) {
+			r.Post("/ranges", app.getZoneRanges)
 		})
 	})
 

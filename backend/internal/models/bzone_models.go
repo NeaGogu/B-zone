@@ -70,11 +70,11 @@ type UserModel struct {
 // ZoneRangeModel struct for ZoneRangeModel
 type ZoneRangeModel struct {
 	// Unique Zone type ID
-	ZoneRangeId int64 `json:"zone_range_id,omitempty" bson:"zone_range_id,omitempty"`
+	ZoneRangeId int64 `json:"zone_range_id,omitempty" bson:"zone_range_id"`
 	// Zipcode range start
-	ZipcodeFrom int64 `json:"zipcode_from,omitempty" bson:"zipcode_from,omitempty"`
+	ZipcodeFrom int64 `json:"zipcode_from" bson:"zipcode_from"`
 	// Zipcode range end
-	ZipcodeTo int64 `json:"zipcode_to,omitempty" bson:"zipcode_to,omitempty"`
+	ZipcodeTo int64 `json:"zipcode_to" bson:"zipcode_to"`
 	// iso country of the zone range
 	IsoCountry string `json:"iso_country,omitempty" bson:"iso_country,omitempty"`
 	//array of coordinates?
@@ -87,14 +87,14 @@ func (m *BzoneDBModel) GetZoneById(zoneId string) (*ZoneModel, error) {
 	coll := m.DB.Collection(ZoneCollection)
 
 	// Create a filter with the zone id
-	queryFilter := bson.M {"zone_id": zoneId} 
+	queryFilter := bson.M{"zone_id": zoneId}
 
 	// Create a variable to store the decoded zone
 	var zone ZoneModel
 	err := coll.FindOne(context.TODO(), queryFilter).Decode(&zone)
 	if err != nil {
 		// if the query does not find any result, then FindOne will return a
-		// mongo.ErrNoDocuments error. We can check for this error and return 
+		// mongo.ErrNoDocuments error. We can check for this error and return
 		// our own ErrDocumentNotFound error instead so that it can be handled
 		// differently
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -109,9 +109,26 @@ func (m *BzoneDBModel) GetZoneById(zoneId string) (*ZoneModel, error) {
 
 }
 
+// helper method to query the database for a list of zones
+func (m *BzoneDBModel) GetZonesListById(zoneIds ...string) ([]*ZoneModel, error) {
 
+	// Get the zones collection
+	coll := m.DB.Collection(ZoneCollection)
 
+	queryFilter := bson.M{"zone_id": bson.M{"$in": zoneIds}}
 
+	cur, err := coll.Find(context.TODO(), queryFilter)
+	if err != nil {
+		return nil, err
+	}
 
+	// don't forget to close the cursor when you're done
+	defer cur.Close(context.TODO())
 
+	var result []*ZoneModel
+	if err = cur.All(context.TODO(), &result); err != nil {
+		return nil, err
+	}
 
+	return result, nil
+}
