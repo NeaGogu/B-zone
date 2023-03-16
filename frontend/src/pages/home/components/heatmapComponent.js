@@ -7,7 +7,6 @@ import 'leaflet.heat'
 Sends a request to the Bumbal API to retrieve a list of activities.
 @returns {Promise<Response>} - The response from the API containing a list of activities.
 */
-
 async function getActivities() {
   const token = localStorage.getItem('token')
   console.log('token ' + token)
@@ -60,48 +59,43 @@ async function findAddressesPoints() {
 }
   
 /**
-Renders a Leaflet Heatmap based on the data retrieved from the Bumbal API.
+Renders a Leaflet Heat map based on the data retrieved from the Bumbal API.
 @returns {JSX.Element} - The Leaflet Heatmap component.
 */
-
-// Hatmap component
+// Heat map component
 const Heatmap = ({ value, intensity }) => {
-  // map context
+  // Map context.
   const context = useLeafletContext()
 
   useEffect(() => {
-    // async function in order to wait for response from api
+    // Async function in order to wait for response from API.
     const fetchData = async () => {
-      // delete old heat layer if it exists
+      // Delete old heat layer if it exists.
       context.layerContainer.eachLayer(function (layer) {
-        //console.log(layer)
-        context.layerContainer.removeLayer(layer)
-        //console.log("exists" + layer)
-        
+        context.layerContainer.removeLayer(layer)        
       })
 
-      // set address points
+      // Set address points.
       let addressPoints = await findAddressesPoints();
-      // map those points to something interpretable for the heatmap
+      // Map those points to something interpretable for the heat map.
       const points = addressPoints
         ? addressPoints.map((p) => {
-          // if activity time is selected
+          // If activity time is selected.
           if (value === 1) {
             return [p[0], p[1], p[2]];
           }
-          // if location is selected
+          // If activity location is selected.
           return [p[0], p[1], intensity];
         })
         : [];
 
-      // create new layer and add it to the map context
+      // Create new layer and add it to the map context.
       context.layerContainer.addLayer(L.heatLayer(points))
     };
 
     fetchData();
 
   })
-
 }
 
 export default Heatmap

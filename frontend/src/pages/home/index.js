@@ -1,6 +1,5 @@
 // External dependencies
 import React, { useState, useEffect } from 'react';
-import { LayersControl, LayerGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
@@ -10,8 +9,6 @@ import { Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvid
 import { UserOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 
 // Components
-import Heatmap from './components/heatmapComponent';
-import PolygonVis from './components/polygonComponents'
 import Map from './components/mapComponent';
 
 // CSS
@@ -23,10 +20,10 @@ const { SubMenu } = Menu;
 const { darkAlgorithm } = theme;
 const { Header, Content, Sider } = Layout;
 
-// User details
+// User email.
 const user_id = localStorage.getItem('email')
 
-// User menu items
+// User credentials menu items: their email and the sign out button.
 const user_items = [
     {
         key: '1',
@@ -47,19 +44,22 @@ const user_items = [
     },
 ];
 
-//signOut function
+/** 
+* Signs out the user, so deletes the user token and redirects them to the login page.
+* @return {void}
+*/
 function signOut() {
     const token = localStorage.getItem('token');
     var valid;
 
-    //1. delete the user token and send sign out GET message
+    //1. Delete the user token and send sign out GET message.
     console.log("Fetching sign out API")
     fetch(`https://sep202302.bumbal.eu/api/v2/authenticate/sign-out?token=${encodeURIComponent(token)}`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`, // add token to Bearer Authorization when sending GET signOut request
+            'Authorization': `Bearer ${token}`, // Add token to Bearer Authorization when sending GET signOut request.
         }
     })
         .then((response) => {
@@ -75,7 +75,7 @@ function signOut() {
             if (valid) {
                 localStorage.clear();
                 alert('You have been logged out!')
-                //2. re-route user to home page
+                //2. Re-route user to home page.
                 window.location.reload()
             } else {
                 alert("You could not be logged out! Please try again later.")
@@ -92,10 +92,10 @@ const ZoneSubMenu = ({ onSubmit }) => {
         e.preventDefault();
         const isValid = onSubmit(averageFuelCost, averageFuelUsage);
         if (isValid) {
-            // add calculations
+            // Add calculations
         }
     };
-    // input fields for home page (fuel , cost)
+    // Input fields for the zone calculation (average fuel cost, average fuel usage of car).
     return (
         <Form onFinish={handleSubmit}>
             <Form.Item rules={[{ required: true }]}>
@@ -131,66 +131,82 @@ const ZoneSubMenu = ({ onSubmit }) => {
 };
 
 localStorage.getItem('token')
-export default function Home() {
 
+export default function Home() {
     const {
         token: { colorBgContainer },
     } = theme.useToken();
 
-    // for comparison button to split maps
+    // For comparison button to split map into two maps.
     const [showComparison, setShowComparison] = useState(false);
+
+    // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
-    // for radio
+
+    // Toggles the splitting of the map into two maps.
+    const toggleComparison = () => {
+        if (showComparison) {
+            return; // If showComparison is already true, do nothing.
+        }
+
+        setShowComparison(true);
+        setShowMap(false); // Reset singular map state when switching to two maps.
+    }
+
+    // Toggles the bringing back of the two maps into one map.
+    const toggleMap = () => {
+        setShowMap(!showMap);
+        setShowComparison(false); // Reset comparison state when switching to singular map.
+    };
+
+    // For radio.
     const [value, setValue] = useState(1);
     const onChange = (e) => {
         setValue(e.target.value);
     };
-    // for number
+
+    // For number.
     const [intensity, setIntensity] = useState(500)
     const onChangeNumber = (e) => {
         console.log(intensity)
         setIntensity(e)
-
     }
 
-    const toggleComparison = () => {
-        if (showComparison) {
-            return; // If showComparison is already true, do nothing
-        }
+    // Contains the name of the zone configuration that the user wants to save.
+    const [saveName, setSaveName] = useState('');
 
-        setShowComparison(true);
-        setShowMap(false); // reset to singular map
-    }
-
-    const toggleMap = () => {
-        setShowMap(!showMap);
-        setShowComparison(false); // reset comparison state when switching singular map
-    };
-
-    // Contains the map aswell as buttons for zones(saved,initial,compare), button for heatmap.
-    const [setSaveName] = useState('');
-
+    /** 
+    * When the user clicks the save button, they are asked to give a name to the zone configuration.
+    * @param {string} name - The name to give the saved zone configuration.
+    * @return {void}
+    */
     function handleSaveClick() {
         const name = window.prompt('Enter a name for the save:');
-        setSaveName(name);
         if (name) {
             addSavedZone(name);
+            setSaveName(name);
         }
     }
-
+    
+    // This makes sure the initial zone configuration is always shown.
     const [savedZones, setSavedZones] = useState([
         { key: 'saved-initial', name: 'Initial Zone' },
 
     ]);
     localStorage.setItem('saved-initial', 'Initial Zone');
 
+    /** 
+    * When the user has entered a name for the zone configuration they want to save, it is shown in the saved zones list.
+    * @param {string} name - The name given to the saved zone configuration.
+    * @return {void}
+    */
     function addSavedZone(name) {
         const key = `saved-${Date.now()}-${Math.random()}`;
         const newZone = { key, name };
         setSavedZones([...savedZones, newZone]);
         localStorage.setItem(key, name);
-      }
-      
+    }
+
     useEffect(() => {
         const savedZones = Object.keys(localStorage)
             .filter(key => key.startsWith('saved-'))
@@ -203,7 +219,7 @@ export default function Home() {
 
     return (
         <ConfigProvider
-            // theme which we should use
+            // Theme of the web-app
             theme={{
                 token: {
                     colorPrimary: "#ffd369",
@@ -211,7 +227,7 @@ export default function Home() {
                     colorPrimaryBg: "#393E46",
                     colorTextBase: "#eeeeee"
                 },
-                // renders antd components with dark mode
+                // Renders AntDesign components with dark mode
                 algorithm: darkAlgorithm
             }}
         >
@@ -233,7 +249,6 @@ export default function Home() {
                             >
                                 <SaveOutlined style={{ color: '#ffd369' }} />
                             </Button>
-
                             <Dropdown
                                 menu={{
                                     items: user_items,
@@ -247,7 +262,6 @@ export default function Home() {
                             </Dropdown>
                         </Space>
                     </div>
-
                     <Menu theme="dark" mode="horizontal" />
                 </Header>
 
@@ -274,11 +288,10 @@ export default function Home() {
                                             Time based
                                         </Radio.Button>
                                         <Radio.Button value={2}>
-                                            Activity based
+                                            Location based
                                         </Radio.Button>
                                     </Radio.Group>
                                 </Menu.Item>
-
                                 <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>
                                     <div style={{ textAlign: "center" }}>Intensity</div>
                                     <div style={{ paddingLeft: 50 }}>
@@ -286,7 +299,6 @@ export default function Home() {
                                     </div>
                                 </Menu.Item>
                             </SubMenu>
-
                             <SubMenu key="sub4" title="Zones">
                                 <ZoneSubMenu />
                             </SubMenu>
@@ -324,7 +336,6 @@ export default function Home() {
                     </Sider>
 
                     <Layout style={{
-
                         padding: 30
                     }}
                     >
@@ -335,26 +346,11 @@ export default function Home() {
                         >
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <Map />
+                                    <Map /> 
                                     <Map />
                                 </div>
                             ) : (
-
-                                <Map>
-                                    <LayersControl position='topright'>
-                                        <LayersControl.Overlay name='Heatmap'>
-                                            <LayerGroup>
-                                                <Heatmap value={value} intensity={intensity} />
-                                            </LayerGroup>
-                                        </LayersControl.Overlay>
-                                        <LayersControl.Overlay name='Polygon'>
-                                            <LayerGroup>
-                                                <PolygonVis />
-                                            </LayerGroup>
-                                        </LayersControl.Overlay>
-                                    </LayersControl>
-                                    {/*PolygonVis*/}
-                                </Map>
+                                <Map /> 
                             )}
                         </Content>
                     </Layout>

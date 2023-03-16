@@ -1,11 +1,19 @@
 // External dependencies
 import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import { LayersControl, LayerGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
 
-//function for map which shows address, zipcode and coordinates when clicking on the map
+// Components
+import Heatmap from './heatmapComponent';
+import PolygonVis from './polygonComponents'
+
+/** 
+* Shows address, zipcode and coordinates when clicking on the map.
+* @return {JSX.Element|null} - Returns a JSX element containing a map marker with a popup, or null if the position is null.
+*/
 function LocationMarker() {
     const [position, setPosition] = useState(null);
     const [address, setAddress] = useState(null);
@@ -50,16 +58,39 @@ function LocationMarker() {
     );
 }
 
-// function that holds the map and the locationmarker function
-function mapComponent(props) {
-  return (
+
+// Main function to hold the map, location marker and the layers
+function MapComponent(props) {
+        // For radio.
+        const [value] = useState(1);
     
-    <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
-      <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' 
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      <LocationMarker />
-    </MapContainer>
-  );
+        // For number.
+        const [intensity] = useState(500)
+    
+    return (
+        <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
+            <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+            <LayersControl position='topright'>
+                <LayersControl.Overlay name='Heat map'>
+                    <LayerGroup>
+                        <Heatmap value={value} intensity={intensity} />
+                    </LayerGroup>
+                </LayersControl.Overlay>
+
+                <LayersControl.Overlay name='Zones'>
+                    <LayerGroup>
+                        <PolygonVis />
+                    </LayerGroup>
+                </LayersControl.Overlay>
+            </LayersControl>
+
+            {/*PolygonVis*/}
+
+            <LocationMarker />
+        </MapContainer>
+    );
 }
 
-export default mapComponent;
+export default MapComponent;
