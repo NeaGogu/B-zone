@@ -14,10 +14,10 @@ import (
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
+	errorLog       *log.Logger
+	infoLog        *log.Logger
 	zipCodeDbModel *models.ZipCodeDBModel
-	bzoneDbModel *models.BzoneDBModel
+	bzoneDbModel   *models.BzoneDBModel
 }
 
 func main() {
@@ -65,10 +65,10 @@ func main() {
 	}()
 
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		zipCodeDbModel: &models.ZipCodeDBModel{ DB: db.Database(models.ZipcodeDatabase) },
-		bzoneDbModel: &models.BzoneDBModel{ DB: db.Database(models.BzoneDatabase) },
+		errorLog:       errorLog,
+		infoLog:        infoLog,
+		zipCodeDbModel: &models.ZipCodeDBModel{DB: db.Database(models.ZipcodeDatabase)},
+		bzoneDbModel:   &models.BzoneDBModel{DB: db.Database(models.BzoneDatabase)},
 	}
 
 	srv := &http.Server{
@@ -87,7 +87,7 @@ func openDB(dsn string) (*mongo.Client, error) {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(dsn).SetServerAPIOptions(serverAPI)
 	// Create a new client and connect to the server
-	client, err := mongo.Connect(context.TODO(), opts)	
+	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
 		// prefer to lift up the error to the caller rather than handling it here
 		return nil, err
@@ -100,4 +100,3 @@ func openDB(dsn string) (*mongo.Client, error) {
 
 	return client, nil
 }
-

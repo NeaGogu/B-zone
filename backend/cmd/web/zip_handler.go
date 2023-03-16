@@ -6,7 +6,6 @@ import (
 	"strconv"
 )
 
-
 func (app *application) getZipCodeCoords(w http.ResponseWriter, r *http.Request) {
 
 	reqZipCodeFrom, err := strconv.Atoi(r.URL.Query().Get("zip_from"))
@@ -20,7 +19,6 @@ func (app *application) getZipCodeCoords(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "Invalid zip_to in query", http.StatusBadRequest)
 		return
 	}
-
 
 	reqZipcodes, err := app.zipCodeDbModel.GetZipCodes(reqZipCodeFrom, reqZipCodeTo)
 	if err != nil {

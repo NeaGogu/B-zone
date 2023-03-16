@@ -3,7 +3,7 @@ import { Button, Form, Input, Card, ConfigProvider, theme, Alert } from 'antd';
 import { useNavigate } from "react-router-dom";
 import './index.css'
 
-// used for dark mdoe
+// used for dark mode
 const { darkAlgorithm } = theme;
 
 export default function Login() {
