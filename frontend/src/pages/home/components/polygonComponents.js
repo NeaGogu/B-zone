@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
+import randomColor from "randomcolor";
 import {wait} from "@testing-library/user-event/dist/utils";
 
 
@@ -60,37 +61,21 @@ async function getZipCodes(zoneList) {
 
     let zipCodes = []
     for (let i = 0; i < zoneList.length; i++) {
-        // console.log("zoneList[i]")
-        // console.log(zoneList[i])
+        // did this in order for the structure to be [[zipcode ranges zone1], [zipcode ranges zone2], etc...]
+        var zone = []
         
         for (let j = 0; j < zoneList[i].zone_ranges.length; j++) {
             var curr = {
                 zipFrom: zoneList[i].zone_ranges[j].zipcode_from,
                 zipTo: zoneList[i].zone_ranges[j].zipcode_to
             }
-            zipCodes.push(curr)
+            zone.push(curr)
         }
-        //console.log(zipCodes)
-        //zipCodes[i] = await getAreas(zoneList[i].zone_ranges); //per each zone, there are a list of areas with from and to
+        zipCodes.push(zone)
     }
 
     return zipCodes
 
-}
-
-async function getAreas(zoneAreas) {
-    //create array of zipcode ranges
-    let zoneAreaZips = [zips]
-    //loop through range items to find zip code ranges
-    for (let j = 0; j < zoneAreas.length; j++) {
-        
-        zoneAreaZips[j].zipFrom = zoneAreas[j].zipcode_from;
-        zoneAreaZips[j].zipTo = zoneAreas[j].zipcode_to;
-        console.log("zoneAreaZips")
-        console.log(zoneAreaZips)
-
-    }
-    return zoneAreaZips
 }
 
 async function getCoordinates(zipsList) {
@@ -98,10 +83,13 @@ async function getCoordinates(zipsList) {
     // console.log(zipsList)
     let coordinatesList = []
     //for each zone area, fetch the coordinates and compile them together
-    for(let j = 0; j < zipsList.length; j++) {
-        // console.log('hello')
-        // console.log(zipsList[j].zipFrom.toString() + " " + zipsList[j].zipTo.toString())
-        coordinatesList[j] = await fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipsList[j].zipFrom.toString() + '&zip_to=' + zipsList[j].zipTo.toString())
+
+    for (let i = 0; i < zipsList.length; i ++){
+        // same idea as in getzipcodes()
+        var struct = []
+        
+        for (let j=0; j <zipsList[i].length; j++) {
+            struct.push(await fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipsList[i][j].zipFrom.toString() + '&zip_to=' + zipsList[i][j].zipTo.toString())
             .then((response) => {
                 if(!response.ok) {
                     console.log("Response from our backend is not ok ???")
@@ -110,9 +98,9 @@ async function getCoordinates(zipsList) {
             })
             .then((data) => {
                 return data
-            }).catch(error => console.log(error))
-        //console.log("verifying output of await for coordinatesList (from getCoordinates)")
-        //console.log(coordinatesList[j])
+            }).catch(error => console.log(error)))
+        }
+        coordinatesList.push(struct)
     }
 
     return coordinatesList
@@ -127,10 +115,13 @@ const PolygonVis = () => {
 
     useEffect(() => {
         // async function in order to wait for response from api
+        context.layerContainer.eachLayer(function(layer){
+            context.layerContainer.removeLayer(layer)
+        })
         
         const fetchData = async () => {
             var coordinatesList = []
-
+            
             // delete old heat layer if it exists
             context.layerContainer.eachLayer(function (layer) {
                 console.log(layer)
@@ -142,18 +133,28 @@ const PolygonVis = () => {
             // console.log(initialZones)
             zipCodes = await getZipCodes(initialZones);
             console.log('zipcodes')
-            console.log(zipCodes)
+            //console.log(zipCodes)
             //console.log("Getting coordinates for first zone area... (from fetchData)")
             coordinatesList = await getCoordinates(zipCodes)
-            console.log(coordinatesList)
+            //console.log(coordinatesList)
             
-            
+            // itterates through zones
+            var arr = []
             for (let i = 0; i < coordinatesList.length; i++) {
-                for (let j = 0; j < coordinatesList[i].length; j++){
-                    context.layerContainer.addLayer(L.polygon(coordinatesList[i][j].zone_coordinates))    
+                //itterates through zone ranges inside of zones
+                let color = randomColor();
+                for (let j =0; j < coordinatesList[i].length; j++){
+                    // itteratres through coordinates in zone ranges
+                    for (let k =0; k<coordinatesList[i][j].length; k++){
+                        let polygon = L.polygon(coordinatesList[i][j][k].zone_coordinates)
+                        polygon.setStyle({color:color})
+                        context.layerContainer.addLayer(polygon)
+                    }
                 }
-                
             }
+            // var group = L.layerGroup(arr);
+            // context.layerContainer.addLayer(group)
+            
             
 
          

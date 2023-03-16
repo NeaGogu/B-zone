@@ -74,9 +74,10 @@ const Heatmap = ({ value, intensity }) => {
     const fetchData = async () => {
       // delete old heat layer if it exists
       context.layerContainer.eachLayer(function (layer) {
-        if (layer._heat != null) {
-          context.layerContainer.removeLayer(layer)
-        }
+        //console.log(layer)
+        context.layerContainer.removeLayer(layer)
+        //console.log("exists" + layer)
+        
       })
 
       // set address points
