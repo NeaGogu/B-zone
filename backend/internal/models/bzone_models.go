@@ -10,6 +10,7 @@ import (
 )
 
 const BzoneDatabase = "Bzone"
+
 // collection names for the bzone database
 const (
 	UserCollection = "users"
@@ -22,21 +23,19 @@ type BzoneDBModel struct {
 	DB *mongo.Database
 }
 
-
 // PlotModel struct for ZonesPLotModel
 type PlotModel struct {
 	// Unique Plot ID
-	PlotId int64 `bson:"plot_id,omitempty"`
+	PlotId int64 `json:"plot_id,omitempty" bson:"plot_id,omitempty"`
 	// Plot Name
-	Name string `bson:"plot_name,omitempty"`
+	Name string `json:"plot_name,omitempty" bson:"plot_name,omitempty"`
 	//Zones in the plot
-	ZoneIds []int64 `bson:"plot_zone_ids,omitempty"`
+	ZoneIds []int64 `json:"plot_zone_ids,omitempty" bson:"plot_zone_ids,omitempty"`
 	//created_at date time
-	PlotCreatedAt time.Time `bson:"plot_created_at,omitempty"`
+	PlotCreatedAt time.Time `json:"plot_created_at,omitempty" bson:"plot_created_at,omitempty"`
 	//saved_at date time
-	PlotSavedAt time.Time `bson:"plot_saved_at,omitempty"`
+	PlotSavedAt time.Time `json:"plot_saved_at,omitempty" bson:"plot_saved_at,omitempty"`
 }
-
 
 // ZoneModel struct for ZoneModel
 type ZoneModel struct {
@@ -50,28 +49,34 @@ type ZoneModel struct {
 	ZoneDrivingTime int64 `bson:"zone_driving_time,omitempty" json:"zone_driving_time"`
 }
 
+// PlotIDNamePair struct containing the ID of a plot and its name
+type PlotIDNamePair struct {
+	// Unique Plot ID
+	PlotId int64 `json:"user_plot_id,omitempty" bson:"user_plot_id,omitempty"`
+	// Plot Name
+	Name string `json:"user_plot_name,omitempty" bson:"user_plot_name,omitempty"`
+}
 
 // UserModel struct for UsersModel
 type UserModel struct {
 	//B-Zone User ID
-	UserId int64 `bson:"user_id,omitempty"`
+	UserId int64 `json:"user_id,omitempty" bson:"user_id,omitempty"`
 	// unique per user
-	Uuid string `bson:"uuid,omitempty"`
+	Uuid string `json:"uuid,omitempty" bson:"uuid,omitempty"`
 	// plots per user
-	PlotIds []int64 `bson:"user_plot_ids,omitempty"`
+	PlotIdNames []PlotIDNamePair `json:"user_id_name,omitempty" bson:"user_id_name,omitempty"`
 }
-
 
 // ZoneRangeModel struct for ZoneRangeModel
 type ZoneRangeModel struct {
 	// Unique Zone type ID
-	ZoneRangeId int64 `bson:"zone_range_id,omitempty"`
+	ZoneRangeId int64 `json:"zone_range_id,omitempty" bson:"zone_range_id,omitempty"`
 	// Zipcode range start
-	ZipcodeFrom int64 `bson:"zipcode_from"`
+	ZipcodeFrom int64 `json:"zipcode_from,omitempty" bson:"zipcode_from,omitempty"`
 	// Zipcode range end
-	ZipcodeTo int64 `bson:"zipcode_to"`
+	ZipcodeTo int64 `json:"zipcode_to,omitempty" bson:"zipcode_to,omitempty"`
 	// iso country of the zone range
-	IsoCountry string `bson:"iso_country,omitempty"`
+	IsoCountry string `json:"iso_country,omitempty" bson:"iso_country,omitempty"`
 	//array of coordinates?
 }
 

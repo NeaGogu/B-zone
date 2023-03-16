@@ -10,6 +10,11 @@ require (
 require github.com/google/uuid v1.3.0 // indirect
 
 require (
+	github.com/go-chi/cors v1.2.1 // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+)
+
+require (
 	github.com/go-chi/chi/v5 v5.0.8 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
