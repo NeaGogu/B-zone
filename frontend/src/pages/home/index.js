@@ -17,8 +17,6 @@ import PolygonVis from './components/polygonComponents'
 import './index.css';
 import dumbzones from './tempData/allcases.json'
 
-
-// Helper function
 /**
  * Returns an object with the specified properties for an item.
  * @param {string} label - The label of the item.
@@ -38,25 +36,11 @@ function getItem(label, key, icon, children, type) {
     };
 }
 
-// Function to convert a string to an array
-function toArr(str) {
-    return Array.isArray(str) ? str : [str];
-}
-
-// Context
+/** 
+ * Context for the form items
+ * @constant {React} 
+*/
 const MyFormItemContext = React.createContext([]);
-
-const MyFormItemGroup = ({ prefix, children }) => {
-    const prefixPath = React.useContext(MyFormItemContext);
-    const concatPath = React.useMemo(() => [...prefixPath, ...toArr(prefix)], [prefixPath, prefix]);
-    return <MyFormItemContext.Provider value={concatPath}>{children}</MyFormItemContext.Provider>;
-};
-
-const MyFormItem = ({ name, ...props }) => {
-    const prefixPath = React.useContext(MyFormItemContext);
-    const concatName = name !== undefined ? [...prefixPath, ...toArr(name)] : undefined;
-    return <Form.Item name={concatName} {...props} />;
-};
 
 // Components from Ant Design
 const { SubMenu } = Menu;
@@ -69,15 +53,6 @@ const item = [
     ]),
     getItem('Filter', 'sub2', null, null)
 ];
-
-// Form handling
-const handleChange = (value) => {
-    console.log(`selected ${value}`);
-};
-
-function setEmail() {
-    document.getElementById('email').innerHTML = user_id //gets email for text in item
-}
 
 // User details
 const user_id = localStorage.getItem('email')
@@ -156,6 +131,7 @@ function LocationMarker() {
         </Marker>
     );
 }
+
 //signOut function
 function signOut() {
     const token = localStorage.getItem('token');
@@ -190,7 +166,6 @@ function signOut() {
                 alert("You could not be logged out! Please try again later.")
             }
         })
-
 }
 
 //Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
@@ -246,10 +221,6 @@ export default function Home() {
     const {
         token: { colorBgContainer },
     } = theme.useToken();
-
-    const onFinish = (value) => {
-        console.log(value);
-    };
 
     // for comparison button to split maps
     const [showComparison, setShowComparison] = useState(false);
