@@ -6,6 +6,7 @@ import (
 	fp "github.com/rjNemo/underscore"
 	"math"
 	"math/rand"
+	"sync"
 )
 
 type VRPInstance struct {
@@ -259,9 +260,15 @@ func randomPopulation(inst VRPInstance, nIndividuals int) Population {
 
 // calcCosts calculates the cost for all solutions in population
 func (population *Population) calcCosts() {
+	var wg sync.WaitGroup
+	wg.Add(len(*population))
 	for i := 0; i < len(*population); i++ {
-		(*population)[i].calcCost()
+		go func(sol *Solution) {
+			defer wg.Done()
+			sol.calcCost()
+		}(&(*population)[i])
 	}
+	wg.Wait()
 }
 
 // getBest returns the best Solution in the Population.

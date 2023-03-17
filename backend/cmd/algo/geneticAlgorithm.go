@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"sync"
 )
 
 // geneticAlgorithm runs a genetic algorithm with the specified hyperparameters and returns the best solution found
@@ -33,30 +34,42 @@ func geneticAlgorithm(inst VRPInstance, nOffspring, nParents, nGenerations, tour
 
 // selectParents selects nParents with replacement from population using tournament selection with tournament size tournamentSize
 func selectParents(population Population, nParents, tournamentSize int) Population {
-	var err error
+	var wg sync.WaitGroup
+	wg.Add(nParents)
 	parents := make(Population, nParents)
 	for i := 0; i < nParents; i++ {
-		parents[i], err = population.tournamentSelection(tournamentSize)
-		if err != nil {
-			panic(err)
-		}
+		go func(j int) {
+			defer wg.Done()
+			var err error
+			parents[j], err = population.tournamentSelection(tournamentSize)
+			if err != nil {
+				panic(err)
+			}
+		}(i)
 	}
+	wg.Wait()
 	return parents
 }
 
 func makeOffspring(parents Population, nOffspring, maxMutations int, mutationRate, crossoverRate float64) Population {
+	var wg sync.WaitGroup
+	wg.Add(nOffspring)
 	n := len(parents)
 	offspring := make(Population, nOffspring)
 	for i := 0; i < nOffspring; i++ {
-		parent1 := parents[rand.Intn(n)].copy()
-		if rand.Float64() < crossoverRate {
-			parent2 := parents[rand.Intn(n)].copy()
-			offspring[i] = crossover(parent1, parent2)
-		} else {
-			offspring[i] = parent1
-		}
-		offspring[i].mutate(maxMutations, mutationRate)
+		go func(j int) {
+			defer wg.Done()
+			parent1 := parents[rand.Intn(n)].copy()
+			if rand.Float64() < crossoverRate {
+				parent2 := parents[rand.Intn(n)].copy()
+				offspring[j] = crossover(parent1, parent2)
+			} else {
+				offspring[j] = parent1
+			}
+			offspring[j].mutate(maxMutations, mutationRate)
+		}(i)
 	}
+	wg.Wait()
 	return offspring
 }
 
