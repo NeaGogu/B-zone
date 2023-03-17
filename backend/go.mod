@@ -12,6 +12,8 @@ require (
 
 require golang.org/x/exp v0.0.0-20220314205449-43aec2f8a4e7 // indirect
 
+require github.com/google/uuid v1.3.0 // indirect
+
 require (
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/golang/snappy v0.0.1 // indirect
