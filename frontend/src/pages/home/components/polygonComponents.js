@@ -36,7 +36,7 @@ async function getInitialZones() {
     })
         // Testing if response recorded was ok.
         .then((response) => {
-            if(!response.ok) {
+            if (!response.ok) {
                 console.log("Response was not ok ???")
                 alert("Unable to retrieve this zone configuration!")
             }
@@ -64,7 +64,7 @@ async function getZipCodes(zoneList) {
     for (let i = 0; i < zoneList.length; i++) {
         // In order for the structure to be [[zipcode ranges zone1], [zipcode ranges zone2], etc...].
         var zone = []
-        
+
         for (let j = 0; j < zoneList[i].zone_ranges.length; j++) {
             var curr = {
                 zipFrom: zoneList[i].zone_ranges[j].zipcode_from,
@@ -86,21 +86,21 @@ async function getCoordinates(zipsList) {
     let coordinatesList = []
     // For each zone area, fetch the coordinates and compile them together.
 
-    for (let i = 0; i < zipsList.length; i ++){
+    for (let i = 0; i < zipsList.length; i++) {
         // Same idea as in getzipcodes().
         var struct = []
-        
-        for (let j=0; j <zipsList[i].length; j++) {
+
+        for (let j = 0; j < zipsList[i].length; j++) {
             struct.push(await fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipsList[i][j].zipFrom.toString() + '&zip_to=' + zipsList[i][j].zipTo.toString())
-            .then((response) => {
-                if(!response.ok) {
-                    console.log("Response from our backend is not ok ???")
-                }
-                return response.json()
-            })
-            .then((data) => {
-                return data
-            }).catch(error => console.log(error)))
+                .then((response) => {
+                    if (!response.ok) {
+                        console.log("Response from our backend is not ok ???")
+                    }
+                    return response.json()
+                })
+                .then((data) => {
+                    return data
+                }).catch(error => console.log(error)))
         }
         coordinatesList.push(struct)
     }
@@ -114,13 +114,13 @@ const PolygonVis = () => {
 
     useEffect(() => {
         // Async function in order to wait for response from API.
-        context.layerContainer.eachLayer(function(layer){
+        context.layerContainer.eachLayer(function (layer) {
             context.layerContainer.removeLayer(layer)
         })
-        
+
         const fetchData = async () => {
             var coordinatesList = []
-            
+
             // Delete old heat layer if it exists.
             context.layerContainer.eachLayer(function (layer) {
                 console.log(layer)
@@ -131,23 +131,23 @@ const PolygonVis = () => {
             zipCodes = await getZipCodes(initialZones);
             console.log('zipcodes')
             coordinatesList = await getCoordinates(zipCodes)
-            
+
             // Iterates through zones.
             for (let i = 0; i < coordinatesList.length; i++) {
                 // Tterates through zone ranges inside of zones.
-                let color = randomColor({luminosity: 'dark'});
-                for (let j =0; j < coordinatesList[i].length; j++){
+                let color = randomColor({ luminosity: 'dark' });
+                for (let j = 0; j < coordinatesList[i].length; j++) {
                     // Iteratres through coordinates in zone ranges.
-                    for (let k =0; k<coordinatesList[i][j].length; k++){
+                    for (let k = 0; k < coordinatesList[i][j].length; k++) {
                         let polygon = L.polygon(coordinatesList[i][j][k].zone_coordinates)
-                        polygon.setStyle({color:color})
+                        polygon.setStyle({ color: color })
                         context.layerContainer.addLayer(polygon)
                     }
                 }
             }
         };
         fetchData()
-    }, [])
+    }, [context.layerContainer])
     return null
 }
 

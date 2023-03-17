@@ -76,7 +76,7 @@ const Heatmap = (props) => {
     // Async function in order to wait for response from API.
     renderRef.current = 1;
     const fetchData = async () => {     
-
+  
       // Set address points.
       let addressPoints = await findAddressesPoints();
       // Map those points to something interpretable for the heat map.
@@ -92,21 +92,20 @@ const Heatmap = (props) => {
           : [];
       pointsRef.current = points
       heatRef.current = new L.heatLayer(points)
-
-
+  
       // Create new layer and add it to the map context.
       context.layerContainer.addLayer(heatRef.current)
-
+  
     };
     fetchData();
-
+  
     return () => {
       context.layerContainer.removeLayer(heatRef.current)
     }
-  }, [])
-
+  }, [context.layerContainer, intensity, value])
+  
   useEffect(() => {
-    if (renderRef.current == 1){
+    if (renderRef.current === 1){
       console.log('firstime?')
       renderRef.current += renderRef.current;
     }else {
@@ -138,7 +137,7 @@ const Heatmap = (props) => {
       };
       fetchData();
     }
-  }, [value, intensity])
+  }, [context.layerContainer, value, intensity])
   return null
 }
 

@@ -3,10 +3,7 @@ import React, { useState, useEffect } from 'react';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
-import { Layout, Menu, theme, Form, Input, Button, ConfigProvider, Radio, InputNumber } from 'antd';
-
-// Icons
-import {  DeleteOutlined } from '@ant-design/icons';
+import { Layout, Menu, theme, ConfigProvider } from 'antd';
 
 // Components
 import Map from './components/mapComponent';
@@ -17,17 +14,9 @@ import SiderComponent from "./components/sliderComponent";
 //import dumbzones from './tempData/allcases.json'
 import HeaderComponent from "./components/headerComponent";
 
-
 // Components from Ant Design
-const { SubMenu } = Menu;
 const { darkAlgorithm } = theme;
 const { Header, Content, Sider } = Layout;
-
-//Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
-const ZoneSubMenu = ({ onSubmit }) => {
-    const [averageFuelCost, setAverageFuelCost] = useState("");
-    const [averageFuelUsage, setAverageFuelUsage] = useState("");
-}
 
 localStorage.getItem('token')
 
@@ -39,21 +28,8 @@ export default function Home() {
     // For comparison button to split map into two maps.
     const [showComparison, setShowComparison] = useState(false);
 
-    //
-    // const [selComps, setSelComps] = useState
-
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
-
-    const toggleMap = () => {
-        setShowMap(!showMap);
-        setShowComparison(false); // Reset comparison state when switching to singular map.
-    };
-
-    const toggleComparison = () => {
-        setShowComparison(!showComparison);
-        setShowMap(false); // Reset singular map state when switching to two maps.
-    };
 
     // For radio.
     const [value, setValue] = useState(1);
@@ -65,9 +41,19 @@ export default function Home() {
     const [intensity, setIntensity] = useState(500)
     const onChangeNumber = (e) => {
         console.log('home')
-        console.log(intensity )
+        console.log(intensity)
         setIntensity(e)
     }
+
+    const toggleMap = () => {
+        setShowMap(!showMap);
+        setShowComparison(false); // Reset comparison state when switching to singular map.
+    };
+
+    const toggleComparison = () => {
+        setShowComparison(!showComparison);
+        setShowMap(false); // Reset singular map state when switching to two maps.
+    };
 
     // Contains the name of the zone configuration that the user wants to save.
     const [saveName, setSaveName] = useState('');
@@ -125,7 +111,7 @@ export default function Home() {
 
     return (
         <ConfigProvider
-            // Theme of the web-app
+            // Theme of the web-app.
             theme={{
                 token: {
                     colorPrimary: "#ffd369",
@@ -133,7 +119,7 @@ export default function Home() {
                     colorPrimaryBg: "#393E46",
                     colorTextBase: "#eeeeee"
                 },
-                // Renders AntDesign components with dark mode
+                // Renders AntDesign components with dark mode.
                 algorithm: darkAlgorithm
             }}
         >
@@ -150,40 +136,20 @@ export default function Home() {
                             background: colorBgContainer,
                         }}
                     >
-                            {/*<Menu key="sub3" title="Heat map" style={{}}>*/}
-                            {/*    <Menu.Item key="5" style={{ padding: 0 }}>*/}
-                            {/*        <Radio.Group value={value} onChange={onChange} size='small'  >*/}
-                            {/*            <Radio.Button value={1}>*/}
-                            {/*                Time based*/}
-                            {/*            </Radio.Button>*/}
-                            {/*            <Radio.Button value={2}>*/}
-                            {/*                Location based*/}
-                            {/*            </Radio.Button>*/}
-                            {/*        </Radio.Group>*/}
-                            {/*    </Menu.Item>*/}
-                            {/*    <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>*/}
-                            {/*        <div style={{ textAlign: "center" }}>Intensity</div>*/}
-                            {/*        <div style={{ paddingLeft: 50 }}>*/}
-                            {/*            <InputNumber min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={value === 1 ? true : false} />*/}
-                            {/*        </div>*/}
-                            {/*    </Menu.Item>*/}
-                            {/*</Menu>*/}
-
-                            <SiderComponent
-                                savedZones={savedZones}
-                                setSavedZones={setSavedZones}
-                                onDeleteZone={handleDeleteZone}
-                                showMap={showMap}
-                                setShowMap={setShowMap}
-                                showComparison={showComparison}
-                                setShowComparison={setShowComparison}
-                                values={value}
-                                setValue={setValue.bind(this)}
-                                setIntensity={setIntensity.bind(this)}
-                                intensity={intensity}
-                                
-                                // onChangeNumber={onChangeNumber}
-                            />
+                        <SiderComponent
+                            savedZones={savedZones}
+                            addSavedZone={addSavedZone}
+                            setSavedZones={setSavedZones}
+                            onDeleteZone={handleDeleteZone}
+                            showMap={showMap}
+                            setShowMap={setShowMap}
+                            showComparison={showComparison}
+                            setShowComparison={setShowComparison}
+                            values={value}
+                            setValue={setValue.bind(this)}
+                            setIntensity={setIntensity.bind(this)}
+                            intensity={intensity}
+                        />
                     </Sider>
 
                     <Layout style={{
@@ -197,11 +163,11 @@ export default function Home() {
                         >
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber}/>
-                                    <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber}/>
+                                    <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} />
+                                    <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} />
                                 </div>
                             ) : (
-                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber}/> 
+                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} />
                             )}
                         </Content>
                     </Layout>

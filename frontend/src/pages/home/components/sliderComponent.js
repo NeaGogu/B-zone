@@ -1,18 +1,21 @@
 // External dependencies
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
-import { Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Radio, InputNumber } from 'antd';
+import { Menu, Form, Input, Button, Radio, InputNumber } from 'antd';
 
 // Icons
-import { UserOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
+import { DeleteOutlined, } from '@ant-design/icons';
+
 // CSS
 import '../index.css';
-import PolygonVis from "./polygonComponents";
+
 const { SubMenu } = Menu;
+
 //Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
 const ZoneSubMenu = ({ onSubmit }) => {
+
     const [averageFuelCost, setAverageFuelCost] = useState("");
     const [averageFuelUsage, setAverageFuelUsage] = useState("");
 
@@ -57,8 +60,10 @@ const ZoneSubMenu = ({ onSubmit }) => {
         </Form>
     );
 };
+
 function SiderComponent(props) {
-    const {values, intensity, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity} = props;
+    const { values, intensity, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones } = props;
+
     console.log(values, intensity)
     const toggleMap = () => {
         setShowMap(!showMap);
@@ -67,7 +72,7 @@ function SiderComponent(props) {
 
     const onChangeNumber = (e) => {
         console.log('comp')
-        console.log(intensity )
+        console.log(intensity)
         setIntensity(e)
     }
 
@@ -80,13 +85,6 @@ function SiderComponent(props) {
         setShowComparison(!showComparison);
         setShowMap(false);
     };
-
-    const [savedZones, setSavedZones] = useState([
-        { key: 'saved-initial', name: 'Initial Zone' },
-    ]);
-
-
-
 
     return (
         <Menu
@@ -110,6 +108,7 @@ function SiderComponent(props) {
                         </Radio.Button>
                     </Radio.Group>
                 </Menu.Item>
+
                 <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>
                     <div style={{ textAlign: "center" }}>Intensity</div>
                     <div style={{ paddingLeft: 50 }}>
@@ -117,9 +116,11 @@ function SiderComponent(props) {
                     </div>
                 </Menu.Item>
             </SubMenu>
+
             <SubMenu key="sub4" title="Zones">
                 <ZoneSubMenu />
             </SubMenu>
+
             <SubMenu key="sub2" title="Saved Zones">
                 {savedZones.map((zone) => (
                     <Menu.Item key={zone.key} style={{ height: '80px', padding: 0 }}>
@@ -150,7 +151,6 @@ function SiderComponent(props) {
             </SubMenu>
         </Menu>
     );
-
 }
 
 export default SiderComponent

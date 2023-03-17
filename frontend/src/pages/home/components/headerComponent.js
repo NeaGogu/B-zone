@@ -9,7 +9,7 @@ import { Button, Dropdown, Space } from 'antd';
 import { UserOutlined, SaveOutlined } from '@ant-design/icons';
 // CSS
 import '../index.css';
-// User email.
+// User email
 const user_id = localStorage.getItem('email')
 
 // User credentials menu items: their email and the sign out button.
@@ -72,10 +72,7 @@ function signOut() {
     })
 }
 
-
 const HeaderComponent = ({handleSaveClick}) => {
-
-
     return (
         <div style={{ display: 'flex', justifyContent: 'flex-end' }} >
             <div style={{ margin: 'auto', width: '100%' }} >
@@ -97,19 +94,16 @@ const HeaderComponent = ({handleSaveClick}) => {
                         items: user_items,
                     }}
                 >
-
                         <Space>
                             <UserOutlined style={{ verticalAlign: 'middle', color: '#ffd369' }} />
                             <button type="button" onClick={signOut} style={{ color: '#ffd369', backgroundColor: 'transparent', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>
                             </button>
                         </Space>
-
                 </Dropdown>
             </Space>
 
         </div>
-
-
     );
 };
+
 export default HeaderComponent

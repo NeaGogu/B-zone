@@ -58,15 +58,14 @@ function LocationMarker() {
     );
 }
 
-
-// Main function to hold the map, location marker and the layers
+// Main function to hold the map, location marker and the layers.
 function MapComponent(props) {
     const { value, intensity } = props;
 
     return (
         <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
             <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
             <LayersControl position='topright'>
                 <LayersControl.Overlay name='Heat map'>
@@ -81,9 +80,6 @@ function MapComponent(props) {
                     </LayerGroup>
                 </LayersControl.Overlay>
             </LayersControl>
-
-            {/*PolygonVis*/}
-
             <LocationMarker />
         </MapContainer>
     );
