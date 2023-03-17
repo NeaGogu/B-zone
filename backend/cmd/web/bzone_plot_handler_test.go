@@ -44,7 +44,7 @@ func TestBzonePlotHandler(t *testing.T) {
 			"Bzone.plots",
 			mtest.FirstBatch,
 			bson.D{{"_id", primitive.NewObjectID()},
-				{"plot_id", 0},
+				{"plot_id", "0"},
 				{"plot_name", "plot0"},
 				{"plot_zone_ids", bson.A{0}},
 				{}})
@@ -55,13 +55,7 @@ func TestBzonePlotHandler(t *testing.T) {
 		//The given bson.D will be returned from the mongo to the driver
 		mt.AddMockResponses(findOne, killCursors)
 
-		//mocked  db error
-		mt.AddMockResponses(mtest.CreateWriteErrorsResponse(mtest.WriteError{
-			Index:   1,
-			Code:    11000,
-			Message: "duplicate key error",
-		}))
-
+		//set up the app for the tests
 		app := SetUpMockApp(mt)
 
 		//Test case for missing plot ID
@@ -128,6 +122,6 @@ func testCase3(t *testing.T, a *application) {
 	resp := w.Result()
 	body, _ := io.ReadAll(resp.Body)
 
-	assert.Equal(t, 404, resp.StatusCode)                  // We expect return code 400
-	assert.Equal(t, "Plot does not exist\n", string(body)) // We expect "Invalid plot id in query"
+	assert.Equal(t, 404, resp.StatusCode)                  // We expect return code 404
+	assert.Equal(t, "Plot does not exist\n", string(body)) // We expect "Plot does not exist"
 }

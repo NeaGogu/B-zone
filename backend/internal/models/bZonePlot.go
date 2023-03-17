@@ -12,7 +12,7 @@ import (
 //	@param plotid
 //	@return BZonePlot
 //	@return error
-func (z *BzoneDBModel) GetPlot(plotId int) (*PlotModel, error) {
+func (z *BzoneDBModel) GetPlot(plotId string) (*PlotModel, error) {
 	// get the plots collection
 	plotsCollection := z.DB.Collection(PlotCollection)
 

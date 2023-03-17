@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 )
 
 // getBZonePlot
@@ -14,8 +13,8 @@ import (
 //	@param r
 func (app *application) getBZonePlot(w http.ResponseWriter, r *http.Request) {
 	//receive the plot id from the query
-	reqBZonePlot, err := strconv.Atoi(r.URL.Query().Get("plot_id"))
-	if err != nil || reqBZonePlot < 0 {
+	reqBZonePlot := r.URL.Query().Get("plot_id")
+	if reqBZonePlot == "" {
 		http.Error(w, "Invalid plot id in query", http.StatusBadRequest)
 		return
 	}
