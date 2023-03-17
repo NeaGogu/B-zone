@@ -1,7 +1,6 @@
 package bumbal
 
 import (
-	openapi "bzone/backend/internal/swag_gen"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -43,7 +42,7 @@ func ReceiveActivities(w http.ResponseWriter, r *http.Request) {
 		// close response body
 		defer resp.Body.Close()
 
-		var activityResponse openapi.ActivityListResponse
+		var activityResponse ActivityListResponseBumbal
 		err = json.Unmarshal(body, &activityResponse)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -52,6 +51,8 @@ func ReceiveActivities(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Println(activityResponse)
 		json.NewEncoder(w).Encode(activityResponse)
+
+		return
 
 	} else {
 		http.Error(w, resp.Status, resp.StatusCode)
