@@ -8,7 +8,7 @@ import Login from './pages/login'
  */
 function App() {
   var authenticated
-  // check whether a token exists in local storage.
+  // Check whether a token exists in local storage.
   if ((localStorage.getItem("token") === null)) {
     authenticated = false;
   } else {

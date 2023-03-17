@@ -219,7 +219,7 @@ export default function Home() {
 
     return (
         <ConfigProvider
-            // Theme of the web-app
+            // Theme of the web-app.
             theme={{
                 token: {
                     colorPrimary: "#ffd369",
@@ -227,7 +227,7 @@ export default function Home() {
                     colorPrimaryBg: "#393E46",
                     colorTextBase: "#eeeeee"
                 },
-                // Renders AntDesign components with dark mode
+                // Renders AntDesign components with dark mode.
                 algorithm: darkAlgorithm
             }}
         >
