@@ -1,12 +1,13 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
 import 'leaflet.heat'
 
 /**
-Sends a request to the Bumbal API to retrieve a list of activities.
-@returns {Promise<Response>} - The response from the API containing a list of activities.
-*/
+ Sends a request to the Bumbal API to retrieve a list of activities.
+ @returns {Promise<Response>} - The response from the API containing a list of activities.
+ */
+
 async function getActivities() {
   const token = localStorage.getItem('token')
   console.log('token ' + token)
@@ -35,9 +36,9 @@ async function getActivities() {
 }
 
 /**
-Finds the latitude and longitude of each activity address and returns the data as an array.
-@returns {Promise<Array>} - The array containing latitude, longitude, and intensity for each address.
-*/
+ Finds the latitude and longitude of each activity address and returns the data as an array.
+ @returns {Promise<Array>} - The array containing latitude, longitude, and intensity for each address.
+ */
 async function findAddressesPoints() {
   const response = await getActivities();
 
@@ -57,45 +58,109 @@ async function findAddressesPoints() {
   console.log(newData)
   return newData;
 }
-  
+
 /**
-Renders a Leaflet Heat map based on the data retrieved from the Bumbal API.
-@returns {JSX.Element} - The Leaflet Heatmap component.
-*/
-// Heat map component
-const Heatmap = ({ value, intensity }) => {
-  // Map context.
+ Renders a Leaflet Heatmap based on the data retrieved from the Bumbal API.
+ @returns {JSX.Element} - The Leaflet Heatmap component.
+ */
+
+// Hatmap component
+const Heatmap = (props) => {
+  const heatRef = useRef()
+  const propsRef = useRef(props)
+  const pointsRef = useRef()
+  const renderRef = useRef()
+  const {value, intensity} = props;
+
+  // map context
   const context = useLeafletContext()
+  console.log('ehllo')
 
   useEffect(() => {
-    // Async function in order to wait for response from API.
+    // async function in order to wait for response from api
+    renderRef.current = 1;
     const fetchData = async () => {
-      // Delete old heat layer if it exists.
-      context.layerContainer.eachLayer(function (layer) {
-        context.layerContainer.removeLayer(layer)        
-      })
+      console.log('yoyo1')
+      // delete old heat layer if it exists
+      // context.layerContainer.eachLayer(function (layer) {
+      //   //console.log(layer)
+      //   context.layerContainer.removeLayer(layer)
+      //   //console.log("exists" + layer)
 
-      // Set address points.
+      // })
+
+      // set address points
       let addressPoints = await findAddressesPoints();
-      // Map those points to something interpretable for the heat map.
+      // map those points to something interpretable for the heatmap
       const points = addressPoints
-        ? addressPoints.map((p) => {
-          // If activity time is selected.
-          if (value === 1) {
-            return [p[0], p[1], p[2]];
-          }
-          // If activity location is selected.
-          return [p[0], p[1], intensity];
-        })
-        : [];
+          ? addressPoints.map((p) => {
+            // if activity time is selected
+            if (value === 1) {
+              return [p[0], p[1], p[2]];
+            }
+            // if location is selected
+            return [p[0], p[1], intensity];
+          })
+          : [];
+      pointsRef.current = points
+      heatRef.current = new L.heatLayer(points)
 
-      // Create new layer and add it to the map context.
-      context.layerContainer.addLayer(L.heatLayer(points))
+
+      // create new layer and add it to the map context
+      context.layerContainer.addLayer(heatRef.current)
+
     };
-
     fetchData();
 
-  })
+    return () => {
+      context.layerContainer.removeLayer(heatRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (renderRef.current == 1){
+      console.log('firstime?')
+      renderRef.current += renderRef.current;
+    }else {
+      const fetchData = async () => {
+        console.log('yoyo1')
+        // delete old heat layer if it exists
+        context.layerContainer.eachLayer(function (layer) {
+          //console.log(layer)
+          context.layerContainer.removeLayer(layer)
+          //console.log("exists" + layer)
+
+        })
+
+        // set address points
+        let addressPoints = await findAddressesPoints();
+        // map those points to something interpretable for the heatmap
+        const points = addressPoints
+            ? addressPoints.map((p) => {
+              // if activity time is selected
+              if (value === 1) {
+                return [p[0], p[1], p[2]];
+              }
+              // if location is selected
+              return [p[0], p[1], intensity];
+            })
+            : [];
+        pointsRef.current = points
+        heatRef.current = new L.heatLayer(points)
+
+
+        // create new layer and add it to the map context
+        context.layerContainer.addLayer(heatRef.current)
+
+      };
+      fetchData();
+    }
+
+  }, [value, intensity])
+
+
 }
+
+
 
 export default Heatmap

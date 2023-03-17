@@ -10,10 +10,10 @@ import "leaflet-defaulticon-compatibility";
 import Heatmap from './heatmapComponent';
 import PolygonVis from './polygonComponents'
 
-/** 
-* Shows address, zipcode and coordinates when clicking on the map.
-* @return {JSX.Element|null} - Returns a JSX element containing a map marker with a popup, or null if the position is null.
-*/
+/**
+ * Shows address, zipcode and coordinates when clicking on the map.
+ * @return {JSX.Element|null} - Returns a JSX element containing a map marker with a popup, or null if the position is null.
+ */
 function LocationMarker() {
     const [position, setPosition] = useState(null);
     const [address, setAddress] = useState(null);
@@ -61,12 +61,12 @@ function LocationMarker() {
 
 // Main function to hold the map, location marker and the layers
 function MapComponent(props) {
-        const {value, intensity} = props;
-    
+    const { value, intensity } = props;
+
     return (
         <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
             <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
             <LayersControl position='topright'>
                 <LayersControl.Overlay name='Heat map'>
