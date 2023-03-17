@@ -92,11 +92,6 @@ func (app *application) routes() http.Handler {
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/plotidnames", app.getUserPlotIDs)
 		})
-	})
-
-	//Get BZone plot model
-	router.Group(func(r chi.Router) {
-		r.Use(JwtChecker)
 
 		r.Route("/bzone", func(r chi.Router) {
 			r.Get("/plot", app.getBZonePlot)

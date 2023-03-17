@@ -4,15 +4,20 @@ go 1.19
 
 require (
 	github.com/go-chi/chi v1.5.4
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	go.mongodb.org/mongo-driver v1.11.2
 )
 
 require (
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/google/go-cmp v0.5.2 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/testify v1.6.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
-	github.com/go-chi/chi/v5 v5.0.8 // indirect
+	github.com/go-chi/chi/v5 v5.0.8
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect

@@ -1,35 +1,33 @@
 package main
 
 import (
-	"bzone/backend/internal/models"
-	"context"
 	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson"
 	"net/http"
 	"strconv"
 )
 
+// getBZonePlot
+//
+//	@Description: function that handles the request for retrieving the one Plot based on the plot id
+//	@receiver app
+//	@param w
+//	@param r
 func (app *application) getBZonePlot(w http.ResponseWriter, r *http.Request) {
-
+	//receive the plot id from the query
 	reqBZonePlot, err := strconv.Atoi(r.URL.Query().Get("plot_id"))
 	if err != nil || reqBZonePlot < 0 {
 		http.Error(w, "Invalid plot id in query", http.StatusBadRequest)
 		return
 	}
 
-	// get the plots collection
-	plotsCollection := app.bzoneDbModel.DB.Collection(models.PlotCollection)
-
-	//set query filter
-	queryFilter := bson.D{{Key: "plot_id", Value: reqBZonePlot}}
-
-	var bZonePlot models.PlotModel
-	err = plotsCollection.FindOne(context.TODO(), queryFilter).Decode(&bZonePlot)
+	// send the plot id to the model which will return the the plot model
+	bZonePlot, err := app.bzoneDbModel.GetPlot(reqBZonePlot)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Plot does not exist", http.StatusNotFound)
 		return
 	}
 
+	// encode the output
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(bZonePlot)
 	return
