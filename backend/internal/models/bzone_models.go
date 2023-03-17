@@ -26,7 +26,7 @@ type BzoneDBModel struct {
 // PlotModel struct for ZonesPLotModel
 type PlotModel struct {
 	// Unique Plot ID
-	PlotId int64 `json:"plot_id,omitempty" bson:"plot_id,omitempty"`
+	PlotId string `json:"plot_id,omitempty" bson:"plot_id,omitempty"`
 	// Plot Name
 	Name string `json:"plot_name,omitempty" bson:"plot_name,omitempty"`
 	//Zones in the plot
