@@ -15,6 +15,6 @@ func main() {
 	}
 	inst := VRPInstance{activities, depot, nRoutes}
 
-	sol := geneticAlgorithm(inst, 5, 5, 5, 3, 1, 0.5)
+	sol := geneticAlgorithm(inst, 1000, 1000, 1000, 3, 5, 0.5, 0.5)
 	fmt.Println(sol)
 }
