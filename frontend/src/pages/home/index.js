@@ -45,16 +45,6 @@ export default function Home() {
         setIntensity(e)
     }
 
-    const toggleMap = () => {
-        setShowMap(!showMap);
-        setShowComparison(false); // Reset comparison state when switching to singular map.
-    };
-
-    const toggleComparison = () => {
-        setShowComparison(!showComparison);
-        setShowMap(false); // Reset singular map state when switching to two maps.
-    };
-
     // Contains the name of the zone configuration that the user wants to save.
     const [saveName, setSaveName] = useState('');
 

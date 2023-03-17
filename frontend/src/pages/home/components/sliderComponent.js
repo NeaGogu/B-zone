@@ -23,9 +23,10 @@ const ZoneSubMenu = ({ onSubmit }) => {
         e.preventDefault();
         const isValid = onSubmit(averageFuelCost, averageFuelUsage);
         if (isValid) {
-            // Add calculations
+            // Add calculations.
         }
     };
+    
     // Input fields for the zone calculation (average fuel cost, average fuel usage of car).
     return (
         <Form onFinish={handleSubmit}>
@@ -65,10 +66,20 @@ function SiderComponent(props) {
     const { values, intensity, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones } = props;
 
     console.log(values, intensity)
+
     const toggleMap = () => {
-        setShowMap(!showMap);
-        setShowComparison(false);
+        if (showComparison && !showMap) {
+            setShowComparison(false);
+            setShowMap(true);
+          }
     };
+
+    const toggleComparison = () => {
+        if (!showComparison && showMap) {
+          setShowComparison(true);
+          setShowMap(false);
+        }
+      };
 
     const onChangeNumber = (e) => {
         console.log('comp')
@@ -80,12 +91,7 @@ function SiderComponent(props) {
         console.log('comp')
         setValue(e.target.value);
     };
-
-    const toggleComparison = () => {
-        setShowComparison(!showComparison);
-        setShowMap(false);
-    };
-
+      
     return (
         <Menu
             mode="inline"
