@@ -7,6 +7,8 @@ require (
 	go.mongodb.org/mongo-driver v1.11.2
 )
 
+require github.com/google/uuid v1.3.0 // indirect
+
 require (
 	github.com/go-chi/cors v1.2.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
