@@ -148,6 +148,7 @@ const PolygonVis = () => {
         };
         fetchData()
     }, [])
+    return null
 }
 
 export default PolygonVis

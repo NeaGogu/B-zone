@@ -139,6 +139,7 @@ const Heatmap = (props) => {
       fetchData();
     }
   }, [value, intensity])
+  return null
 }
 
 export default Heatmap

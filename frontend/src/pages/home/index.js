@@ -6,13 +6,14 @@ import "leaflet-defaulticon-compatibility";
 import { Layout, Menu, theme, Form, Input, Button, Dropdown, Space, ConfigProvider, Radio, InputNumber } from 'antd';
 
 // Icons
-import { UserOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
+import { UserOutlined, SaveOutlined } from '@ant-design/icons';
 
 // Components
 import Map from './components/mapComponent';
 
 // CSS
 import './index.css';
+import SiderComponent from "./components/sliderComponent";
 //import dumbzones from './tempData/allcases.json'
 
 // Components from Ant Design
@@ -44,10 +45,10 @@ const user_items = [
     },
 ];
 
-/**
- * Signs out the user, so deletes the user token and redirects them to the login page.
- * @return {void}
- */
+/** 
+* Signs out the user, so deletes the user token and redirects them to the login page.
+* @return {void}
+*/
 function signOut() {
     const token = localStorage.getItem('token');
     var valid;
@@ -70,65 +71,20 @@ function signOut() {
 
             }
         }).then((data) => {
-        console.log("This is the data:")
-        console.log(data)
-        if (valid) {
-            localStorage.clear();
-            alert('You have been logged out!')
-            //2. Re-route user to home page.
-            window.location.reload()
-        } else {
-            alert("You could not be logged out! Please try again later.")
-        }
-    })
+            console.log("This is the data:")
+            console.log(data)
+            if (valid) {
+                localStorage.clear();
+                alert('You have been logged out!')
+                //2. Re-route user to home page.
+                window.location.reload()
+            } else {
+                alert("You could not be logged out! Please try again later.")
+            }
+        })
 }
 
-//Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
-const ZoneSubMenu = ({ onSubmit }) => {
-    const [averageFuelCost, setAverageFuelCost] = useState("");
-    const [averageFuelUsage, setAverageFuelUsage] = useState("");
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const isValid = onSubmit(averageFuelCost, averageFuelUsage);
-        if (isValid) {
-            // Add calculations
-        }
-    };
-    // Input fields for the zone calculation (average fuel cost, average fuel usage of car).
-    return (
-        <Form onFinish={handleSubmit}>
-            <Form.Item rules={[{ required: true }]}>
-                Average fuel cost
-                <Input
-                    placeholder="input fuel cost"
-                    type="number"
-                    step="0.01"
-                    value={averageFuelCost}
-                    onChange={(e) => setAverageFuelCost(e.target.value)}
-                />
-            </Form.Item>
-            <Form.Item>
-                Average fuel usage of car
-                <Input
-                    placeholder="input fuel usage of car"
-                    type="number"
-                    step="0.01"
-                    value={averageFuelUsage}
-                    onChange={(e) => setAverageFuelUsage(e.target.value)}
-                />
-            </Form.Item>
-            <Button
-                style={{ width: "100%" }}
-                type="primary"
-                htmlType="submit"
-                disabled={!averageFuelCost || !averageFuelUsage}
-            >
-                Calculate
-            </Button>
-        </Form>
-    );
-};
 
 localStorage.getItem('token')
 
@@ -140,23 +96,20 @@ export default function Home() {
     // For comparison button to split map into two maps.
     const [showComparison, setShowComparison] = useState(false);
 
+    //
+    // const [selComps, setSelComps] = useState
+
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
 
-    // Toggles the splitting of the map into two maps.
-    const toggleComparison = () => {
-        if (showComparison) {
-            return; // If showComparison is already true, do nothing.
-        }
-
-        setShowComparison(true);
-        setShowMap(false); // Reset singular map state when switching to two maps.
-    }
-
-    // Toggles the bringing back of the two maps into one map.
     const toggleMap = () => {
         setShowMap(!showMap);
         setShowComparison(false); // Reset comparison state when switching to singular map.
+    };
+
+    const toggleComparison = () => {
+        setShowComparison(!showComparison);
+        setShowMap(false); // Reset singular map state when switching to two maps.
     };
 
     // For radio.
@@ -168,18 +121,19 @@ export default function Home() {
     // For number.
     const [intensity, setIntensity] = useState(500)
     const onChangeNumber = (e) => {
-        console.log(intensity)
+        console.log('home')
+        console.log(intensity )
         setIntensity(e)
     }
 
     // Contains the name of the zone configuration that the user wants to save.
     const [saveName, setSaveName] = useState('');
 
-    /**
-     * When the user clicks the save button, they are asked to give a name to the zone configuration.
-     * @param {string} name - The name to give the saved zone configuration.
-     * @return {void}
-     */
+    /** 
+    * When the user clicks the save button, they are asked to give a name to the zone configuration.
+    * @param {string} name - The name to give the saved zone configuration.
+    * @return {void}
+    */
     function handleSaveClick() {
         const name = window.prompt('Enter a name for the save:');
         if (name) {
@@ -194,12 +148,17 @@ export default function Home() {
 
     ]);
     localStorage.setItem('saved-initial', 'Initial Zone');
+    const handleDeleteZone = (key) => {
+        localStorage.removeItem(key);
+        const newSavedZones = savedZones.filter((item) => item.key !== key);
+        setSavedZones(newSavedZones);
+    };
 
-    /**
-     * When the user has entered a name for the zone configuration they want to save, it is shown in the saved zones list.
-     * @param {string} name - The name given to the saved zone configuration.
-     * @return {void}
-     */
+    /** 
+    * When the user has entered a name for the zone configuration they want to save, it is shown in the saved zones list.
+    * @param {string} name - The name given to the saved zone configuration.
+    * @return {void}
+    */
     function addSavedZone(name) {
         const key = `saved-${Date.now()}-${Math.random()}`;
         const newZone = { key, name };
@@ -216,10 +175,14 @@ export default function Home() {
             }));
         setSavedZones(savedZones);
     }, []);
+    useEffect(() => {
+        console.log('home')
+        console.log(value, intensity)
+    }, [value, intensity]);
 
     return (
         <ConfigProvider
-            // Theme of the web-app.
+            // Theme of the web-app
             theme={{
                 token: {
                     colorPrimary: "#ffd369",
@@ -227,7 +190,7 @@ export default function Home() {
                     colorPrimaryBg: "#393E46",
                     colorTextBase: "#eeeeee"
                 },
-                // Renders AntDesign components with dark mode.
+                // Renders AntDesign components with dark mode
                 algorithm: darkAlgorithm
             }}
         >
@@ -272,68 +235,40 @@ export default function Home() {
                             background: colorBgContainer,
                         }}
                     >
-                        <Menu
-                            mode="inline"
-                            defaultSelectedKeys={['1']}
-                            defaultOpenKeys={['sub1']}
-                            style={{
-                                height: '100%',
-                                borderRight: 0,
-                            }}
-                        >
-                            <SubMenu key="sub3" title="Heat map" style={{}}>
-                                <Menu.Item key="5" style={{ padding: 0 }}>
-                                    <Radio.Group value={value} onChange={onChange} size='small'  >
-                                        <Radio.Button value={1}>
-                                            Time based
-                                        </Radio.Button>
-                                        <Radio.Button value={2}>
-                                            Location based
-                                        </Radio.Button>
-                                    </Radio.Group>
-                                </Menu.Item>
-                                <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>
-                                    <div style={{ textAlign: "center" }}>Intensity</div>
-                                    <div style={{ paddingLeft: 50 }}>
-                                        <InputNumber min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={value === 1 ? true : false} />
-                                    </div>
-                                </Menu.Item>
-                            </SubMenu>
+                            {/*<Menu key="sub3" title="Heat map" style={{}}>*/}
+                            {/*    <Menu.Item key="5" style={{ padding: 0 }}>*/}
+                            {/*        <Radio.Group value={value} onChange={onChange} size='small'  >*/}
+                            {/*            <Radio.Button value={1}>*/}
+                            {/*                Time based*/}
+                            {/*            </Radio.Button>*/}
+                            {/*            <Radio.Button value={2}>*/}
+                            {/*                Location based*/}
+                            {/*            </Radio.Button>*/}
+                            {/*        </Radio.Group>*/}
+                            {/*    </Menu.Item>*/}
+                            {/*    <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>*/}
+                            {/*        <div style={{ textAlign: "center" }}>Intensity</div>*/}
+                            {/*        <div style={{ paddingLeft: 50 }}>*/}
+                            {/*            <InputNumber min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={value === 1 ? true : false} />*/}
+                            {/*        </div>*/}
+                            {/*    </Menu.Item>*/}
+                            {/*</Menu>*/}
 
-                            <SubMenu key="sub4" title="Zones">
-                                <ZoneSubMenu />
-                            </SubMenu>
-
-                            <SubMenu key="sub2" title="Saved Zones">
-                                {savedZones.map((zone) => (
-                                    <Menu.Item key={zone.key} style={{ height: '80px', padding: 0 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ paddingLeft: '10px' }}>{zone.name}</span>
-                                            {zone.name !== 'Initial Zone' && (
-                                                <Button
-                                                    style={{ float: 'right' }}
-                                                    onClick={() => {
-                                                        localStorage.removeItem(zone.key);
-                                                        const newSavedZones = savedZones.filter((item) => item.key !== zone.key);
-                                                        setSavedZones(newSavedZones);
-                                                    }}
-                                                >
-                                                    <DeleteOutlined />
-                                                </Button>
-                                            )}
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                                            <Button style={{ flex: 1, marginRight: '3px' }} onClick={toggleMap}>
-                                                View
-                                            </Button>
-                                            <Button style={{ flex: 1, marginLeft: '3px' }} onClick={toggleComparison}>
-                                                Compare
-                                            </Button>
-                                        </div>
-                                    </Menu.Item>
-                                ))}
-                            </SubMenu>
-                        </Menu>
+                            <SiderComponent
+                                savedZones={savedZones}
+                                setSavedZones={setSavedZones}
+                                onDeleteZone={handleDeleteZone}
+                                showMap={showMap}
+                                setShowMap={setShowMap}
+                                showComparison={showComparison}
+                                setShowComparison={setShowComparison}
+                                values={value}
+                                setValue={setValue.bind(this)}
+                                setIntensity={setIntensity.bind(this)}
+                                intensity={intensity}
+                                
+                                // onChangeNumber={onChangeNumber}
+                            />
                     </Sider>
 
                     <Layout style={{
@@ -341,17 +276,17 @@ export default function Home() {
                     }}
                     >
                         <Content className="map" id="map"
-                                 style={{
-                                     minHeight: 500,
-                                 }}
+                            style={{
+                                minHeight: 500,
+                            }}
                         >
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <Map value={value} intensity={intensity} onChange={onChange} onChangeNumber={onChangeNumber} />
-                                    <Map value={value} intensity={intensity} onChange={onChange} onChangeNumber={onChangeNumber} />
+                                    <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber}/>
+                                    <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber}/>
                                 </div>
                             ) : (
-                                <Map value={value} intensity={intensity} onChange={onChange} onChangeNumber={onChangeNumber} />
+                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber}/> 
                             )}
                         </Content>
                     </Layout>
