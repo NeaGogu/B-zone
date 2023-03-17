@@ -265,7 +265,7 @@ export default function Home() {
                         >
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <Map /> 
+                                    <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber}/>
                                     <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber}/>
                                 </div>
                             ) : (
