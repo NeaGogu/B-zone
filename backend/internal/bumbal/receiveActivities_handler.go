@@ -1,17 +1,12 @@
 package bumbal
 
 import (
-	swagModels "bzone/backend/internal/swag_gen"
+	openapi "bzone/backend/internal/swag_gen"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
 )
-
-type Activities struct {
-	Items []swagModels.ActivityModel `json:"items,omitempty"`
-}
 
 func ReceiveActivities(w http.ResponseWriter, r *http.Request) {
 	url := "https://sep202302.bumbal.eu/api/v2/activity"
@@ -21,8 +16,10 @@ func ReceiveActivities(w http.ResponseWriter, r *http.Request) {
 	req, err := http.NewRequest(http.MethodPut, url, nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
+	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Authorization", jwToken)
 
 	resp, err := http.DefaultClient.Do(req)
@@ -31,10 +28,7 @@ func ReceiveActivities(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if resp.StatusCode == http.StatusUnauthorized {
-		http.Error(w, resp.Status, resp.StatusCode)
-		return
-	} else if resp.StatusCode == http.StatusMethodNotAllowed {
+	if resp.StatusCode == http.StatusMethodNotAllowed {
 		http.Error(w, resp.Status, resp.StatusCode)
 		return
 	} else if resp.StatusCode == http.StatusUnprocessableEntity {
@@ -49,14 +43,15 @@ func ReceiveActivities(w http.ResponseWriter, r *http.Request) {
 		// close response body
 		defer resp.Body.Close()
 
-		var activityModel Activities
-		err = xml.Unmarshal(body, &activityModel)
+		var activityResponse openapi.ActivityListResponse
+		err = json.Unmarshal(body, &activityResponse)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(activityModel)
+		fmt.Println(activityResponse)
+		json.NewEncoder(w).Encode(activityResponse)
 
 	} else {
 		http.Error(w, resp.Status, resp.StatusCode)
