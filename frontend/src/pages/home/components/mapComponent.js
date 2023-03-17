@@ -1,149 +1,92 @@
-import { useEffect, useRef } from 'react'
-import L from 'leaflet'
-import { useLeafletContext } from '@react-leaflet/core'
-import 'leaflet.heat'
+// External dependencies
+import React, { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import { LayersControl, LayerGroup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
+import "leaflet-defaulticon-compatibility";
+
+// Components
+import Heatmap from './heatmapComponent';
+import PolygonVis from './polygonComponents'
 
 /**
- Sends a request to the Bumbal API to retrieve a list of activities.
- @returns {Promise<Response>} - The response from the API containing a list of activities.
+ * Shows address, zipcode and coordinates when clicking on the map.
+ * @return {JSX.Element|null} - Returns a JSX element containing a map marker with a popup, or null if the position is null.
  */
-async function getActivities() {
-  const token = localStorage.getItem('token')
-  console.log('token ' + token)
-  const requestOptions = {
-    method: 'PUT',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`, // Add token to Bearer Authorization when sending GET signOut request.
-    },
-    body: JSON.stringify({
-      "options": {
-        "include_address": true
-      },
-      "limit": 10,
-      "offset": 0,
-      "sorting_column": "id",
-      "sorting_direction": "asc",
-      "as_list": true,
-      "count_only": false
-    })
-  };
-  const response = await fetch('https://sep202302.bumbal.eu/api/v2/activity', requestOptions);
-  console.log('getActivities response ' + response.status)
-  return response;
+function LocationMarker() {
+    const [position, setPosition] = useState(null);
+    const [address, setAddress] = useState(null);
+    const [zipcode, setZipcode] = useState(null);
+
+    const map = useMapEvents({
+        click(e) {
+            const { lat, lng } = e.latlng;
+            setPosition(e.latlng);
+            const API_KEY = 'pk.eyJ1IjoidGFuaWFnb2lhMTEiLCJhIjoiY2xleTRrYm02MDlmMTN4bzVsZTR4cWp4OCJ9.hmT59q-Q1IcEjC6mdY2R9w';
+            const API_URL = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${API_KEY}&types=postcode,address`;
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(data => {
+                    const features = data.features;
+                    if (features.length > 0) {
+                        const address = features[0].place_name;
+                        const zipcodes = features.filter(feature => feature.place_type[0] === 'postcode');
+                        const zipcode = zipcodes.length > 0 ? zipcodes[0].text : null;
+                        setAddress(address);
+                        setZipcode(zipcode);
+                    } else {
+                        setAddress(null);
+                        setZipcode(null);
+                    }
+                });
+            map.flyTo(e.latlng, map.getZoom());
+        },
+    });
+
+    return position === null ? null : (
+        <Marker position={position}>
+            <Popup>
+                <div>
+                    <div>Latitude: {position.lat.toFixed(4)}</div>
+                    <div>Longitude: {position.lng.toFixed(4)}</div>
+                    {address && <div>Address: {address}</div>}
+                    {zipcode && <div>Zipcode: {zipcode}</div>}
+                </div>
+            </Popup>
+        </Marker>
+    );
 }
 
-/**
- Finds the latitude and longitude of each activity address and returns the data as an array.
- @returns {Promise<Array>} - The array containing latitude, longitude, and intensity for each address.
- */
-async function findAddressesPoints() {
-  const response = await getActivities();
 
-  // If token is invalid, take the user to log in page.
-  if (response.status === 401) {
-    alert('Expired or Invalid Token')
-    localStorage.removeItem('token')
-    window.location.reload()
-  }
+// Main function to hold the map, location marker and the layers
+function MapComponent(props) {
+    const { value, intensity } = props;
 
-  const data = await response.json();
+    return (
+        <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
+            <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-  console.log(data)
-  let newData = data.items.map((i) => {
-    return [i.address.latitude, i.address.longitude, i.duration]; // Lat Lng intensity.
-  })
-  console.log(newData)
-  return newData;
+            <LayersControl position='topright'>
+                <LayersControl.Overlay name='Heat map'>
+                    <LayerGroup>
+                        <Heatmap value={value} intensity={intensity} />
+                    </LayerGroup>
+                </LayersControl.Overlay>
+
+                <LayersControl.Overlay name='Zones'>
+                    <LayerGroup>
+                        <PolygonVis />
+                    </LayerGroup>
+                </LayersControl.Overlay>
+            </LayersControl>
+
+            {/*PolygonVis*/}
+
+            <LocationMarker />
+        </MapContainer>
+    );
 }
 
-/**
- Renders a Leaflet Heatmap based on the data retrieved from the Bumbal API.
- @returns {JSX.Element} - The Leaflet Heatmap component.
- */
-
-const Heatmap = (props) => {
-  const heatRef = useRef()
-  const pointsRef = useRef()
-  const renderRef = useRef()
-  const {value, intensity} = props;
-
-  // Map context.
-  const context = useLeafletContext()
-  console.log('ehllo')
-
-  useEffect(() => {
-    // Async function in order to wait for response from API.
-    renderRef.current = 1;
-    const fetchData = async () => {
-      console.log('yoyo1')
-     
-
-      // Set address points.
-      let addressPoints = await findAddressesPoints();
-      // Map those points to something interpretable for the heat map.
-      const points = addressPoints
-          ? addressPoints.map((p) => {
-            // If activity time is selected.
-            if (value === 1) {
-              return [p[0], p[1], p[2]];
-            }
-            // If activity location is selected.
-            return [p[0], p[1], intensity];
-          })
-          : [];
-      pointsRef.current = points
-      heatRef.current = new L.heatLayer(points)
-
-
-      // Create new layer and add it to the map context.
-      context.layerContainer.addLayer(heatRef.current)
-
-    };
-    fetchData();
-
-    return () => {
-      context.layerContainer.removeLayer(heatRef.current)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (renderRef.current == 1){
-      console.log('firstime?')
-      renderRef.current += renderRef.current;
-    }else {
-      const fetchData = async () => {
-        console.log('yoyo1')
-
-        // Delete old heat layer if it exists.
-        context.layerContainer.eachLayer(function (layer) {
-          context.layerContainer.removeLayer(layer)
-        })
-
-        // Set address points.
-        let addressPoints = await findAddressesPoints();
-
-        // Map those points to something interpretable for the heat map.
-        const points = addressPoints
-            ? addressPoints.map((p) => {
-              // If activity time is selected.
-              if (value === 1) {
-                return [p[0], p[1], p[2]];
-              }
-              // If activity location is selected.
-              return [p[0], p[1], intensity];
-            })
-            : [];
-        pointsRef.current = points
-        heatRef.current = new L.heatLayer(points)
-
-        // Create new layer and add it to the map context.
-        context.layerContainer.addLayer(heatRef.current)
-      };
-      fetchData();
-    }
-  }, [value, intensity])
-}
-
-export default Heatmap
+export default MapComponent;
