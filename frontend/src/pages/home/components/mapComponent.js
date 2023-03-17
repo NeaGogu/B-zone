@@ -61,11 +61,7 @@ function LocationMarker() {
 
 // Main function to hold the map, location marker and the layers
 function MapComponent(props) {
-        // For radio.
-        const [value] = useState(1);
-    
-        // For number.
-        const [intensity] = useState(500)
+    const { value, intensity } = props;
     
     return (
         <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>

@@ -187,7 +187,7 @@ export default function Home() {
             setSaveName(name);
         }
     }
-    
+
     // This makes sure the initial zone configuration is always shown.
     const [savedZones, setSavedZones] = useState([
         { key: 'saved-initial', name: 'Initial Zone' },
@@ -299,6 +299,7 @@ export default function Home() {
                                     </div>
                                 </Menu.Item>
                             </SubMenu>
+
                             <SubMenu key="sub4" title="Zones">
                                 <ZoneSubMenu />
                             </SubMenu>
@@ -346,11 +347,11 @@ export default function Home() {
                         >
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <Map /> 
-                                    <Map />
+                                    <Map value={value} intensity={intensity} onChange={onChange} onChangeNumber={onChangeNumber} />
+                                    <Map value={value} intensity={intensity} onChange={onChange} onChangeNumber={onChangeNumber} />
                                 </div>
                             ) : (
-                                <Map /> 
+                                <Map value={value} intensity={intensity} onChange={onChange} onChangeNumber={onChangeNumber} />
                             )}
                         </Content>
                     </Layout>
