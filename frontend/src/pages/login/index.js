@@ -3,14 +3,28 @@ import { Button, Form, Input, Card, ConfigProvider, theme, Alert } from 'antd';
 import { useNavigate } from "react-router-dom";
 import './index.css'
 
-// used for dark mdoe
+// used for dark mode
 const { darkAlgorithm } = theme;
 
 export default function Login() {
-
+    /**
+    * A hook from React Router that allows for navigation within the app.
+    @type {Function}
+    */
     const navigate = useNavigate();
+
+    /**
+    * A boolean variable that keeps track of whether the user has been verified or not
+     @type {boolean}
+    */
     var verified;
 
+    /** 
+    * Authenticates the user's credentials against the server API. 
+    * @param {string} user The email address of the user to authenticate.
+    * @param {string} passw The password of user to authenticate.
+    * @return {undefined} 
+    */
     function signIn(user, passw) {
         fetch("https://sep202302.bumbal.eu/api/v2/authenticate/sign-in", {
             method: 'POST',
@@ -52,6 +66,12 @@ export default function Login() {
             })
         return undefined;
     }
+    
+    /**
+    Handles the form submission event and triggers the signIn() function with the entered email and password.
+    @param {object} values - An object containing the entered form values.
+    @return {undefined}
+    */
 
     const onFinish = (values) => {
         var email = Object.values(values)[0];
@@ -74,7 +94,7 @@ export default function Login() {
                     // renders antd components with dark mode
                     algorithm: darkAlgorithm
                 }}
-            >
+            >   
                 {/* Form Implementation */}
                 <Card className='form-card' >
                     <Form name='login-form' className='login-form' onFinish={onFinish}>
@@ -95,10 +115,21 @@ export default function Login() {
                     </Form>
                 </Card>
             </ConfigProvider>
+            
 
             {/* Bee Image (maybe use a background pre made instead of an svg as component) */}
             <img src='https://upload.wikimedia.org/wikipedia/commons/c/c3/Bee_-_The_Noun_Project.svg' alt='Bee SVG' className='bee' />
         </div>
     );
+            
 
 }
+
+/**
+Renders a card component containing a login form.
+@param {string} className - The class name for the card component.
+@param {string} name - The name of the form.
+@param {function} onFinish - The function to call when the form is submitted.
+@returns {JSX.Element} - The card component with a login form.
+*/
+// couldnt put this in line 97 above {/* Form Implementation */} gave me error.

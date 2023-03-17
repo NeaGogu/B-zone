@@ -1,11 +1,11 @@
 package main
 
 import (
-	_ "bzone/backend/cmd/web/api_endpoints"
 	"net/http"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 func hello(w http.ResponseWriter, r *http.Request) {
@@ -68,14 +68,38 @@ func (app *application) routes() http.Handler {
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
-	router.Use(JwtChecker)
+	router.Use(cors.Handler(cors.Options{
+    // AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+    AllowedOrigins:   []string{"https://*", "http://*", "*"},
+    // AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+    AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+    AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "*"},
+    ExposedHeaders:   []string{"Link"},
+    AllowCredentials: false,
+    MaxAge:           300, // Maximum value not ignored by any of major browsers
+  }))
 
-	router.Route("/test_route", func(r chi.Router) {
+
+	app.infoLog.Println("CORS enabled!")
+	// for testing purposes, does not require JWT authorization
+	router.Route("/test", func(r chi.Router) {
 		r.Get("/", hello)
+		r.Route("/zip", func(r chi.Router) {
+
+			r.Get("/coordinates", app.getZipCodeCoords)
+		})
 	})
 
-	router.Route("/zip", func(r chi.Router) {
-		r.Get("/coordinates", app.getZipCodeCoords)
+	router.Group(func(r chi.Router) {
+		r.Use(JwtChecker)
+
+		r.Route("/zip", func(r chi.Router) {
+			r.Get("/coordinates", app.getZipCodeCoords)
+		})
+
+		r.Route("/user", func(r chi.Router) {
+			r.Get("/plotidnames", app.getUserPlotIDs)
+		})
 	})
 
 	return router

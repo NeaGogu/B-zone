@@ -11,6 +11,11 @@ require (
 require golang.org/x/exp v0.0.0-20220314205449-43aec2f8a4e7 // indirect
 
 require (
+	github.com/go-chi/cors v1.2.1 // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+)
+
+require (
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
