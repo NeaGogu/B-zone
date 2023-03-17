@@ -99,15 +99,6 @@ export default function Home() {
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
 
-    const toggleMap = () => {
-        setShowMap(!showMap);
-        setShowComparison(false); // Reset comparison state when switching to singular map.
-    };
-
-    const toggleComparison = () => {
-        setShowComparison(!showComparison);
-        setShowMap(false); // Reset singular map state when switching to two maps.
-    };
 
     // For radio.
     const [value, setValue] = useState(1);
@@ -227,6 +218,7 @@ export default function Home() {
                             background: colorBgContainer,
                         }}
                     >
+                        //heatmap settings as Menu for testing purposes 
                             {/*<Menu key="sub3" title="Heat map" style={{}}>*/}
                             {/*    <Menu.Item key="5" style={{ padding: 0 }}>*/}
                             {/*        <Radio.Group value={value} onChange={onChange} size='small'  >*/}
@@ -246,6 +238,7 @@ export default function Home() {
                             {/*    </Menu.Item>*/}
                             {/*</Menu>*/}
 
+                            //sider component
                             <SiderComponent
                                 savedZones={savedZones}
                                 setSavedZones={setSavedZones}

@@ -57,24 +57,22 @@ const ZoneSubMenu = ({ onSubmit }) => {
         </Form>
     );
 };
-function SiderComponent(props) {
-    const {value, intensity, onChange, onChangeNumber, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone} = props;
+const SiderComponent =
+    ({ value, intensity, onChange, onChangeNumber, savedZones, setSavedZones, onDeleteZone,
+         showComparison, setShowComparison, showMap, setShowMap }) => {
 
-    const toggleMap = () => {
+
+
+
+        const toggleMap = () => {
         setShowMap(!showMap);
-        setShowComparison(false);
+        setShowComparison(false); // Reset comparison state when switching to singular map.
     };
 
     const toggleComparison = () => {
         setShowComparison(!showComparison);
-        setShowMap(false);
+        setShowMap(false); // Reset singular map state when switching to two maps.
     };
-
-    const [savedZones, setSavedZones] = useState([
-        { key: 'saved-initial', name: 'Initial Zone' },
-    ]);
-
-
     return (
         <Menu
             mode="inline"
@@ -137,7 +135,5 @@ function SiderComponent(props) {
             </SubMenu>
         </Menu>
     );
-
-}
-
+};
 export default SiderComponent
