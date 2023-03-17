@@ -1016,3 +1016,51 @@ func TestSolution_mutate_repeat(t *testing.T) {
 		})
 	}
 }
+
+func TestSolution_removePoints(t *testing.T) {
+	tests := []struct {
+		name   string
+		sol    Solution
+		points []Pos
+		want   Solution
+	}{
+		{
+			name:   "empty solution, empty points",
+			sol:    Solution{},
+			points: []Pos{},
+			want:   Solution{},
+		},
+		{
+			name:   "empty solution, non-empty points",
+			sol:    Solution{},
+			points: []Pos{{0, 0}},
+			want:   Solution{},
+		},
+		{
+			name:   "nonempty solution, empty points",
+			sol:    Solution{[]Route{{Pos{0, 0}, []Pos{{1, 1}}}}, 0},
+			points: []Pos{},
+			want:   Solution{[]Route{{Pos{0, 0}, []Pos{{1, 1}}}}, 0},
+		},
+		{
+			name:   "point not in solution",
+			sol:    Solution{[]Route{{Pos{0, 0}, []Pos{{1, 1}}}}, 0},
+			points: []Pos{{42, 42}},
+			want:   Solution{[]Route{{Pos{0, 0}, []Pos{{1, 1}}}}, 0},
+		},
+		{
+			name:   "point in solution",
+			sol:    Solution{[]Route{{Pos{0, 0}, []Pos{{1, 1}}}}, 0},
+			points: []Pos{{1, 1}},
+			want:   Solution{[]Route{{Pos{0, 0}, []Pos{}}}, 0},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.sol.removePoints(tt.points)
+			if !reflect.DeepEqual(tt.sol, tt.want) {
+				t.Errorf("removePoints() got = %v, want %v", tt.sol, tt.want)
+			}
+		})
+	}
+}

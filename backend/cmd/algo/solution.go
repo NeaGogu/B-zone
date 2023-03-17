@@ -218,19 +218,11 @@ func (sol *Solution) applyGreedy(r, i int) error {
 	return nil
 }
 
-func (sol *Solution) removePoints(points []Pos, removeRoutes bool) {
+func (sol *Solution) removePoints(points []Pos) {
 	for _, point := range points {
 		for r, route := range sol.routes {
 			if i := indexOf(route.activities, point); i >= 0 {
 				sol.routes[r].activities = append(route.activities[:i], route.activities[i+1:]...)
-			}
-		}
-	}
-	if removeRoutes {
-		for i := 0; i < len(sol.routes); i++ {
-			if len(sol.routes[i].activities) == 0 {
-				sol.routes = append(sol.routes[:i], sol.routes[i+1:]...)
-				i--
 			}
 		}
 	}

@@ -116,5 +116,5 @@ func passOnRoute(parent1, parent2, child *Solution, index int) {
 		return
 	}
 	child.routes[index] = route
-	parent2.removePoints(route.activities, false)
+	parent2.removePoints(route.activities)
 }

@@ -4,16 +4,13 @@ go 1.19
 
 require (
 	github.com/go-chi/chi v1.5.4
+	github.com/go-chi/cors v1.2.1
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/rjNemo/underscore v0.5.0
 	go.mongodb.org/mongo-driver v1.11.2
 )
 
 require golang.org/x/exp v0.0.0-20220314205449-43aec2f8a4e7 // indirect
-
-require (
-	github.com/go-chi/cors v1.2.1 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-)
 
 require (
 	github.com/go-chi/chi/v5 v5.0.8
