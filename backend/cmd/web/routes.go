@@ -94,6 +94,11 @@ func (app *application) routes() http.Handler {
 		r.Route("/zone/", func(r chi.Router) {
 			r.Post("/ranges", app.getZoneRanges)
 		})
+		//testing bzone plot getter
+		r.Route("/bzone", func(r chi.Router) {
+			r.Get("/plot", app.getBZonePlot)
+		})
+
 	})
 
 	// authorized routes
@@ -110,6 +115,10 @@ func (app *application) routes() http.Handler {
 
 		r.Route("/zone/", func(r chi.Router) {
 			r.Post("/ranges", app.getZoneRanges)
+		})
+
+		r.Route("/bzone", func(r chi.Router) {
+			r.Get("/plot", app.getBZonePlot)
 		})
 
 		r.Route("/bumbal", func(r chi.Router) {
