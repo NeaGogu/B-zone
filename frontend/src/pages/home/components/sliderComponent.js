@@ -25,38 +25,44 @@ const ZoneSubMenu = ({ onSubmit }) => {
             // Add calculations.
         }
     };
-    
+
     // Input fields for the zone calculation (average fuel cost, average fuel usage of car).
     return (
         <Form onFinish={handleSubmit}>
             <Form.Item rules={[{ required: true }]}>
-                Average fuel cost
-                <Input
-                    placeholder="input fuel cost"
-                    type="number"
-                    step="0.01"
-                    value={averageFuelCost}
-                    onChange={(e) => setAverageFuelCost(e.target.value)}
-                />
+                <div style={{ padding: "0 5px" }}>
+                    Average fuel cost
+                    <Input
+                        placeholder="input fuel cost"
+                        type="number"
+                        step="0.01"
+                        value={averageFuelCost}
+                        onChange={(e) => setAverageFuelCost(e.target.value)}
+                    />
+                </div>
             </Form.Item>
             <Form.Item>
-                Average fuel usage of car
-                <Input
-                    placeholder="input fuel usage of car"
-                    type="number"
-                    step="0.01"
-                    value={averageFuelUsage}
-                    onChange={(e) => setAverageFuelUsage(e.target.value)}
-                />
+                <div style={{ padding: "0 5px" }}>
+                    Average fuel usage of car
+                    <Input
+                        placeholder="input fuel usage of car"
+                        type="number"
+                        step="0.01"
+                        value={averageFuelUsage}
+                        onChange={(e) => setAverageFuelUsage(e.target.value)}
+                    />
+                </div>
             </Form.Item>
-            <Button
-                style={{ width: "100%" }}
-                type="primary"
-                htmlType="submit"
-                disabled={!averageFuelCost || !averageFuelUsage}
-            >
-                Calculate
-            </Button>
+            <div style={{ textAlign: "center" }}>
+                <Button
+                    style={{ width: "95%" }}
+                    type="primary"
+                    htmlType="submit"
+                    disabled={!averageFuelCost || !averageFuelUsage}
+                >
+                    Calculate
+                </Button>
+            </div>
         </Form>
     );
 };
@@ -70,15 +76,15 @@ function SiderComponent(props) {
         if (showComparison && !showMap) {
             setShowComparison(false);
             setShowMap(true);
-          }
+        }
     };
 
     const toggleComparison = () => {
         if (!showComparison && showMap) {
-          setShowComparison(true);
-          setShowMap(false);
+            setShowComparison(true);
+            setShowMap(false);
         }
-      };
+    };
 
     const onChangeNumber = (e) => {
         console.log('comp')
@@ -90,7 +96,7 @@ function SiderComponent(props) {
         console.log('comp')
         setValue(e.target.value);
     };
-      
+
     return (
         <Menu
             mode="inline"
@@ -103,20 +109,22 @@ function SiderComponent(props) {
         >
 
             <SubMenu key="sub3" title="Heat map" style={{}}>
-                <Menu.Item key="5" style={{ padding: 0 }}>
-                    <Radio.Group value={values} onChange={onChange} size='small'  >
-                        <Radio.Button value={1}>
-                            Time based
-                        </Radio.Button>
-                        <Radio.Button value={2}>
-                            Location based
-                        </Radio.Button>
-                    </Radio.Group>
-                </Menu.Item>
+                <div style={{ width: '100%', textAlign: 'center' }}>
+                    <Menu.Item key="5" style={{ padding: 0 }}>
+                        <Radio.Group value={values} onChange={onChange} size='small'  >
+                            <Radio.Button value={1}>
+                                Time based
+                            </Radio.Button>
+                            <Radio.Button value={2}>
+                                Location based
+                            </Radio.Button>
+                        </Radio.Group>
+                    </Menu.Item>
+                </div>
 
                 <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>
                     <div style={{ textAlign: "center" }}>Intensity</div>
-                    <div style={{ paddingLeft: 50 }}>
+                    <div style={{ textAlign: "center" }}>
                         <InputNumber min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={values === 1 ? true : false} />
                     </div>
                 </Menu.Item>

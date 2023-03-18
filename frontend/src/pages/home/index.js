@@ -123,7 +123,7 @@ export default function Home() {
 
                 <Layout>
                     <Sider
-                        width={"200"}
+                        width={"225"}
                         style={{
                             background: colorBgContainer,
                         }}
@@ -155,8 +155,12 @@ export default function Home() {
                         >
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} />
-                                    <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} />
+                                    <div style={{ paddingRight: "5px", width: "50%" }}>
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} />
+                                    </div>
+                                    <div style={{ paddingLeft: "5px", width: "50%" }}>
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} />
+                                    </div>
                                 </div>
                             ) : (
                                 <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} />
