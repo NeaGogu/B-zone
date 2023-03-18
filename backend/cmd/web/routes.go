@@ -69,27 +69,38 @@ func (app *application) routes() http.Handler {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(cors.Handler(cors.Options{
-    // AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
-    AllowedOrigins:   []string{"https://*", "http://*", "*"},
-    // AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
-    AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-    AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "*"},
-    ExposedHeaders:   []string{"Link"},
-    AllowCredentials: false,
-    MaxAge:           300, // Maximum value not ignored by any of major browsers
-  }))
-
+		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+		AllowedOrigins: []string{"https://*", "http://*", "*"},
+		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "*"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
 
 	app.infoLog.Println("CORS enabled!")
 	// for testing purposes, does not require JWT authorization
+	// should not be used in production
 	router.Route("/test", func(r chi.Router) {
 		r.Get("/", hello)
+
 		r.Route("/zip", func(r chi.Router) {
 
 			r.Get("/coordinates", app.getZipCodeCoords)
 		})
+
+		r.Route("/zone/", func(r chi.Router) {
+			r.Post("/ranges", app.getZoneRanges)
+		})
+		//testing bzone plot getter
+		r.Route("/bzone", func(r chi.Router) {
+			r.Get("/plot", app.getBZonePlot)
+		})
+
 	})
 
+	// authorized routes
 	router.Group(func(r chi.Router) {
 		r.Use(JwtChecker)
 
@@ -99,6 +110,14 @@ func (app *application) routes() http.Handler {
 
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/plotidnames", app.getUserPlotIDs)
+		})
+
+		r.Route("/zone/", func(r chi.Router) {
+			r.Post("/ranges", app.getZoneRanges)
+		})
+
+		r.Route("/bzone", func(r chi.Router) {
+			r.Get("/plot", app.getBZonePlot)
 		})
 	})
 
