@@ -1,26 +1,35 @@
 package bumbal
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
+const baseUrl = "https://sep202302.bumbal.eu/api/v2/"
+const (
+	activitiesUrl = "activity"
+)
+
 func ReceiveActivities(w http.ResponseWriter, r *http.Request) {
-	url := "https://sep202302.bumbal.eu/api/v2/activity"
+	reqUrl := baseUrl + activitiesUrl
+	reqBody := []byte(`{"options":{"include_address_applied":true}}`)
 	jwToken := r.Header.Get("Authorization") // -> "Bearer <TOKEN>"
 
+	fmt.Println(bytes.NewBuffer(reqBody))
 	// query BUMBAL /activity -> PUT req with TOKEN in body
-	req, err := http.NewRequest(http.MethodPut, url, nil)
+	req, err := http.NewRequest(http.MethodPut, reqUrl, bytes.NewBuffer(reqBody))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Authorization", jwToken)
 
+	fmt.Println(req)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -35,22 +44,23 @@ func ReceiveActivities(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if resp.StatusCode == http.StatusOK {
 		// get the data
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-		// close response body
-		defer resp.Body.Close()
+		//body, err := io.ReadAll(resp.Body)
+		//if err != nil {
+		//	fmt.Println(err.Error())
+		//}
+		//// close response body
+		//defer resp.Body.Close()
 
-		var activityResponse ActivityListResponseBumbal
-		err = json.Unmarshal(body, &activityResponse)
+		var respModel ActivityListResponseBumbal
+		dec := json.NewDecoder(resp.Body)
+		err = dec.Decode(&respModel)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Println(activityResponse)
-		json.NewEncoder(w).Encode(activityResponse)
+		fmt.Println(respModel)
+		json.NewEncoder(w).Encode(respModel)
 
 		return
 
