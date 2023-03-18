@@ -15,6 +15,7 @@ async function getInitialZones() {
     // Gets list of zones.
     // Definition of URl, body values, and userToken.
     const zonesURL = "https://sep202302.bumbal.eu/api/v2/zone"
+
     const bodyValues = JSON.stringify({
         "options": {
             "include_zone_ranges": true,
@@ -22,7 +23,9 @@ async function getInitialZones() {
         },
         "filters": {}
     })
+
     const userToken = localStorage.getItem('token')
+
     let initialZones = []
 
     initialZones = await fetch(zonesURL, {
@@ -42,10 +45,12 @@ async function getInitialZones() {
             }
             return response.json();
         })
+
         // Dealing with received list of zones.
         .then(async (data) => {
             return data.items
         })
+
         .catch(error => console.log(error, 'error'))
 
     return initialZones
@@ -59,8 +64,8 @@ async function getInitialZones() {
 async function getZipCodes(zoneList) {
     // When you retrieve a list of zones from Bumbal API from zone with PUT, you retrieve a list of zone configurations, 
     // which itself includes a list of zones in each zone configuration.
-
     let zipCodes = []
+
     for (let i = 0; i < zoneList.length; i++) {
         // In order for the structure to be [[zipcode ranges zone1], [zipcode ranges zone2], etc...].
         var zone = []
@@ -85,7 +90,6 @@ async function getZipCodes(zoneList) {
 async function getCoordinates(zipsList) {
     let coordinatesList = []
     // For each zone area, fetch the coordinates and compile them together.
-
     for (let i = 0; i < zipsList.length; i++) {
         // Same idea as in getzipcodes().
         var struct = []
@@ -100,7 +104,9 @@ async function getCoordinates(zipsList) {
                 })
                 .then((data) => {
                     return data
-                }).catch(error => console.log(error)))
+                })
+
+                .catch(error => console.log(error)))
         }
         coordinatesList.push(struct)
     }

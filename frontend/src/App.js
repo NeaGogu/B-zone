@@ -7,6 +7,7 @@ import Login from './pages/login'
  * @return {JSX.Element} The JSX element representing the application.
  */
 function App() {
+  
   var authenticated
   // Check whether a token exists in local storage.
   if ((localStorage.getItem("token") === null)) {

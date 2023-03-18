@@ -67,6 +67,7 @@ export default function Home() {
 
     ]);
     localStorage.setItem('saved-initial', 'Initial Zone');
+
     const handleDeleteZone = (key) => {
         localStorage.removeItem(key);
         const newSavedZones = savedZones.filter((item) => item.key !== key);
@@ -94,6 +95,7 @@ export default function Home() {
             }));
         setSavedZones(savedZones);
     }, []);
+
     useEffect(() => {
         console.log('home')
         console.log(value, intensity)

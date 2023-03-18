@@ -7,9 +7,11 @@ import { Button, Dropdown, Space } from 'antd';
 
 // Icons
 import { UserOutlined, SaveOutlined } from '@ant-design/icons';
+
 // CSS
 import '../index.css';
-// User email
+
+// User email.
 const user_id = localStorage.getItem('email')
 
 // User credentials menu items: their email and the sign out button.
@@ -72,6 +74,7 @@ function signOut() {
     })
 }
 
+// The main header component, shows the logo, the B-Zone title, the save button and the user credentials menu.
 const HeaderComponent = ({handleSaveClick}) => {
     return (
         <div style={{ display: 'flex', justifyContent: 'flex-end' }} >

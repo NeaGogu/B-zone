@@ -23,6 +23,7 @@ function LocationMarker() {
         click(e) {
             const { lat, lng } = e.latlng;
             setPosition(e.latlng);
+            
             const API_KEY = 'pk.eyJ1IjoidGFuaWFnb2lhMTEiLCJhIjoiY2xleTRrYm02MDlmMTN4bzVsZTR4cWp4OCJ9.hmT59q-Q1IcEjC6mdY2R9w';
             const API_URL = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${API_KEY}&types=postcode,address`;
             fetch(API_URL)
