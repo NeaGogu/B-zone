@@ -21,7 +21,7 @@ func geneticAlgorithm(inst VRPInstance, nOffspring, nParents, nGenerations, tour
 		}
 		fmt.Println("Generation:", gen, "best cost:", bestSol.cost)
 		parents := selectParents(population, nParents, tournamentSize)
-		population = makeOffspring(parents, nOffspring, maxMutations, mutationRate, crossoverRate)
+		population = makeOffspring(inst, parents, nOffspring, maxMutations, mutationRate, crossoverRate)
 		population[0] = bestSol
 	}
 	population.calcCosts()
@@ -51,7 +51,7 @@ func selectParents(population Population, nParents, tournamentSize int) Populati
 	return parents
 }
 
-func makeOffspring(parents Population, nOffspring, maxMutations int, mutationRate, crossoverRate float64) Population {
+func makeOffspring(inst VRPInstance, parents Population, nOffspring, maxMutations int, mutationRate, crossoverRate float64) Population {
 	var wg sync.WaitGroup
 	wg.Add(nOffspring)
 	n := len(parents)
@@ -66,7 +66,7 @@ func makeOffspring(parents Population, nOffspring, maxMutations int, mutationRat
 			} else {
 				offspring[j] = parent1
 			}
-			offspring[j].mutate(maxMutations, mutationRate)
+			offspring[j].mutate(inst, maxMutations, mutationRate)
 		}(i)
 	}
 	wg.Wait()

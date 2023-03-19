@@ -11,7 +11,7 @@ import (
 
 type VRPInstance struct {
 	activities []Pos
-	depot      Pos
+	depots     []Pos
 	nRoutes    int
 }
 
@@ -19,6 +19,7 @@ type VRPInstance struct {
 type Pos struct {
 	latitude  float64
 	longitude float64
+	zipcode   int
 }
 
 // Route represents a tour stating at depot and going through all activities
@@ -40,7 +41,7 @@ func randomSolution(inst VRPInstance) Solution {
 	var sol Solution
 	sol.routes = make([]Route, inst.nRoutes)
 	for i := 0; i < inst.nRoutes; i++ {
-		sol.routes[i].depot = inst.depot
+		sol.routes[i].depot = inst.depots[rand.Intn(len(inst.depots))]
 	}
 	for _, activity := range inst.activities {
 		i := rand.Intn(inst.nRoutes)
@@ -72,12 +73,12 @@ func (sol *Solution) calcCost() {
 	}
 }
 
-func (sol *Solution) mutate(maxMutations int, mutationRate float64) {
+func (sol *Solution) mutate(inst VRPInstance, maxMutations int, mutationRate float64) {
 	for mut := 0; mut < maxMutations; mut++ {
 		if rand.Float64() > mutationRate {
 			continue
 		}
-		switch rand.Intn(5) {
+		switch rand.Intn(6) {
 		case 0:
 			sol.randSolSwap()
 		case 1:
@@ -86,8 +87,10 @@ func (sol *Solution) mutate(maxMutations int, mutationRate float64) {
 			sol.randRouteSwap()
 		case 3:
 			sol.rand2Opt()
-		case 5:
+		case 4:
 			sol.randRouteGreedy()
+		case 5:
+			sol.randChangeDepot(inst)
 		}
 	}
 }
@@ -162,6 +165,15 @@ func (sol *Solution) randRouteGreedy() {
 	n := len(sol.routes[r].activities)
 	i := rand.Intn(n)
 	err := sol.routes[r].applyGreedy(i)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (sol *Solution) randChangeDepot(inst VRPInstance) {
+	r := rand.Intn(len(sol.routes))
+	d := rand.Intn(len(inst.depots))
+	err := sol.routes[r].applyChangeDepot(inst, d)
 	if err != nil {
 		panic(err)
 	}
@@ -320,7 +332,7 @@ func greedyRoute(depot Pos, points []Pos) Route {
 	for len(points) > 0 {
 		minDist = math.MaxFloat64
 		for i, point := range points {
-			if d := dist(point, depot); d < minDist {
+			if d := dist(point, route.activities[j-1]); d < minDist {
 				minDist = d
 				minI = i
 			}
@@ -400,6 +412,16 @@ func (route *Route) applyGreedy(i int) error {
 	return nil
 }
 
+// applyChangeDepot changes the depot of route
+// Returns an error if d<0 or d>=len(inst.depots)
+func (route *Route) applyChangeDepot(inst VRPInstance, d int) error {
+	if d < 0 || d >= len(inst.depots) {
+		return errors.New(fmt.Sprintf("index out of bounds: d=%d not in range [0,len(inst.depots)) = [0,%d)", d, len(inst.depots)))
+	}
+	route.depot = inst.depots[d]
+	return nil
+}
+
 func (route *Route) copy() Route {
 	return Route{
 		depot: route.depot.copy(),
@@ -451,5 +473,6 @@ func (p *Pos) copy() Pos {
 	return Pos{
 		latitude:  p.latitude,
 		longitude: p.longitude,
+		zipcode:   p.zipcode,
 	}
 }
