@@ -18,14 +18,14 @@ func Test_crossover_repeat(t *testing.T) {
 	}
 	inst := VRPInstance{
 		activities: []Pos{
-			{3, 5},
-			{6, 5},
-			{3, 4},
-			{10, 10},
-			{1, 2},
-			{33, 7},
+			{3, 5, 42},
+			{6, 5, 42},
+			{3, 4, 42},
+			{10, 10, 69},
+			{1, 2, 42},
+			{33, 7, 69},
 		},
-		depot:   Pos{5, 5},
+		depots:  []Pos{{5, 5, 42}, {9, 9, 50}},
 		nRoutes: 2,
 	}
 	tests := make([]testcase, 100)

@@ -115,13 +115,13 @@ func Test_dist(t *testing.T) {
 		args args
 		want float64
 	}{
-		{"same", args{Pos{0, 0}, Pos{0, 0}}, 0},
-		{"y+", args{Pos{0, 0}, Pos{1, 0}}, 1},
-		{"y-", args{Pos{0, 0}, Pos{-1, 0}}, 1},
-		{"x+", args{Pos{0, 0}, Pos{0, 1}}, 1},
-		{"x-", args{Pos{0, 0}, Pos{0, -1}}, 1},
-		{"diagonal45deg", args{Pos{0, 0}, Pos{1, 1}}, math.Sqrt2},
-		{"diagonal_345", args{Pos{0, 0}, Pos{3, 4}}, 5},
+		{"same", args{Pos{0, 0, 0}, Pos{0, 0, 0}}, 0},
+		{"y+", args{Pos{0, 0, 0}, Pos{1, 0, 0}}, 1},
+		{"y-", args{Pos{0, 0, 0}, Pos{-1, 0, 0}}, 1},
+		{"x+", args{Pos{0, 0, 0}, Pos{0, 1, 0}}, 1},
+		{"x-", args{Pos{0, 0, 0}, Pos{0, -1, 0}}, 1},
+		{"diagonal45deg", args{Pos{0, 0, 0}, Pos{1, 1, 0}}, math.Sqrt2},
+		{"diagonal_345", args{Pos{0, 0, 0}, Pos{3, 4, 0}}, 5},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -142,16 +142,16 @@ func Test_greedyRoute(t *testing.T) {
 		args args
 		want Route
 	}{
-		{"no points", args{Pos{0, 0}, []Pos{}},
-			Route{Pos{0, 0}, []Pos{}}},
-		{"1 points", args{Pos{0, 0}, []Pos{{1, 1}}},
-			Route{Pos{0, 0}, []Pos{{1, 1}}}},
-		{"2 equal points", args{Pos{0, 0}, []Pos{{1, 1}, {1, 1}}},
-			Route{Pos{0, 0}, []Pos{{1, 1}, {1, 1}}}},
-		{"2 different points ordered", args{Pos{0, 0}, []Pos{{1, 1}, {2, 2}}},
-			Route{Pos{0, 0}, []Pos{{1, 1}, {2, 2}}}},
-		{"2 different points unordered", args{Pos{0, 0}, []Pos{{2, 2}, {1, 1}}},
-			Route{Pos{0, 0}, []Pos{{1, 1}, {2, 2}}}},
+		{"no points", args{Pos{0, 0, 0}, []Pos{}},
+			Route{Pos{0, 0, 0}, []Pos{}}},
+		{"1 points", args{Pos{0, 0, 0}, []Pos{{1, 1, 0}}},
+			Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}},
+		{"2 equal points", args{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {1, 1, 0}}},
+			Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {1, 1, 0}}}},
+		{"2 different points ordered", args{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
+			Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}}},
+		{"2 different points unordered", args{Pos{0, 0, 0}, []Pos{{2, 2, 0}, {1, 1, 0}}},
+			Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -171,16 +171,16 @@ func TestRoute_applySwap(t *testing.T) {
 		wantErr bool
 		want    Route
 	}{
-		{"empty route", Route{Pos{0, 0}, []Pos{}}, 0, 0,
-			true, Route{Pos{0, 0}, []Pos{}}},
-		{"singleton route", Route{Pos{0, 0}, []Pos{{1, 1}}}, 0, 0,
-			false, Route{Pos{0, 0}, []Pos{{1, 1}}}},
-		{"index to high", Route{Pos{0, 0}, []Pos{{1, 1}}}, 0, 1,
-			true, Route{Pos{0, 0}, []Pos{{1, 1}}}},
-		{"negative index", Route{Pos{0, 0}, []Pos{{1, 1}}}, 0, -1,
-			true, Route{Pos{0, 0}, []Pos{{1, 1}}}},
-		{"swap 2", Route{Pos{0, 0}, []Pos{{1, 1}, {2, 2}}}, 0, 1,
-			false, Route{Pos{0, 0}, []Pos{{2, 2}, {1, 1}}}},
+		{"empty route", Route{Pos{0, 0, 0}, []Pos{}}, 0, 0,
+			true, Route{Pos{0, 0, 0}, []Pos{}}},
+		{"singleton route", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}, 0, 0,
+			false, Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}},
+		{"index to high", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}, 0, 1,
+			true, Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}},
+		{"negative index", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}, 0, -1,
+			true, Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}},
+		{"swap 2", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}}, 0, 1,
+			false, Route{Pos{0, 0, 0}, []Pos{{2, 2, 0}, {1, 1, 0}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -204,18 +204,18 @@ func TestRoute_apply2Opt(t *testing.T) {
 		wantErr bool
 		want    Route
 	}{
-		{"empty route", Route{Pos{0, 0}, []Pos{}}, 0, 0,
-			true, Route{Pos{0, 0}, []Pos{}}},
-		{"singleton route", Route{Pos{0, 0}, []Pos{{1, 1}}}, 0, 0,
-			false, Route{Pos{0, 0}, []Pos{{1, 1}}}},
-		{"index to high", Route{Pos{0, 0}, []Pos{{1, 1}}}, 0, 1,
-			true, Route{Pos{0, 0}, []Pos{{1, 1}}}},
-		{"negative index", Route{Pos{0, 0}, []Pos{{1, 1}}}, 0, -1,
-			true, Route{Pos{0, 0}, []Pos{{1, 1}}}},
-		{"2opt 2", Route{Pos{0, 0}, []Pos{{1, 1}, {2, 2}}}, 0, 1,
-			false, Route{Pos{0, 0}, []Pos{{2, 2}, {1, 1}}}},
-		{"2opt many", Route{Pos{0, 0}, []Pos{{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}}}, 1, 3,
-			false, Route{Pos{0, 0}, []Pos{{1, 1}, {4, 4}, {3, 3}, {2, 2}, {5, 5}}}},
+		{"empty route", Route{Pos{0, 0, 0}, []Pos{}}, 0, 0,
+			true, Route{Pos{0, 0, 0}, []Pos{}}},
+		{"singleton route", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}, 0, 0,
+			false, Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}},
+		{"index to high", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}, 0, 1,
+			true, Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}},
+		{"negative index", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}, 0, -1,
+			true, Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}},
+		{"2opt 2", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}}, 0, 1,
+			false, Route{Pos{0, 0, 0}, []Pos{{2, 2, 0}, {1, 1, 0}}}},
+		{"2opt many", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}, {3, 3, 0}, {4, 4, 0}, {5, 5, 0}}}, 1, 3,
+			false, Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {4, 4, 0}, {3, 3, 0}, {2, 2, 0}, {5, 5, 0}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -238,18 +238,18 @@ func TestRoute_applyGreedy(t *testing.T) {
 		wantErr bool
 		want    Route
 	}{
-		{"empty route", Route{Pos{0, 0}, []Pos{}}, 0,
-			true, Route{Pos{0, 0}, []Pos{}}},
-		{"singleton route", Route{Pos{0, 0}, []Pos{{1, 1}}}, 0,
-			false, Route{Pos{0, 0}, []Pos{{1, 1}}}},
-		{"optimal route", Route{Pos{0, 0}, []Pos{{0, 1}, {1, 1}, {1, 0}}}, 1,
-			false, Route{Pos{0, 0}, []Pos{{0, 1}, {1, 1}, {1, 0}}}},
-		{"non-optimal route", Route{Pos{0, 0}, []Pos{{1, 1}, {0, 1}, {1, 0}}}, 1,
-			false, Route{Pos{0, 0}, []Pos{{0, 1}, {1, 1}, {1, 0}}}},
-		{"index to high", Route{Pos{0, 0}, []Pos{{1, 1}}}, 1,
-			true, Route{Pos{0, 0}, []Pos{{1, 1}}}},
-		{"negative index", Route{Pos{0, 0}, []Pos{{1, 1}}}, -1,
-			true, Route{Pos{0, 0}, []Pos{{1, 1}}}},
+		{"empty route", Route{Pos{0, 0, 0}, []Pos{}}, 0,
+			true, Route{Pos{0, 0, 0}, []Pos{}}},
+		{"singleton route", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}, 0,
+			false, Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}},
+		{"optimal route", Route{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}, 1,
+			false, Route{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}},
+		{"non-optimal route", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {0, 1, 0}, {1, 0, 0}}}, 1,
+			false, Route{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}},
+		{"index to high", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}, 1,
+			true, Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}},
+		{"negative index", Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}, -1,
+			true, Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -282,16 +282,16 @@ func TestSolution_applySwap(t *testing.T) {
 			name: "r0<0",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{-1, 0, 0, 0},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -299,16 +299,16 @@ func TestSolution_applySwap(t *testing.T) {
 			name: "i<0",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{0, -1, 0, 0},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -316,16 +316,16 @@ func TestSolution_applySwap(t *testing.T) {
 			name: "r1<0",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{0, 0, -1, 0},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -333,16 +333,16 @@ func TestSolution_applySwap(t *testing.T) {
 			name: "j<0",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{0, 0, 0, -1},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -350,16 +350,16 @@ func TestSolution_applySwap(t *testing.T) {
 			name: "r0>=len(sol.routes)",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{1, 0, 0, 0},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -367,16 +367,16 @@ func TestSolution_applySwap(t *testing.T) {
 			name: "i>=len(sol.routes[r0].activities)",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{0, 1, 0, 0},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -384,16 +384,16 @@ func TestSolution_applySwap(t *testing.T) {
 			name: "r1>=len(sol.routes)",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{0, 0, 1, 0},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -401,16 +401,16 @@ func TestSolution_applySwap(t *testing.T) {
 			name: "j>=len(sol.routes[r1].activities)",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{0, 0, 0, 1},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -418,16 +418,16 @@ func TestSolution_applySwap(t *testing.T) {
 			name: "swap different route",
 			sol: Solution{
 				routes: []Route{
-					{Pos{0, 0}, []Pos{{1, 1}, {2, 2}}},
-					{Pos{0, 0}, []Pos{{3, 3}, {4, 4}}},
+					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
+					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
 				cost: 0},
 			args:    args{0, 1, 1, 0},
 			wantErr: false,
 			want: Solution{
 				routes: []Route{
-					{Pos{0, 0}, []Pos{{1, 1}, {3, 3}}},
-					{Pos{0, 0}, []Pos{{2, 2}, {4, 4}}},
+					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {3, 3, 0}}},
+					{Pos{0, 0, 0}, []Pos{{2, 2, 0}, {4, 4, 0}}},
 				},
 				cost: 0},
 		},
@@ -435,16 +435,16 @@ func TestSolution_applySwap(t *testing.T) {
 			name: "swap same route",
 			sol: Solution{
 				routes: []Route{
-					{Pos{0, 0}, []Pos{{1, 1}, {2, 2}}},
-					{Pos{0, 0}, []Pos{{3, 3}, {4, 4}}},
+					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
+					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
 				cost: 0},
 			args:    args{0, 1, 0, 0},
 			wantErr: false,
 			want: Solution{
 				routes: []Route{
-					{Pos{0, 0}, []Pos{{2, 2}, {1, 1}}},
-					{Pos{0, 0}, []Pos{{3, 3}, {4, 4}}},
+					{Pos{0, 0, 0}, []Pos{{2, 2, 0}, {1, 1, 0}}},
+					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
 				cost: 0},
 		},
@@ -479,16 +479,16 @@ func TestSolution_applyMigrate(t *testing.T) {
 			name: "r0<0",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{-1, 0, 0, 0},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -496,16 +496,16 @@ func TestSolution_applyMigrate(t *testing.T) {
 			name: "i<0",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{0, -1, 0, 0},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -513,16 +513,16 @@ func TestSolution_applyMigrate(t *testing.T) {
 			name: "r1<0",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{0, 0, -1, 0},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -530,16 +530,16 @@ func TestSolution_applyMigrate(t *testing.T) {
 			name: "j<0",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{0, 0, 0, -1},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -547,16 +547,16 @@ func TestSolution_applyMigrate(t *testing.T) {
 			name: "r0>=len(sol.routes)",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{1, 0, 0, 0},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -564,16 +564,16 @@ func TestSolution_applyMigrate(t *testing.T) {
 			name: "i>=len(sol.routes[r0].activities)",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{0, 1, 0, 0},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -581,16 +581,16 @@ func TestSolution_applyMigrate(t *testing.T) {
 			name: "r1>=len(sol.routes)",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{0, 0, 1, 0},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -598,16 +598,16 @@ func TestSolution_applyMigrate(t *testing.T) {
 			name: "j>len(sol.routes[r1].activities)",
 			sol: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 			args:    args{0, 0, 0, 2},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{{
-					depot:      Pos{0, 0},
-					activities: []Pos{{1, 1}},
+					depot:      Pos{0, 0, 0},
+					activities: []Pos{{1, 1, 0}},
 				}},
 				cost: 0},
 		},
@@ -615,16 +615,16 @@ func TestSolution_applyMigrate(t *testing.T) {
 			name: "same route",
 			sol: Solution{
 				routes: []Route{
-					{Pos{0, 0}, []Pos{{1, 1}, {2, 2}}},
-					{Pos{0, 0}, []Pos{{3, 3}, {4, 4}}},
+					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
+					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
 				cost: 0},
 			args:    args{0, 0, 0, 1},
 			wantErr: true,
 			want: Solution{
 				routes: []Route{
-					{Pos{0, 0}, []Pos{{1, 1}, {2, 2}}},
-					{Pos{0, 0}, []Pos{{3, 3}, {4, 4}}},
+					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
+					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
 				cost: 0},
 		},
@@ -632,16 +632,16 @@ func TestSolution_applyMigrate(t *testing.T) {
 			name: "migrate front",
 			sol: Solution{
 				routes: []Route{
-					{Pos{0, 0}, []Pos{{1, 1}, {2, 2}}},
-					{Pos{0, 0}, []Pos{{3, 3}, {4, 4}}},
+					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
+					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
 				cost: 0},
 			args:    args{0, 0, 1, 0},
 			wantErr: false,
 			want: Solution{
 				routes: []Route{
-					{Pos{0, 0}, []Pos{{2, 2}}},
-					{Pos{0, 0}, []Pos{{1, 1}, {3, 3}, {4, 4}}},
+					{Pos{0, 0, 0}, []Pos{{2, 2, 0}}},
+					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {3, 3, 0}, {4, 4, 0}}},
 				},
 				cost: 0},
 		},
@@ -649,16 +649,16 @@ func TestSolution_applyMigrate(t *testing.T) {
 			name: "migrate middle",
 			sol: Solution{
 				routes: []Route{
-					{Pos{0, 0}, []Pos{{1, 1}, {2, 2}}},
-					{Pos{0, 0}, []Pos{{3, 3}, {4, 4}}},
+					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
+					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
 				cost: 0},
 			args:    args{0, 0, 1, 1},
 			wantErr: false,
 			want: Solution{
 				routes: []Route{
-					{Pos{0, 0}, []Pos{{2, 2}}},
-					{Pos{0, 0}, []Pos{{3, 3}, {1, 1}, {4, 4}}},
+					{Pos{0, 0, 0}, []Pos{{2, 2, 0}}},
+					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {1, 1, 0}, {4, 4, 0}}},
 				},
 				cost: 0},
 		},
@@ -666,16 +666,16 @@ func TestSolution_applyMigrate(t *testing.T) {
 			name: "migrate end",
 			sol: Solution{
 				routes: []Route{
-					{Pos{0, 0}, []Pos{{1, 1}, {2, 2}}},
-					{Pos{0, 0}, []Pos{{3, 3}, {4, 4}}},
+					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
+					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
 				cost: 0},
 			args:    args{0, 0, 1, 2},
 			wantErr: false,
 			want: Solution{
 				routes: []Route{
-					{Pos{0, 0}, []Pos{{2, 2}}},
-					{Pos{0, 0}, []Pos{{3, 3}, {4, 4}, {1, 1}}},
+					{Pos{0, 0, 0}, []Pos{{2, 2, 0}}},
+					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}, {1, 1, 0}}},
 				},
 				cost: 0},
 		},
@@ -706,23 +706,23 @@ func TestPopulation_calcCosts(t *testing.T) {
 		{
 			name: "singleton population",
 			population: Population{{
-				routes: []Route{{Pos{0, 0}, []Pos{{3, 4}}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
 				cost:   0,
 			}},
 			want: Population{{
-				routes: []Route{{Pos{0, 0}, []Pos{{3, 4}}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
 				cost:   10,
 			}},
 		},
 		{
 			name: "multi population",
 			population: Population{
-				{[]Route{{Pos{0, 0}, []Pos{{3, 4}}}}, 0},
-				{[]Route{{Pos{0, 0}, []Pos{{1, 0}}}}, 0},
+				{[]Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}}, 0},
+				{[]Route{{Pos{0, 0, 0}, []Pos{{1, 0, 0}}}}, 0},
 			},
 			want: Population{
-				{[]Route{{Pos{0, 0}, []Pos{{3, 4}}}}, 10},
-				{[]Route{{Pos{0, 0}, []Pos{{1, 0}}}}, 2},
+				{[]Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}}, 10},
+				{[]Route{{Pos{0, 0, 0}, []Pos{{1, 0, 0}}}}, 2},
 			},
 		},
 	}
@@ -756,46 +756,46 @@ func TestSolution_calcCost(t *testing.T) {
 		{
 			name: "1 empty route",
 			sol: Solution{
-				routes: []Route{{Pos{0, 0}, []Pos{}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{}}},
 				cost:   0,
 			},
 			want: Solution{
-				routes: []Route{{Pos{0, 0}, []Pos{}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{}}},
 				cost:   0,
 			},
 		},
 		{
 			name: "1 singleton route",
 			sol: Solution{
-				routes: []Route{{Pos{0, 0}, []Pos{{3, 4}}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
 				cost:   0,
 			},
 			want: Solution{
-				routes: []Route{{Pos{0, 0}, []Pos{{3, 4}}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
 				cost:   10,
 			},
 		},
 		{
 			name: "1 route 3 activities",
 			sol: Solution{
-				routes: []Route{{Pos{0, 0}, []Pos{{0, 1}, {1, 1}, {1, 0}}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}},
 				cost:   0,
 			},
 			want: Solution{
-				routes: []Route{{Pos{0, 0}, []Pos{{0, 1}, {1, 1}, {1, 0}}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}},
 				cost:   4,
 			},
 		},
 		{
 			name: "2 singleton routes",
 			sol: Solution{
-				routes: []Route{{Pos{0, 0}, []Pos{{3, 4}}},
-					{Pos{0, 0}, []Pos{{-3, -4}}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}},
+					{Pos{0, 0, 0}, []Pos{{-3, -4, 0}}}},
 				cost: 0,
 			},
 			want: Solution{
-				routes: []Route{{Pos{0, 0}, []Pos{{3, 4}}},
-					{Pos{0, 0}, []Pos{{-3, -4}}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}},
+					{Pos{0, 0, 0}, []Pos{{-3, -4, 0}}}},
 				cost: 20,
 			},
 		},
@@ -838,14 +838,14 @@ func TestPopulation_getBest(t *testing.T) {
 		{
 			name: "multiple same cost",
 			population: Population{{
-				routes: []Route{{Pos{0, 0}, []Pos{{3, 4}}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
 				cost:   1,
 			}, {
-				routes: []Route{{Pos{5, 5}, []Pos{{1, 1}}}},
+				routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
 				cost:   1,
 			}},
 			wantSolution: Solution{
-				routes: []Route{{Pos{0, 0}, []Pos{{3, 4}}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
 				cost:   1,
 			},
 			wantErr: false,
@@ -853,14 +853,14 @@ func TestPopulation_getBest(t *testing.T) {
 		{
 			name: "multiple different cost",
 			population: Population{{
-				routes: []Route{{Pos{0, 0}, []Pos{{3, 4}}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
 				cost:   10,
 			}, {
-				routes: []Route{{Pos{5, 5}, []Pos{{1, 1}}}},
+				routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
 				cost:   1,
 			}},
 			wantSolution: Solution{
-				routes: []Route{{Pos{5, 5}, []Pos{{1, 1}}}},
+				routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
 				cost:   1,
 			},
 			wantErr: false,
@@ -921,15 +921,15 @@ func TestPopulation_tournamentSelection(t *testing.T) {
 		{
 			name: "huge tournament size",
 			population: Population{{
-				routes: []Route{{Pos{0, 0}, []Pos{{3, 4}}}},
+				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
 				cost:   10,
 			}, {
-				routes: []Route{{Pos{5, 5}, []Pos{{1, 1}}}},
+				routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
 				cost:   1,
 			}},
 			tournamentSize: 100,
 			want: Solution{
-				routes: []Route{{Pos{5, 5}, []Pos{{1, 1}}}},
+				routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
 				cost:   1,
 			},
 			wantErr: false,
@@ -951,6 +951,7 @@ func TestPopulation_tournamentSelection(t *testing.T) {
 
 func TestSolution_mutate_repeat(t *testing.T) {
 	type testcase struct {
+		inst         VRPInstance
 		name         string
 		sol          Solution
 		maxMutations int
@@ -959,19 +960,20 @@ func TestSolution_mutate_repeat(t *testing.T) {
 	}
 	inst := VRPInstance{
 		activities: []Pos{
-			{3, 5},
-			{6, 5},
-			{3, 4},
-			{10, 10},
-			{1, 2},
-			{33, 7},
+			{3, 5, 42},
+			{6, 5, 42},
+			{3, 4, 42},
+			{10, 10, 69},
+			{1, 2, 42},
+			{33, 7, 69},
 		},
-		depot:   Pos{5, 5},
+		depots:  []Pos{{5, 5, 42}, {9, 9, 50}},
 		nRoutes: 2,
 	}
 	tests := make([]testcase, 100)
 	for i := 0; i < 100; i++ {
 		tests[i] = testcase{
+			inst:         inst,
 			name:         fmt.Sprintf("%d", i),
 			sol:          randomSolution(inst),
 			maxMutations: rand.Intn(5) + 1,
@@ -982,7 +984,7 @@ func TestSolution_mutate_repeat(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.sol.mutate(tt.maxMutations, tt.mutationRate)
+			tt.sol.mutate(tt.inst, tt.maxMutations, tt.mutationRate)
 
 			if tt.wantInst.nRoutes != len(tt.sol.routes) {
 				t.Errorf("mutate() gotRoutes = %d, wantNRoutes %d", len(tt.sol.routes), tt.wantInst.nRoutes)
@@ -1025,34 +1027,34 @@ func TestSolution_removePoints(t *testing.T) {
 		want   Solution
 	}{
 		{
-			name:   "empty solution, empty points",
+			name:   "empty Solution, empty points",
 			sol:    Solution{},
 			points: []Pos{},
 			want:   Solution{},
 		},
 		{
-			name:   "empty solution, non-empty points",
+			name:   "empty Solution, non-empty points",
 			sol:    Solution{},
-			points: []Pos{{0, 0}},
+			points: []Pos{{0, 0, 0}},
 			want:   Solution{},
 		},
 		{
-			name:   "nonempty solution, empty points",
-			sol:    Solution{[]Route{{Pos{0, 0}, []Pos{{1, 1}}}}, 0},
+			name:   "nonempty Solution, empty points",
+			sol:    Solution{[]Route{{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}}, 0},
 			points: []Pos{},
-			want:   Solution{[]Route{{Pos{0, 0}, []Pos{{1, 1}}}}, 0},
+			want:   Solution{[]Route{{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}}, 0},
 		},
 		{
-			name:   "point not in solution",
-			sol:    Solution{[]Route{{Pos{0, 0}, []Pos{{1, 1}}}}, 0},
-			points: []Pos{{42, 42}},
-			want:   Solution{[]Route{{Pos{0, 0}, []Pos{{1, 1}}}}, 0},
+			name:   "point not in Solution",
+			sol:    Solution{[]Route{{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}}, 0},
+			points: []Pos{{42, 42, 0}},
+			want:   Solution{[]Route{{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}}, 0},
 		},
 		{
-			name:   "point in solution",
-			sol:    Solution{[]Route{{Pos{0, 0}, []Pos{{1, 1}}}}, 0},
-			points: []Pos{{1, 1}},
-			want:   Solution{[]Route{{Pos{0, 0}, []Pos{}}}, 0},
+			name:   "point in Solution",
+			sol:    Solution{[]Route{{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}}, 0},
+			points: []Pos{{1, 1, 0}},
+			want:   Solution{[]Route{{Pos{0, 0, 0}, []Pos{}}}, 0},
 		},
 	}
 	for _, tt := range tests {
