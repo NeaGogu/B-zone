@@ -951,14 +951,14 @@ func TestPopulation_tournamentSelection(t *testing.T) {
 
 func TestSolution_mutate_repeat(t *testing.T) {
 	type testcase struct {
-		inst         VRPInstance
+		inst         MDVRPInstance
 		name         string
 		sol          Solution
 		maxMutations int
 		mutationRate float64
-		wantInst     VRPInstance
+		wantInst     MDVRPInstance
 	}
-	inst := VRPInstance{
+	inst := MDVRPInstance{
 		activities: []Pos{
 			{3, 5, 42},
 			{6, 5, 42},

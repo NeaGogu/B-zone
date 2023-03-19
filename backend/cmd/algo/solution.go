@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type VRPInstance struct {
+type MDVRPInstance struct {
 	activities []Pos
 	depots     []Pos
 	nRoutes    int
@@ -37,7 +37,7 @@ type Solution struct {
 type Population []Solution
 
 // randomSolution initializes and returns a random Solution
-func randomSolution(inst VRPInstance) Solution {
+func randomSolution(inst MDVRPInstance) Solution {
 	var sol Solution
 	sol.routes = make([]Route, inst.nRoutes)
 	for i := 0; i < inst.nRoutes; i++ {
@@ -73,7 +73,7 @@ func (sol *Solution) calcCost() {
 	}
 }
 
-func (sol *Solution) mutate(inst VRPInstance, maxMutations int, mutationRate float64) {
+func (sol *Solution) mutate(inst MDVRPInstance, maxMutations int, mutationRate float64) {
 	for mut := 0; mut < maxMutations; mut++ {
 		if rand.Float64() > mutationRate {
 			continue
@@ -170,7 +170,7 @@ func (sol *Solution) randRouteGreedy() {
 	}
 }
 
-func (sol *Solution) randChangeDepot(inst VRPInstance) {
+func (sol *Solution) randChangeDepot(inst MDVRPInstance) {
 	r := rand.Intn(len(sol.routes))
 	d := rand.Intn(len(inst.depots))
 	err := sol.routes[r].applyChangeDepot(inst, d)
@@ -224,12 +224,6 @@ func (sol *Solution) applyMigrate(r0, i, r1, j int) error {
 	return nil
 }
 
-// applyGreedy removes activity i from route r and re-inserts it in any route at the position that makes the cost the lowest
-func (sol *Solution) applyGreedy(r, i int) error {
-	// TODO: applyGreedy
-	return nil
-}
-
 func (sol *Solution) removePoints(points []Pos) {
 	for _, point := range points {
 		for r, route := range sol.routes {
@@ -257,7 +251,7 @@ func (sol *Solution) activityCount() int {
 }
 
 // randomPopulation initializes and returns a Population with nIndividuals random Solution
-func randomPopulation(inst VRPInstance, nIndividuals int) Population {
+func randomPopulation(inst MDVRPInstance, nIndividuals int) Population {
 	return fp.Map(make([]Solution, nIndividuals),
 		func(t Solution) Solution { return randomSolution(inst) })
 }
@@ -414,7 +408,7 @@ func (route *Route) applyGreedy(i int) error {
 
 // applyChangeDepot changes the depot of route
 // Returns an error if d<0 or d>=len(inst.depots)
-func (route *Route) applyChangeDepot(inst VRPInstance, d int) error {
+func (route *Route) applyChangeDepot(inst MDVRPInstance, d int) error {
 	if d < 0 || d >= len(inst.depots) {
 		return errors.New(fmt.Sprintf("index out of bounds: d=%d not in range [0,len(inst.depots)) = [0,%d)", d, len(inst.depots)))
 	}

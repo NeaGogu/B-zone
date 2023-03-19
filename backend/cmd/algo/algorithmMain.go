@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	inst := VRPInstance{
+	inst := MDVRPInstance{
 		activities: []Pos{
 			{3, 5, 42},
 			{6, 5, 42},
@@ -17,7 +17,7 @@ func main() {
 		depots:  []Pos{{5, 5, 42}, {9, 9, 50}},
 		nRoutes: 2,
 	}
-	// inst := VRPInstance{
+	// inst := MDVRPInstance{
 	// 	activities: make([]Pos, 1000),
 	// 	depot:      Pos{0, 0},
 	// 	nRoutes:    4,

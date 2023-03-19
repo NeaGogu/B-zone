@@ -1,13 +1,74 @@
 package main
 
 import (
+	openapi "bzone/backend/internal/swag_gen"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"sync"
 )
 
+// generateMDVRPInstance converts a slice of openapi.ActivityModel to a MDVRPInstance
+func generateMDVRPInstance(activities []openapi.ActivityModel, nRoutes int) MDVRPInstance {
+	inst := MDVRPInstance{nRoutes: nRoutes}
+	inst.activities = make([]Pos, len(activities))
+	depots := make(map[Pos]bool)
+
+	for i, activity := range activities {
+		var err error
+		var actLat, actLon, depotLat, depotLon float64
+		var actZip, depotZip int
+
+		actLat, err = strconv.ParseFloat(*activity.AddressApplied.Latitude, 64)
+		if err != nil {
+			panic(err)
+		}
+		actLon, err = strconv.ParseFloat(*activity.AddressApplied.Longitude, 64)
+		if err != nil {
+			panic(err)
+		}
+		actZip, err = strconv.Atoi(*activity.AddressApplied.Zipcode)
+		if err != nil {
+			panic(err)
+		}
+		inst.activities[i] = Pos{
+			latitude:  actLat,
+			longitude: actLon,
+			zipcode:   actZip,
+		}
+
+		depotLat, err = strconv.ParseFloat(*activity.DepotAddress.Latitude, 64)
+		if err != nil {
+			panic(err)
+		}
+		depotLon, err = strconv.ParseFloat(*activity.DepotAddress.Longitude, 64)
+		if err != nil {
+			panic(err)
+		}
+		depotZip, err = strconv.Atoi(*activity.DepotAddress.Zipcode)
+		if err != nil {
+			panic(err)
+		}
+		depotPos := Pos{
+			latitude:  depotLat,
+			longitude: depotLon,
+			zipcode:   depotZip,
+		}
+		depots[depotPos] = true
+	}
+
+	inst.depots = make([]Pos, len(depots))
+	i := 0
+	for depot := range depots {
+		inst.depots[i] = depot
+		i++
+	}
+
+	return inst
+}
+
 // geneticAlgorithm runs a genetic algorithm with the specified hyperparameters and returns the best solution found
-func geneticAlgorithm(inst VRPInstance, nOffspring, nParents, nGenerations, tournamentSize, maxMutations int,
+func geneticAlgorithm(inst MDVRPInstance, nOffspring, nParents, nGenerations, tournamentSize, maxMutations int,
 	mutationRate, crossoverRate float64) Solution {
 	var err error
 	bestSol := randomSolution(inst)
@@ -51,7 +112,7 @@ func selectParents(population Population, nParents, tournamentSize int) Populati
 	return parents
 }
 
-func makeOffspring(inst VRPInstance, parents Population, nOffspring, maxMutations int, mutationRate, crossoverRate float64) Population {
+func makeOffspring(inst MDVRPInstance, parents Population, nOffspring, maxMutations int, mutationRate, crossoverRate float64) Population {
 	var wg sync.WaitGroup
 	wg.Add(nOffspring)
 	n := len(parents)
