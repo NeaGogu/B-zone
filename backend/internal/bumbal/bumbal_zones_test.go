@@ -17,149 +17,105 @@ func TestGetZoneListReponse(t *testing.T) {
 		t.Fatal(err)
 	}
 
-
-	for _, zone := range zoneResponse.Items{
+	for _, zone := range zoneResponse.Items {
 
 		fmt.Println(zone.Name)
 
-		for _, zoneRange := range *zone.ZoneRanges{
+		for _, zoneRange := range *zone.ZoneRanges {
 			fmt.Printf("\t %+v \n", zoneRange)
 		}
 	}
-
 }
 
 func TestZoneListResponseToListOfZoneModels(t *testing.T) {
-
-	// mock response
-	// zoneResponse := &BumbalZoneListResponse{
-	//
-	// 	Items: []BumbalZoneModel{
-	//
-	// 		{
-	//
-	// 			ZoneRanges: &[]BumbalZoneRangeModel{
-	//
-	// 				{
-	//
-	// 					ZipcodeFrom: "1000",
-	// 					ZipcodeTo:   "2000",
-	// 					IsoCountry: "NL",
-	// 				},
-	// 				{
-	//
-	// 					ZipcodeFrom: "3000",
-	// 					ZipcodeTo:   "4000",
-	// 					IsoCountry: "NL",
-	// 				},
-	// 				{
-	//
-	// 					ZipcodeFrom: "5000",
-	// 					ZipcodeTo:   "7000",
-	// 					IsoCountry: "NL",
-	// 				},
-	//
-	// 			},
-	// 		},
-	// 		{
-	//
-	// 			ZoneRanges: &[]BumbalZoneRangeModel{
-	//
-	// 				{
-	//
-	// 					ZipcodeFrom: "1000",
-	// 					ZipcodeTo:   "2000",
-	// 					IsoCountry: "NL",
-	// 				},
-	// 				{
-	//
-	// 					ZipcodeFrom: "3000",
-	// 					ZipcodeTo:   "4000",
-	// 					IsoCountry: "NL",
-	// 				},
-	// 				{
-	//
-	// 					ZipcodeFrom: "5000",
-	// 					ZipcodeTo:   "7000",
-	// 					IsoCountry: "NL",
-	// 				},
-	//
-	// 			},
-	// 		},
-	// 	},
-	// }
-	//
-	// exceptedZoneList := []models.ZoneModel{
-	// 	{
-	// 	
-	// 		ZoneRanges: []models.ZoneRangeModel{
-	// 			{
-	// 				ZipcodeFrom: 1000,
-	// 				ZipcodeTo:   2000,
-	// 				IsoCountry: "NL",
-	// 			},
-	// 			{
-	// 				ZipcodeFrom: 3000,
-	// 				ZipcodeTo:   4000,
-	// 				IsoCountry: "NL",
-	// 			},
-	// 			{
-	// 				ZipcodeFrom: 5000,
-	// 				ZipcodeTo:   7000,
-	// 				IsoCountry: "NL",
-	// 			},
-	// 		},
-	// 	},
-	// }
-
-		zoneResponse := BumbalZoneListResponse{
-		Items: []BumbalZoneModel{
-			{
-				Id:   "1",
-				Name: "zone 1",
-				ZoneRanges: &[]BumbalZoneRangeModel{
+	testCases := []struct {
+		name             string
+		mockZoneResponse BumbalZoneListResponse
+		expectedZoneList []models.ZoneModel
+		expectedError    bool
+	}{
+		{
+			name: "Happy path",
+			mockZoneResponse: BumbalZoneListResponse{
+				Items: []BumbalZoneModel{
 					{
-						ZipcodeFrom: "1000",
-						ZipcodeTo:   "2000",
-						IsoCountry:  "US",
+						Id:   "1",
+						Name: "zone 1",
+						ZoneRanges: &[]BumbalZoneRangeModel{
+							{
+								ZipcodeFrom: "1000",
+								ZipcodeTo:   "2000",
+								IsoCountry:  "US",
+							},
+						},
+					},
+					{
+						Id:   "2",
+						Name: "zone 2",
+						ZoneRanges: &[]BumbalZoneRangeModel{
+							{
+								ZipcodeFrom: "3000",
+								ZipcodeTo:   "4000",
+								IsoCountry:  "CA",
+							},
+						},
 					},
 				},
 			},
-			{
-				Id:   "2",
-				Name: "zone 2",
-				ZoneRanges: &[]BumbalZoneRangeModel{
+			expectedZoneList: []models.ZoneModel{
+				{
+					ZoneRanges: []models.ZoneRangeModel{
+						{ZoneRangeId: 0, ZipcodeFrom: 1000, ZipcodeTo: 2000, IsoCountry: "US"},
+					},
+					ZoneFuelCost:    0,
+					ZoneDrivingTime: 0,
+				},
+				{
+					ZoneRanges: []models.ZoneRangeModel{
+						{ZoneRangeId: 0, ZipcodeFrom: 3000, ZipcodeTo: 4000, IsoCountry: "CA"},
+					},
+					ZoneFuelCost:    0,
+					ZoneDrivingTime: 0,
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "Invalid zipcode from, not a number",
+			mockZoneResponse: BumbalZoneListResponse{
+				Items: []BumbalZoneModel{
 					{
-						ZipcodeFrom: "3000",
-						ZipcodeTo:   "4000",
-						IsoCountry:  "CA",
+						ZoneRanges: &[]BumbalZoneRangeModel{
+							{
+								ZipcodeFrom: "invalid",
+								ZipcodeTo:   "54321",
+								IsoCountry:  "US",
+							},
+						},
 					},
 				},
 			},
+			expectedZoneList: nil,
+			expectedError:    true,
 		},
 	}
 
-	expectedZoneList := []models.ZoneModel{
-		{
-			ZoneRanges:   []models.ZoneRangeModel{{ZoneRangeId: 0, ZipcodeFrom: 1000, ZipcodeTo: 2000, IsoCountry: "US"}},
-			ZoneFuelCost: 0,
-			ZoneDrivingTime: 0,
-		},
-		{
-			ZoneRanges:   []models.ZoneRangeModel{{ZoneRangeId: 0, ZipcodeFrom: 3000, ZipcodeTo: 4000, IsoCountry: "CA"}},
-			ZoneFuelCost: 0,
-			ZoneDrivingTime: 0,
-		},
-	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			zoneList, err := tc.mockZoneResponse.ToRangeModelList()
 
-	zoneList, err := zoneResponse.ToRangeModelList()
-	if err != nil {
-		t.Errorf("unexpected error: %s", err.Error())
-	}
+			// check for error first
+			if tc.expectedError && (err == nil) {
+				t.Error("Expected error but got nil")
+			} else if !tc.expectedError && err != nil {
+				t.Errorf("Expected nil error but got %v", err)
+			}
 
-	if !reflect.DeepEqual(expectedZoneList, zoneList) {
-		t.Errorf("expected zone list %v, but got %v",expectedZoneList, zoneList)
-	}
+			if tc.expectedError && !reflect.DeepEqual(tc.expectedZoneList, zoneList) {
+				t.Errorf("expected zone list %v, but got %v", tc.expectedZoneList, zoneList)
+			}
 
+		})
+	}
 
 }
