@@ -3,6 +3,7 @@ package genetic
 import (
 	openapi "bzone/backend/internal/swag_gen"
 	"fmt"
+	fp "github.com/rjNemo/underscore"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -12,7 +13,7 @@ import (
 func GenerateMDVRPInstance(activities []openapi.ActivityModel, nRoutes int) MDVRPInstance {
 	inst := MDVRPInstance{NRoutes: nRoutes}
 	inst.Activities = make([]Pos, len(activities))
-	depots := make(map[Pos]bool)
+	inst.Depots = make([]Pos, len(activities))
 
 	for i, activity := range activities {
 		var err error
@@ -49,22 +50,24 @@ func GenerateMDVRPInstance(activities []openapi.ActivityModel, nRoutes int) MDVR
 		if err != nil {
 			panic(err)
 		}
-		depotPos := Pos{
+		inst.Depots[i] = Pos{
 			Latitude:  depotLat,
 			Longitude: depotLon,
 			Zipcode:   depotZip,
 		}
-		depots[depotPos] = true
 	}
 
-	inst.Depots = make([]Pos, len(depots))
-	i := 0
-	for depot := range depots {
-		inst.Depots[i] = depot
-		i++
-	}
+	inst.Depots = fp.Unique(inst.Depots)
 
 	return inst
+}
+
+func Solution2ZoneMap(solution Solution) map[int][]int {
+	zoneMap := make(map[int][]int)
+	for i, route := range solution.Routes {
+		zoneMap[i] = fp.Unique(fp.Map(route.Activities, func(pos Pos) int { return pos.Zipcode }))
+	}
+	return zoneMap
 }
 
 // GeneticAlgorithm runs a genetic algorithm with the specified hyperparameters and returns the best solution found

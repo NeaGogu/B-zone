@@ -33,4 +33,5 @@ func main() {
 		fmt.Println("Route", i, "length:", len(route.Activities))
 	}
 	fmt.Println(sol)
+	fmt.Println(genetic.Solution2ZoneMap(sol))
 }
