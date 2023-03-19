@@ -1,4 +1,4 @@
-package main
+package genetic
 
 import (
 	"fmt"
@@ -281,172 +281,172 @@ func TestSolution_applySwap(t *testing.T) {
 		{
 			name: "r0<0",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{-1, 0, 0, 0},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "i<0",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, -1, 0, 0},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "r1<0",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 0, -1, 0},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "j<0",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 0, 0, -1},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "r0>=len(sol.routes)",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{1, 0, 0, 0},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "i>=len(sol.routes[r0].activities)",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 1, 0, 0},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "r1>=len(sol.routes)",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 0, 1, 0},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "j>=len(sol.routes[r1].activities)",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 0, 0, 1},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "swap different route",
 			sol: Solution{
-				routes: []Route{
+				Routes: []Route{
 					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
 					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 1, 1, 0},
 			wantErr: false,
 			want: Solution{
-				routes: []Route{
+				Routes: []Route{
 					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {3, 3, 0}}},
 					{Pos{0, 0, 0}, []Pos{{2, 2, 0}, {4, 4, 0}}},
 				},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "swap same route",
 			sol: Solution{
-				routes: []Route{
+				Routes: []Route{
 					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
 					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 1, 0, 0},
 			wantErr: false,
 			want: Solution{
-				routes: []Route{
+				Routes: []Route{
 					{Pos{0, 0, 0}, []Pos{{2, 2, 0}, {1, 1, 0}}},
 					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
-				cost: 0},
+				Cost: 0},
 		},
 	}
 	for _, tt := range tests {
@@ -478,206 +478,206 @@ func TestSolution_applyMigrate(t *testing.T) {
 		{
 			name: "r0<0",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{-1, 0, 0, 0},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "i<0",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, -1, 0, 0},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "r1<0",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 0, -1, 0},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "j<0",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 0, 0, -1},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "r0>=len(sol.routes)",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{1, 0, 0, 0},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "i>=len(sol.routes[r0].activities)",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 1, 0, 0},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "r1>=len(sol.routes)",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 0, 1, 0},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "j>len(sol.routes[r1].activities)",
 			sol: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 0, 0, 2},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{{
-					depot:      Pos{0, 0, 0},
-					activities: []Pos{{1, 1, 0}},
+				Routes: []Route{{
+					Depot:      Pos{0, 0, 0},
+					Activities: []Pos{{1, 1, 0}},
 				}},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "same route",
 			sol: Solution{
-				routes: []Route{
+				Routes: []Route{
 					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
 					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 0, 0, 1},
 			wantErr: true,
 			want: Solution{
-				routes: []Route{
+				Routes: []Route{
 					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
 					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "migrate front",
 			sol: Solution{
-				routes: []Route{
+				Routes: []Route{
 					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
 					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 0, 1, 0},
 			wantErr: false,
 			want: Solution{
-				routes: []Route{
+				Routes: []Route{
 					{Pos{0, 0, 0}, []Pos{{2, 2, 0}}},
 					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {3, 3, 0}, {4, 4, 0}}},
 				},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "migrate middle",
 			sol: Solution{
-				routes: []Route{
+				Routes: []Route{
 					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
 					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 0, 1, 1},
 			wantErr: false,
 			want: Solution{
-				routes: []Route{
+				Routes: []Route{
 					{Pos{0, 0, 0}, []Pos{{2, 2, 0}}},
 					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {1, 1, 0}, {4, 4, 0}}},
 				},
-				cost: 0},
+				Cost: 0},
 		},
 		{
 			name: "migrate end",
 			sol: Solution{
-				routes: []Route{
+				Routes: []Route{
 					{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {2, 2, 0}}},
 					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}}},
 				},
-				cost: 0},
+				Cost: 0},
 			args:    args{0, 0, 1, 2},
 			wantErr: false,
 			want: Solution{
-				routes: []Route{
+				Routes: []Route{
 					{Pos{0, 0, 0}, []Pos{{2, 2, 0}}},
 					{Pos{0, 0, 0}, []Pos{{3, 3, 0}, {4, 4, 0}, {1, 1, 0}}},
 				},
-				cost: 0},
+				Cost: 0},
 		},
 	}
 	for _, tt := range tests {
@@ -706,12 +706,12 @@ func TestPopulation_calcCosts(t *testing.T) {
 		{
 			name: "singleton population",
 			population: Population{{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
-				cost:   0,
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
+				Cost:   0,
 			}},
 			want: Population{{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
-				cost:   10,
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
+				Cost:   10,
 			}},
 		},
 		{
@@ -745,58 +745,58 @@ func TestSolution_calcCost(t *testing.T) {
 		{
 			name: "0 routes",
 			sol: Solution{
-				routes: []Route{},
-				cost:   0,
+				Routes: []Route{},
+				Cost:   0,
 			},
 			want: Solution{
-				routes: []Route{},
-				cost:   0,
+				Routes: []Route{},
+				Cost:   0,
 			},
 		},
 		{
 			name: "1 empty route",
 			sol: Solution{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{}}},
-				cost:   0,
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{}}},
+				Cost:   0,
 			},
 			want: Solution{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{}}},
-				cost:   0,
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{}}},
+				Cost:   0,
 			},
 		},
 		{
 			name: "1 singleton route",
 			sol: Solution{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
-				cost:   0,
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
+				Cost:   0,
 			},
 			want: Solution{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
-				cost:   10,
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
+				Cost:   10,
 			},
 		},
 		{
 			name: "1 route 3 activities",
 			sol: Solution{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}},
-				cost:   0,
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}},
+				Cost:   0,
 			},
 			want: Solution{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}},
-				cost:   4,
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}},
+				Cost:   4,
 			},
 		},
 		{
 			name: "2 singleton routes",
 			sol: Solution{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}},
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}},
 					{Pos{0, 0, 0}, []Pos{{-3, -4, 0}}}},
-				cost: 0,
+				Cost: 0,
 			},
 			want: Solution{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}},
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}},
 					{Pos{0, 0, 0}, []Pos{{-3, -4, 0}}}},
-				cost: 20,
+				Cost: 20,
 			},
 		},
 	}
@@ -826,42 +826,42 @@ func TestPopulation_getBest(t *testing.T) {
 		{
 			name: "singleton population",
 			population: Population{{
-				routes: []Route{},
-				cost:   1,
+				Routes: []Route{},
+				Cost:   1,
 			}},
 			wantSolution: Solution{
-				routes: []Route{},
-				cost:   1,
+				Routes: []Route{},
+				Cost:   1,
 			},
 			wantErr: false,
 		},
 		{
 			name: "multiple same cost",
 			population: Population{{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
-				cost:   1,
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
+				Cost:   1,
 			}, {
-				routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
-				cost:   1,
+				Routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
+				Cost:   1,
 			}},
 			wantSolution: Solution{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
-				cost:   1,
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
+				Cost:   1,
 			},
 			wantErr: false,
 		},
 		{
 			name: "multiple different cost",
 			population: Population{{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
-				cost:   10,
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
+				Cost:   10,
 			}, {
-				routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
-				cost:   1,
+				Routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
+				Cost:   1,
 			}},
 			wantSolution: Solution{
-				routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
-				cost:   1,
+				Routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
+				Cost:   1,
 			},
 			wantErr: false,
 		},
@@ -898,8 +898,8 @@ func TestPopulation_tournamentSelection(t *testing.T) {
 		{
 			name: "0 tournament size",
 			population: Population{{
-				routes: []Route{},
-				cost:   1,
+				Routes: []Route{},
+				Cost:   1,
 			}},
 			tournamentSize: 0,
 			want:           Solution{},
@@ -908,29 +908,29 @@ func TestPopulation_tournamentSelection(t *testing.T) {
 		{
 			name: "singleton population",
 			population: Population{{
-				routes: []Route{},
-				cost:   1,
+				Routes: []Route{},
+				Cost:   1,
 			}},
 			tournamentSize: 1,
 			want: Solution{
-				routes: []Route{},
-				cost:   1,
+				Routes: []Route{},
+				Cost:   1,
 			},
 			wantErr: false,
 		},
 		{
 			name: "huge tournament size",
 			population: Population{{
-				routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
-				cost:   10,
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
+				Cost:   10,
 			}, {
-				routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
-				cost:   1,
+				Routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
+				Cost:   1,
 			}},
 			tournamentSize: 100,
 			want: Solution{
-				routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
-				cost:   1,
+				Routes: []Route{{Pos{5, 5, 0}, []Pos{{1, 1, 0}}}},
+				Cost:   1,
 			},
 			wantErr: false,
 		},
@@ -959,7 +959,7 @@ func TestSolution_mutate_repeat(t *testing.T) {
 		wantInst     MDVRPInstance
 	}
 	inst := MDVRPInstance{
-		activities: []Pos{
+		Activities: []Pos{
 			{3, 5, 42},
 			{6, 5, 42},
 			{3, 4, 42},
@@ -967,8 +967,8 @@ func TestSolution_mutate_repeat(t *testing.T) {
 			{1, 2, 42},
 			{33, 7, 69},
 		},
-		depots:  []Pos{{5, 5, 42}, {9, 9, 50}},
-		nRoutes: 2,
+		Depots:  []Pos{{5, 5, 42}, {9, 9, 50}},
+		NRoutes: 2,
 	}
 	tests := make([]testcase, 100)
 	for i := 0; i < 100; i++ {
@@ -986,32 +986,32 @@ func TestSolution_mutate_repeat(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.sol.mutate(tt.inst, tt.maxMutations, tt.mutationRate)
 
-			if tt.wantInst.nRoutes != len(tt.sol.routes) {
-				t.Errorf("mutate() gotRoutes = %d, wantNRoutes %d", len(tt.sol.routes), tt.wantInst.nRoutes)
+			if tt.wantInst.NRoutes != len(tt.sol.Routes) {
+				t.Errorf("mutate() gotRoutes = %d, wantNRoutes %d", len(tt.sol.Routes), tt.wantInst.NRoutes)
 				return
 			}
-			if nAct := tt.sol.activityCount(); len(tt.wantInst.activities) != nAct {
-				t.Errorf("mutate() len(activities) = %d, len(inst.activities) %d", nAct, len(tt.wantInst.activities))
+			if nAct := tt.sol.activityCount(); len(tt.wantInst.Activities) != nAct {
+				t.Errorf("mutate() len(activities) = %d, len(inst.activities) %d", nAct, len(tt.wantInst.Activities))
 				return
 			}
-			for _, route := range tt.sol.routes {
-				for _, activity := range route.activities {
-					if !fp.Contains(tt.wantInst.activities, activity) {
-						t.Errorf("mutate() got = %v, wantActivities %v", tt.sol, tt.wantInst.activities)
+			for _, route := range tt.sol.Routes {
+				for _, activity := range route.Activities {
+					if !fp.Contains(tt.wantInst.Activities, activity) {
+						t.Errorf("mutate() got = %v, wantActivities %v", tt.sol, tt.wantInst.Activities)
 						return
 					}
 				}
 			}
-			for _, activity := range tt.wantInst.activities {
+			for _, activity := range tt.wantInst.Activities {
 				has := false
-				for _, route := range tt.sol.routes {
-					if fp.Contains(route.activities, activity) {
+				for _, route := range tt.sol.Routes {
+					if fp.Contains(route.Activities, activity) {
 						has = true
 						break
 					}
 				}
 				if !has {
-					t.Errorf("mutate() got = %v, wantActivities %v", tt.sol, tt.wantInst.activities)
+					t.Errorf("mutate() got = %v, wantActivities %v", tt.sol, tt.wantInst.Activities)
 					return
 				}
 			}

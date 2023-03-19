@@ -1,12 +1,13 @@
 package main
 
 import (
+	"bzone/backend/cmd/algo/genetic"
 	"fmt"
 )
 
 func main() {
-	inst := MDVRPInstance{
-		activities: []Pos{
+	inst := genetic.MDVRPInstance{
+		Activities: []genetic.Pos{
 			{3, 5, 42},
 			{6, 5, 42},
 			{3, 4, 42},
@@ -14,8 +15,8 @@ func main() {
 			{1, 2, 42},
 			{33, 7, 69},
 		},
-		depots:  []Pos{{5, 5, 42}, {9, 9, 50}},
-		nRoutes: 2,
+		Depots:  []genetic.Pos{{5, 5, 42}, {9, 9, 50}},
+		NRoutes: 2,
 	}
 	// inst := MDVRPInstance{
 	// 	activities: make([]Pos, 1000),
@@ -26,10 +27,10 @@ func main() {
 	// 	inst.activities[i] = Pos{rand.Float64()*200 - 100, rand.Float64()*200 - 100}
 	// }
 
-	sol := geneticAlgorithm(inst, 100, 100, 100, 5, 5, 0.5, 0.5)
-	fmt.Println("Cost:", sol.cost)
-	for i, route := range sol.routes {
-		fmt.Println("Route", i, "length:", len(route.activities))
+	sol := genetic.GeneticAlgorithm(inst, 100, 100, 100, 5, 5, 0.5, 0.5)
+	fmt.Println("Cost:", sol.Cost)
+	for i, route := range sol.Routes {
+		fmt.Println("Route", i, "length:", len(route.Activities))
 	}
 	fmt.Println(sol)
 }

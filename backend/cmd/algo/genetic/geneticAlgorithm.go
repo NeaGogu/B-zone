@@ -1,4 +1,4 @@
-package main
+package genetic
 
 import (
 	openapi "bzone/backend/internal/swag_gen"
@@ -8,10 +8,10 @@ import (
 	"sync"
 )
 
-// generateMDVRPInstance converts a slice of openapi.ActivityModel to a MDVRPInstance
-func generateMDVRPInstance(activities []openapi.ActivityModel, nRoutes int) MDVRPInstance {
-	inst := MDVRPInstance{nRoutes: nRoutes}
-	inst.activities = make([]Pos, len(activities))
+// GenerateMDVRPInstance converts a slice of openapi.ActivityModel to a MDVRPInstance
+func GenerateMDVRPInstance(activities []openapi.ActivityModel, nRoutes int) MDVRPInstance {
+	inst := MDVRPInstance{NRoutes: nRoutes}
+	inst.Activities = make([]Pos, len(activities))
 	depots := make(map[Pos]bool)
 
 	for i, activity := range activities {
@@ -31,10 +31,10 @@ func generateMDVRPInstance(activities []openapi.ActivityModel, nRoutes int) MDVR
 		if err != nil {
 			panic(err)
 		}
-		inst.activities[i] = Pos{
-			latitude:  actLat,
-			longitude: actLon,
-			zipcode:   actZip,
+		inst.Activities[i] = Pos{
+			Latitude:  actLat,
+			Longitude: actLon,
+			Zipcode:   actZip,
 		}
 
 		depotLat, err = strconv.ParseFloat(*activity.DepotAddress.Latitude, 64)
@@ -50,25 +50,25 @@ func generateMDVRPInstance(activities []openapi.ActivityModel, nRoutes int) MDVR
 			panic(err)
 		}
 		depotPos := Pos{
-			latitude:  depotLat,
-			longitude: depotLon,
-			zipcode:   depotZip,
+			Latitude:  depotLat,
+			Longitude: depotLon,
+			Zipcode:   depotZip,
 		}
 		depots[depotPos] = true
 	}
 
-	inst.depots = make([]Pos, len(depots))
+	inst.Depots = make([]Pos, len(depots))
 	i := 0
 	for depot := range depots {
-		inst.depots[i] = depot
+		inst.Depots[i] = depot
 		i++
 	}
 
 	return inst
 }
 
-// geneticAlgorithm runs a genetic algorithm with the specified hyperparameters and returns the best solution found
-func geneticAlgorithm(inst MDVRPInstance, nOffspring, nParents, nGenerations, tournamentSize, maxMutations int,
+// GeneticAlgorithm runs a genetic algorithm with the specified hyperparameters and returns the best solution found
+func GeneticAlgorithm(inst MDVRPInstance, nOffspring, nParents, nGenerations, tournamentSize, maxMutations int,
 	mutationRate, crossoverRate float64) Solution {
 	var err error
 	bestSol := randomSolution(inst)
@@ -80,7 +80,7 @@ func geneticAlgorithm(inst MDVRPInstance, nOffspring, nParents, nGenerations, to
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("Generation:", gen, "best cost:", bestSol.cost)
+		fmt.Println("Generation:", gen, "best cost:", bestSol.Cost)
 		parents := selectParents(population, nParents, tournamentSize)
 		population = makeOffspring(inst, parents, nOffspring, maxMutations, mutationRate, crossoverRate)
 		population[0] = bestSol
@@ -135,8 +135,8 @@ func makeOffspring(inst MDVRPInstance, parents Population, nOffspring, maxMutati
 }
 
 func crossover(parent1 Solution, parent2 Solution) Solution {
-	nRoutes := len(parent1.routes)
-	child := Solution{routes: make([]Route, nRoutes)}
+	nRoutes := len(parent1.Routes)
+	child := Solution{Routes: make([]Route, nRoutes)}
 	// put nRoutes-1 complete routes from the parents in the child
 	for i := 0; i < nRoutes-1; i++ {
 		selectParent1 := rand.Float64()
@@ -151,18 +151,18 @@ func crossover(parent1 Solution, parent2 Solution) Solution {
 	remaining := make([]Pos, 0)
 	longest := 0
 	var longI int
-	for i, route := range parent1.routes {
-		if l := len(route.activities); l > longest {
+	for i, route := range parent1.Routes {
+		if l := len(route.Activities); l > longest {
 			longest = l
 			longI = i
 		}
-		for _, activity := range route.activities {
+		for _, activity := range route.Activities {
 			remaining = append(remaining, activity)
 		}
 	}
-	depot := parent1.routes[longI].depot
+	depot := parent1.Routes[longI].Depot
 	route := greedyRoute(depot, remaining)
-	child.routes[nRoutes-1] = route
+	child.Routes[nRoutes-1] = route
 
 	return child.copy()
 }
@@ -171,11 +171,11 @@ func crossover(parent1 Solution, parent2 Solution) Solution {
 func passOnRoute(parent1, parent2, child *Solution, index int) {
 	var route Route
 	var err error
-	parent1.routes, route, err = remove(parent1.routes, rand.Intn(len(parent1.routes)))
+	parent1.Routes, route, err = remove(parent1.Routes, rand.Intn(len(parent1.Routes)))
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	child.routes[index] = route
-	parent2.removePoints(route.activities)
+	child.Routes[index] = route
+	parent2.removePoints(route.Activities)
 }

@@ -1,4 +1,4 @@
-package main
+package genetic
 
 import (
 	"errors"
@@ -10,28 +10,28 @@ import (
 )
 
 type MDVRPInstance struct {
-	activities []Pos
-	depots     []Pos
-	nRoutes    int
+	Activities []Pos
+	Depots     []Pos
+	NRoutes    int
 }
 
 // Pos is the position of an activity
 type Pos struct {
-	latitude  float64
-	longitude float64
-	zipcode   int
+	Latitude  float64
+	Longitude float64
+	Zipcode   int
 }
 
 // Route represents a tour stating at depot and going through all activities
 // (depot -> activities[0] -> activities[1] -> ... -> activities[n] -> depot)
 type Route struct {
-	depot      Pos
-	activities []Pos
+	Depot      Pos
+	Activities []Pos
 }
 
 type Solution struct {
-	routes []Route
-	cost   float64
+	Routes []Route
+	Cost   float64
 }
 
 type Population []Solution
@@ -39,36 +39,36 @@ type Population []Solution
 // randomSolution initializes and returns a random Solution
 func randomSolution(inst MDVRPInstance) Solution {
 	var sol Solution
-	sol.routes = make([]Route, inst.nRoutes)
-	for i := 0; i < inst.nRoutes; i++ {
-		sol.routes[i].depot = inst.depots[rand.Intn(len(inst.depots))]
+	sol.Routes = make([]Route, inst.NRoutes)
+	for i := 0; i < inst.NRoutes; i++ {
+		sol.Routes[i].Depot = inst.Depots[rand.Intn(len(inst.Depots))]
 	}
-	for _, activity := range inst.activities {
-		i := rand.Intn(inst.nRoutes)
-		sol.routes[i].activities = append(sol.routes[i].activities, activity)
+	for _, activity := range inst.Activities {
+		i := rand.Intn(inst.NRoutes)
+		sol.Routes[i].Activities = append(sol.Routes[i].Activities, activity)
 	}
-	for i := 0; i < len(sol.routes); i++ {
-		rand.Shuffle(len(sol.routes[i].activities), func(a, b int) {
-			sol.routes[i].activities[a], sol.routes[i].activities[b] =
-				sol.routes[i].activities[b], sol.routes[i].activities[a]
+	for i := 0; i < len(sol.Routes); i++ {
+		rand.Shuffle(len(sol.Routes[i].Activities), func(a, b int) {
+			sol.Routes[i].Activities[a], sol.Routes[i].Activities[b] =
+				sol.Routes[i].Activities[b], sol.Routes[i].Activities[a]
 		})
 	}
 	return sol
 }
 
-// calcCost calculates the cost of the Solution. The cost is the total distance of all routes
+// calcCost calculates the Cost of the Solution. The Cost is the total distance of all Routes
 func (sol *Solution) calcCost() {
-	sol.cost = 0
-	for _, r := range sol.routes {
-		if len(r.activities) == 0 {
+	sol.Cost = 0
+	for _, r := range sol.Routes {
+		if len(r.Activities) == 0 {
 			continue
 		}
-		for i, pos := range r.activities[1:] {
-			sol.cost += dist(pos, r.activities[i])
+		for i, pos := range r.Activities[1:] {
+			sol.Cost += dist(pos, r.Activities[i])
 		}
-		if len(r.activities) > 0 {
-			sol.cost += dist(r.activities[0], r.depot)
-			sol.cost += dist(r.activities[len(r.activities)-1], r.depot)
+		if len(r.Activities) > 0 {
+			sol.Cost += dist(r.Activities[0], r.Depot)
+			sol.Cost += dist(r.Activities[len(r.Activities)-1], r.Depot)
 		}
 	}
 }
@@ -96,16 +96,16 @@ func (sol *Solution) mutate(inst MDVRPInstance, maxMutations int, mutationRate f
 }
 
 func (sol *Solution) randSolSwap() {
-	r0 := rand.Intn(len(sol.routes))
-	for len(sol.routes[r0].activities) == 0 {
-		r0 = rand.Intn(len(sol.routes))
+	r0 := rand.Intn(len(sol.Routes))
+	for len(sol.Routes[r0].Activities) == 0 {
+		r0 = rand.Intn(len(sol.Routes))
 	}
-	i := rand.Intn(len(sol.routes[r0].activities))
-	r1 := rand.Intn(len(sol.routes))
-	for len(sol.routes[r1].activities) == 0 {
-		r1 = rand.Intn(len(sol.routes))
+	i := rand.Intn(len(sol.Routes[r0].Activities))
+	r1 := rand.Intn(len(sol.Routes))
+	for len(sol.Routes[r1].Activities) == 0 {
+		r1 = rand.Intn(len(sol.Routes))
 	}
-	j := rand.Intn(len(sol.routes[r1].activities))
+	j := rand.Intn(len(sol.Routes[r1].Activities))
 	err := sol.applySwap(r0, i, r1, j)
 	if err != nil {
 		panic(err)
@@ -113,16 +113,16 @@ func (sol *Solution) randSolSwap() {
 }
 
 func (sol *Solution) randMigrate() {
-	r0 := rand.Intn(len(sol.routes))
-	for len(sol.routes[r0].activities) == 0 {
-		r0 = rand.Intn(len(sol.routes))
+	r0 := rand.Intn(len(sol.Routes))
+	for len(sol.Routes[r0].Activities) == 0 {
+		r0 = rand.Intn(len(sol.Routes))
 	}
-	i := rand.Intn(len(sol.routes[r0].activities))
-	r1 := rand.Intn(len(sol.routes))
+	i := rand.Intn(len(sol.Routes[r0].Activities))
+	r1 := rand.Intn(len(sol.Routes))
 	for r0 == r1 {
-		r1 = rand.Intn(len(sol.routes))
+		r1 = rand.Intn(len(sol.Routes))
 	}
-	j := rand.Intn(len(sol.routes[r1].activities) + 1)
+	j := rand.Intn(len(sol.Routes[r1].Activities) + 1)
 	err := sol.applyMigrate(r0, i, r1, j)
 	if err != nil {
 		panic(err)
@@ -130,50 +130,50 @@ func (sol *Solution) randMigrate() {
 }
 
 func (sol *Solution) randRouteSwap() {
-	r := rand.Intn(len(sol.routes))
-	for len(sol.routes[r].activities) == 0 {
-		r = rand.Intn(len(sol.routes))
+	r := rand.Intn(len(sol.Routes))
+	for len(sol.Routes[r].Activities) == 0 {
+		r = rand.Intn(len(sol.Routes))
 	}
-	n := len(sol.routes[r].activities)
+	n := len(sol.Routes[r].Activities)
 	i := rand.Intn(n)
 	j := rand.Intn(n)
-	err := sol.routes[r].applySwap(i, j)
+	err := sol.Routes[r].applySwap(i, j)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func (sol *Solution) rand2Opt() {
-	r := rand.Intn(len(sol.routes))
-	for len(sol.routes[r].activities) == 0 {
-		r = rand.Intn(len(sol.routes))
+	r := rand.Intn(len(sol.Routes))
+	for len(sol.Routes[r].Activities) == 0 {
+		r = rand.Intn(len(sol.Routes))
 	}
-	n := len(sol.routes[r].activities)
+	n := len(sol.Routes[r].Activities)
 	i := rand.Intn(n)
 	j := rand.Intn(n)
-	err := sol.routes[r].apply2Opt(i, j)
+	err := sol.Routes[r].apply2Opt(i, j)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func (sol *Solution) randRouteGreedy() {
-	r := rand.Intn(len(sol.routes))
-	for len(sol.routes[r].activities) == 0 {
-		r = rand.Intn(len(sol.routes))
+	r := rand.Intn(len(sol.Routes))
+	for len(sol.Routes[r].Activities) == 0 {
+		r = rand.Intn(len(sol.Routes))
 	}
-	n := len(sol.routes[r].activities)
+	n := len(sol.Routes[r].Activities)
 	i := rand.Intn(n)
-	err := sol.routes[r].applyGreedy(i)
+	err := sol.Routes[r].applyGreedy(i)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func (sol *Solution) randChangeDepot(inst MDVRPInstance) {
-	r := rand.Intn(len(sol.routes))
-	d := rand.Intn(len(inst.depots))
-	err := sol.routes[r].applyChangeDepot(inst, d)
+	r := rand.Intn(len(sol.Routes))
+	d := rand.Intn(len(inst.Depots))
+	err := sol.Routes[r].applyChangeDepot(inst, d)
 	if err != nil {
 		panic(err)
 	}
@@ -184,17 +184,17 @@ func (sol *Solution) randChangeDepot(inst MDVRPInstance) {
 // or i<0 or i>=len(sol.routes[r0].activities)
 // or j<0 or j>=len(sol.routes[r1].activities)
 func (sol *Solution) applySwap(r0, i, r1, j int) error {
-	if r0 < 0 || r0 >= len(sol.routes) || r1 < 0 || r1 >= len(sol.routes) {
-		return errors.New(fmt.Sprintf("index out of bounds: either r0=%d, r1=%d not in range [0,len(sol.routes)) = [0,%d)", r0, r1, len(sol.routes)))
+	if r0 < 0 || r0 >= len(sol.Routes) || r1 < 0 || r1 >= len(sol.Routes) {
+		return errors.New(fmt.Sprintf("index out of bounds: either r0=%d, r1=%d not in range [0,len(sol.routes)) = [0,%d)", r0, r1, len(sol.Routes)))
 	}
-	if i < 0 || i >= len(sol.routes[r0].activities) {
-		return errors.New(fmt.Sprintf("index out of bounds: i=%d not in range [0,len(sol.routes[r0].activities)) = [0,%d)", i, len(sol.routes[r0].activities)))
+	if i < 0 || i >= len(sol.Routes[r0].Activities) {
+		return errors.New(fmt.Sprintf("index out of bounds: i=%d not in range [0,len(sol.routes[r0].activities)) = [0,%d)", i, len(sol.Routes[r0].Activities)))
 	}
-	if j < 0 || j >= len(sol.routes[r1].activities) {
-		return errors.New(fmt.Sprintf("index out of bounds: j=%d not in range [0,len(sol.routes[r1].activities)) = [0,%d)", j, len(sol.routes[r1].activities)))
+	if j < 0 || j >= len(sol.Routes[r1].Activities) {
+		return errors.New(fmt.Sprintf("index out of bounds: j=%d not in range [0,len(sol.routes[r1].activities)) = [0,%d)", j, len(sol.Routes[r1].Activities)))
 	}
 
-	sol.routes[r0].activities[i], sol.routes[r1].activities[j] = sol.routes[r1].activities[j], sol.routes[r0].activities[i]
+	sol.Routes[r0].Activities[i], sol.Routes[r1].Activities[j] = sol.Routes[r1].Activities[j], sol.Routes[r0].Activities[i]
 	return nil
 }
 
@@ -204,8 +204,8 @@ func (sol *Solution) applySwap(r0, i, r1, j int) error {
 // or j<0 or j>len(sol.routes[r1].activities)
 // or r0==r1
 func (sol *Solution) applyMigrate(r0, i, r1, j int) error {
-	if r0 < 0 || r0 >= len(sol.routes) || r1 < 0 || r1 >= len(sol.routes) {
-		return errors.New(fmt.Sprintf("index out of bounds: either r0=%d, r1=%d not in range [0,len(sol.routes)) = [0,%d)", r0, r1, len(sol.routes)))
+	if r0 < 0 || r0 >= len(sol.Routes) || r1 < 0 || r1 >= len(sol.Routes) {
+		return errors.New(fmt.Sprintf("index out of bounds: either r0=%d, r1=%d not in range [0,len(sol.routes)) = [0,%d)", r0, r1, len(sol.Routes)))
 	}
 	if r0 == r1 {
 		return errors.New(fmt.Sprintf("r0 should not equal r1: r0=%d, r1=%d", r0, r1))
@@ -213,11 +213,11 @@ func (sol *Solution) applyMigrate(r0, i, r1, j int) error {
 
 	var act Pos
 	var err error
-	sol.routes[r0].activities, act, err = remove(sol.routes[r0].activities, i)
+	sol.Routes[r0].Activities, act, err = remove(sol.Routes[r0].Activities, i)
 	if err != nil {
 		return err
 	}
-	sol.routes[r1].activities, err = insert(sol.routes[r1].activities, act, j)
+	sol.Routes[r1].Activities, err = insert(sol.Routes[r1].Activities, act, j)
 	if err != nil {
 		return err
 	}
@@ -226,9 +226,9 @@ func (sol *Solution) applyMigrate(r0, i, r1, j int) error {
 
 func (sol *Solution) removePoints(points []Pos) {
 	for _, point := range points {
-		for r, route := range sol.routes {
-			if i := indexOf(route.activities, point); i >= 0 {
-				sol.routes[r].activities = append(route.activities[:i], route.activities[i+1:]...)
+		for r, route := range sol.Routes {
+			if i := indexOf(route.Activities, point); i >= 0 {
+				sol.Routes[r].Activities = append(route.Activities[:i], route.Activities[i+1:]...)
 			}
 		}
 	}
@@ -236,17 +236,17 @@ func (sol *Solution) removePoints(points []Pos) {
 
 func (sol *Solution) copy() Solution {
 	return Solution{
-		routes: fp.Map(sol.routes, func(route Route) Route {
+		Routes: fp.Map(sol.Routes, func(route Route) Route {
 			return route.copy()
 		}),
-		cost: sol.cost,
+		Cost: sol.Cost,
 	}
 }
 
 func (sol *Solution) activityCount() int {
-	return fp.Reduce(sol.routes,
+	return fp.Reduce(sol.Routes,
 		func(route Route, count int) int {
-			return count + len(route.activities)
+			return count + len(route.Activities)
 		}, 0)
 }
 
@@ -277,7 +277,7 @@ func (population *Population) getBest() (Solution, error) {
 	}
 	sol := fp.Reduce(*population,
 		func(sol Solution, best Solution) Solution {
-			if sol.cost < best.cost {
+			if sol.Cost < best.Cost {
 				return sol
 			} else {
 				return best
@@ -299,7 +299,7 @@ func (population *Population) tournamentSelection(tournamentSize int) (Solution,
 	var best *Solution
 	for i := 0; i < tournamentSize; i++ {
 		opponent := (*population)[rand.Intn(n)]
-		if best == nil || opponent.cost < best.cost {
+		if best == nil || opponent.Cost < best.Cost {
 			best = &opponent
 		}
 	}
@@ -320,18 +320,18 @@ func greedyRoute(depot Pos, points []Pos) Route {
 			minI = i
 		}
 	}
-	points, route.activities[0], _ = remove(points, minI)
+	points, route.Activities[0], _ = remove(points, minI)
 
 	j := 1
 	for len(points) > 0 {
 		minDist = math.MaxFloat64
 		for i, point := range points {
-			if d := dist(point, route.activities[j-1]); d < minDist {
+			if d := dist(point, route.Activities[j-1]); d < minDist {
 				minDist = d
 				minI = i
 			}
 		}
-		points, route.activities[j], _ = remove(points, minI)
+		points, route.Activities[j], _ = remove(points, minI)
 		j++
 	}
 
@@ -341,11 +341,11 @@ func greedyRoute(depot Pos, points []Pos) Route {
 // applySwap swaps activity i and j in the route.
 // Returns an error if i,j<0 or i,j>=len(route.activities)
 func (route *Route) applySwap(i, j int) error {
-	if i < 0 || i >= len(route.activities) || j < 0 || j >= len(route.activities) {
-		return errors.New(fmt.Sprintf("index out of bounds: either i=%d, j=%d not in range [0,len(route.activities)) = [0,%d)", i, j, len(route.activities)))
+	if i < 0 || i >= len(route.Activities) || j < 0 || j >= len(route.Activities) {
+		return errors.New(fmt.Sprintf("index out of bounds: either i=%d, j=%d not in range [0,len(route.activities)) = [0,%d)", i, j, len(route.Activities)))
 	}
-	if len(route.activities) > 1 && i != j {
-		route.activities[i], route.activities[j] = route.activities[j], route.activities[i]
+	if len(route.Activities) > 1 && i != j {
+		route.Activities[i], route.Activities[j] = route.Activities[j], route.Activities[i]
 	}
 	return nil
 }
@@ -353,10 +353,10 @@ func (route *Route) applySwap(i, j int) error {
 // apply2Opt reverses the slice route.activities[i:j+1] in place.
 // Returns an error if i,j<0 or i,j>=len(route.activities)
 func (route *Route) apply2Opt(i, j int) error {
-	if i < 0 || i >= len(route.activities) || j < 0 || j >= len(route.activities) {
-		return errors.New(fmt.Sprintf("index out of bounds: either i=%d, j=%d not in range [0,len(route.activities)) = [0,%d)", i, j, len(route.activities)))
+	if i < 0 || i >= len(route.Activities) || j < 0 || j >= len(route.Activities) {
+		return errors.New(fmt.Sprintf("index out of bounds: either i=%d, j=%d not in range [0,len(route.activities)) = [0,%d)", i, j, len(route.Activities)))
 	}
-	if len(route.activities) > 1 && i != j {
+	if len(route.Activities) > 1 && i != j {
 		if i > j {
 			i, j = j, i
 		}
@@ -373,53 +373,53 @@ func (route *Route) apply2Opt(i, j int) error {
 // applyGreedy removes activity i from the route and re-inserts it back in route in the position that makes route the shortest.
 // Returns an error if i<0 or i>=len(route.activities)
 func (route *Route) applyGreedy(i int) error {
-	if i < 0 || i >= len(route.activities) {
-		return errors.New(fmt.Sprintf("index out of bounds: i=%d not in range [0,len(route.activities)) = [0,%d)", i, len(route.activities)))
+	if i < 0 || i >= len(route.Activities) {
+		return errors.New(fmt.Sprintf("index out of bounds: i=%d not in range [0,len(route.activities)) = [0,%d)", i, len(route.Activities)))
 	}
-	if len(route.activities) <= 1 {
+	if len(route.Activities) <= 1 {
 		return nil
 	}
 
 	var act Pos
 	var err error
-	route.activities, act, err = remove(route.activities, i)
+	route.Activities, act, err = remove(route.Activities, i)
 	if err != nil {
 		return err
 	}
 
 	j := 0
-	minCost := dist(route.depot, act) + dist(act, route.activities[0])
-	for k, pos := range route.activities[1:] {
-		cost := dist(route.activities[k], act) + dist(act, pos)
+	minCost := dist(route.Depot, act) + dist(act, route.Activities[0])
+	for k, pos := range route.Activities[1:] {
+		cost := dist(route.Activities[k], act) + dist(act, pos)
 		if cost < minCost {
 			minCost = cost
 			j = k + 1
 		}
 	}
-	if dist(route.depot, act)+dist(act, route.activities[len(route.activities)-1]) < minCost {
-		j = len(route.activities)
+	if dist(route.Depot, act)+dist(act, route.Activities[len(route.Activities)-1]) < minCost {
+		j = len(route.Activities)
 	}
-	route.activities, err = insert(route.activities, act, j)
+	route.Activities, err = insert(route.Activities, act, j)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// applyChangeDepot changes the depot of route
+// applyChangeDepot changes the Depot of route
 // Returns an error if d<0 or d>=len(inst.depots)
 func (route *Route) applyChangeDepot(inst MDVRPInstance, d int) error {
-	if d < 0 || d >= len(inst.depots) {
-		return errors.New(fmt.Sprintf("index out of bounds: d=%d not in range [0,len(inst.depots)) = [0,%d)", d, len(inst.depots)))
+	if d < 0 || d >= len(inst.Depots) {
+		return errors.New(fmt.Sprintf("index out of bounds: d=%d not in range [0,len(inst.depots)) = [0,%d)", d, len(inst.Depots)))
 	}
-	route.depot = inst.depots[d]
+	route.Depot = inst.Depots[d]
 	return nil
 }
 
 func (route *Route) copy() Route {
 	return Route{
-		depot: route.depot.copy(),
-		activities: fp.Map(route.activities, func(pos Pos) Pos {
+		Depot: route.Depot.copy(),
+		Activities: fp.Map(route.Activities, func(pos Pos) Pos {
 			return pos.copy()
 		}),
 	}
@@ -460,13 +460,13 @@ func indexOf[A comparable](l []A, a A) int {
 
 // dist calculates the Euclidean distance between Pos p0 and p1
 func dist(p0, p1 Pos) float64 {
-	return math.Sqrt(math.Pow(p1.longitude-p0.longitude, 2) + math.Pow(p1.latitude-p0.latitude, 2))
+	return math.Sqrt(math.Pow(p1.Longitude-p0.Longitude, 2) + math.Pow(p1.Latitude-p0.Latitude, 2))
 }
 
 func (p *Pos) copy() Pos {
 	return Pos{
-		latitude:  p.latitude,
-		longitude: p.longitude,
-		zipcode:   p.zipcode,
+		Latitude:  p.Latitude,
+		Longitude: p.Longitude,
+		Zipcode:   p.Zipcode,
 	}
 }

@@ -1,4 +1,4 @@
-package main
+package genetic
 
 import (
 	openapi "bzone/backend/internal/swag_gen"
@@ -19,7 +19,7 @@ func Test_crossover_repeat(t *testing.T) {
 		wantInst MDVRPInstance
 	}
 	inst := MDVRPInstance{
-		activities: []Pos{
+		Activities: []Pos{
 			{3, 5, 42},
 			{6, 5, 42},
 			{3, 4, 42},
@@ -27,8 +27,8 @@ func Test_crossover_repeat(t *testing.T) {
 			{1, 2, 42},
 			{33, 7, 69},
 		},
-		depots:  []Pos{{5, 5, 42}, {9, 9, 50}},
-		nRoutes: 2,
+		Depots:  []Pos{{5, 5, 42}, {9, 9, 50}},
+		NRoutes: 2,
 	}
 	tests := make([]testcase, 100)
 	for i := 0; i < 100; i++ {
@@ -46,32 +46,32 @@ func Test_crossover_repeat(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := crossover(tt.args.parent1, tt.args.parent2)
 
-			if tt.wantInst.nRoutes != len(got.routes) {
-				t.Errorf("crossover() gotRoutes = %d, wantNRoutes %d", len(got.routes), tt.wantInst.nRoutes)
+			if tt.wantInst.NRoutes != len(got.Routes) {
+				t.Errorf("crossover() gotRoutes = %d, wantNRoutes %d", len(got.Routes), tt.wantInst.NRoutes)
 				return
 			}
-			if nAct := got.activityCount(); len(tt.wantInst.activities) != nAct {
-				t.Errorf("crossover() len(activities) = %d, len(inst.activities) %d", nAct, len(tt.wantInst.activities))
+			if nAct := got.activityCount(); len(tt.wantInst.Activities) != nAct {
+				t.Errorf("crossover() len(activities) = %d, len(inst.activities) %d", nAct, len(tt.wantInst.Activities))
 				return
 			}
-			for _, route := range got.routes {
-				for _, activity := range route.activities {
-					if !fp.Contains(tt.wantInst.activities, activity) {
-						t.Errorf("crossover() got = %v, wantActivities %v", got, tt.wantInst.activities)
+			for _, route := range got.Routes {
+				for _, activity := range route.Activities {
+					if !fp.Contains(tt.wantInst.Activities, activity) {
+						t.Errorf("crossover() got = %v, wantActivities %v", got, tt.wantInst.Activities)
 						return
 					}
 				}
 			}
-			for _, activity := range tt.wantInst.activities {
+			for _, activity := range tt.wantInst.Activities {
 				has := false
-				for _, route := range got.routes {
-					if fp.Contains(route.activities, activity) {
+				for _, route := range got.Routes {
+					if fp.Contains(route.Activities, activity) {
 						has = true
 						break
 					}
 				}
 				if !has {
-					t.Errorf("crossover() got = %v, wantActivities %v", got, tt.wantInst.activities)
+					t.Errorf("crossover() got = %v, wantActivities %v", got, tt.wantInst.Activities)
 					return
 				}
 			}
@@ -91,9 +91,9 @@ func Test_generateMDVRPInstance(t *testing.T) {
 			activities: []openapi.ActivityModel{},
 			nRoutes:    42,
 			want: MDVRPInstance{
-				activities: []Pos{},
-				depots:     []Pos{},
-				nRoutes:    42,
+				Activities: []Pos{},
+				Depots:     []Pos{},
+				NRoutes:    42,
 			},
 		},
 		{
@@ -103,9 +103,9 @@ func Test_generateMDVRPInstance(t *testing.T) {
 			},
 			nRoutes: 42,
 			want: MDVRPInstance{
-				activities: []Pos{{1, 2, 3}},
-				depots:     []Pos{{4, 5, 6}},
-				nRoutes:    42,
+				Activities: []Pos{{1, 2, 3}},
+				Depots:     []Pos{{4, 5, 6}},
+				NRoutes:    42,
 			},
 		},
 		{
@@ -116,9 +116,9 @@ func Test_generateMDVRPInstance(t *testing.T) {
 			},
 			nRoutes: 42,
 			want: MDVRPInstance{
-				activities: []Pos{{1, 2, 3}, {10, 20, 30}},
-				depots:     []Pos{{4, 5, 6}},
-				nRoutes:    42,
+				Activities: []Pos{{1, 2, 3}, {10, 20, 30}},
+				Depots:     []Pos{{4, 5, 6}},
+				NRoutes:    42,
 			},
 		},
 		{
@@ -129,15 +129,15 @@ func Test_generateMDVRPInstance(t *testing.T) {
 			},
 			nRoutes: 42,
 			want: MDVRPInstance{
-				activities: []Pos{{1, 2, 3}, {10, 20, 30}},
-				depots:     []Pos{{4, 5, 6}, {40, 50, 60}},
-				nRoutes:    42,
+				Activities: []Pos{{1, 2, 3}, {10, 20, 30}},
+				Depots:     []Pos{{4, 5, 6}, {40, 50, 60}},
+				NRoutes:    42,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := generateMDVRPInstance(tt.activities, tt.nRoutes); !reflect.DeepEqual(got, tt.want) {
+			if got := GenerateMDVRPInstance(tt.activities, tt.nRoutes); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("generateMDVRPInstance() = %v, want %v", got, tt.want)
 			}
 		})
