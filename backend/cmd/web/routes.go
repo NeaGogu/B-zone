@@ -108,15 +108,25 @@ func (app *application) routes() http.Handler {
 			r.Get("/plots", app.getUserPlotIDs)
 		})
 
-		r.Route("/zone/", func(r chi.Router) {
-			r.Post("/ranges", app.getZoneRanges)
-		})
+		//r.Route("/zone/", func(r chi.Router) {
+		//	r.Post("/ranges", app.getZoneRanges)
+		//})
 
 		r.Route("/plot", func(r chi.Router) {
 			r.Get("/{plotId}", app.GetPlotById)
 			r.Put("/sync", app.SyncBumbalZones)
 		})
 	})
+
+	// log all the routes mounted on the router
+	app.infoLog.Println("Mounted routes:")
+	err := chi.Walk(router, func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		app.infoLog.Printf("[%s]: '%s' has %d middlewares\n", method, route, len(middlewares))
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
 
 	return router
 }
