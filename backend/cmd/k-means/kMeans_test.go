@@ -78,7 +78,7 @@ func TestKMeans(t *testing.T) {
 
 			// Check that each cluster has at least one observation
 			for _, c := range got {
-				if len(c.observations) == 0 {
+				if len(c.ZoneRanges) == 0 {
 					t.Errorf("kMeans() returned a cluster with 0 observations")
 				}
 			}
