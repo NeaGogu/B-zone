@@ -1,12 +1,15 @@
 package kMeans
 
 import (
+	model "bzone/backend/internal/models"
 	openapi "bzone/backend/internal/swag_gen"
 	"math"
 	"math/rand"
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // MinNormal is the smallest positive normal value of type float64.
@@ -589,6 +592,78 @@ func TestHaversineDistance(t *testing.T) {
 	}
 }
 
+func TestClusterToZipcodeSet(t *testing.T) {
+	// create sample data
+	activity1 := makeActivity1(t, 1, "52.3764", "4.9004", "1012")
+	activity2 := makeActivity1(t, 2, "52.3764", "4.9004", "1017")
+	activity3 := makeActivity1(t, 3, "51.2194", "4.4025", "2273")
+	cluster1 := createCluster(t, coordinates{52.3764, 4.9004}, observations{observation{id: 1, coordinates: createCoordinate(t, 4.9004, 52.3764)}, observation{id: 2, coordinates: createCoordinate(t, 4.9004, 52.3764)}})
+	cluster2 := createCluster(t, coordinates{51.2194, 4.4025}, observations{observation{id: 3, coordinates: createCoordinate(t, 4.4025, 51.2194)}})
+	clusters := clusters{cluster1, cluster2}
+	activities := []openapi.ActivityModel{*activity1, *activity2, *activity3}
+
+	// call the function
+	result := clusterToZipcodeSet(clusters, activities)
+
+	// assert the result
+	expected := []map[string]struct{}{
+		{"1012": {}, "1017": {}, "1052": {}},
+		{"2273": {}},
+	}
+
+	assert.Equal(t, expected, result)
+}
+
+func TestZipcodeSetToZoneModel(t *testing.T) {
+	// create sample data
+	listZipcodeSet := []map[string]struct{}{
+		{"1012": {}, "1017": {}, "1052": {}},
+		{"2273": {}},
+	}
+
+	// call the function
+	result := zipcodeSetToZoneModel(listZipcodeSet)
+
+	// assert the result
+	expected := []model.ZoneModel{
+		{
+			Id:              0,
+			ZoneRanges:      []model.ZoneRangeModel{{ZoneRangeId: 0, ZipcodeFrom: 1012, ZipcodeTo: 1052, IsoCountry: "NLD"}},
+			ZoneFuelCost:    0,
+			ZoneDrivingTime: 0,
+		},
+		{
+			Id:              1,
+			ZoneRanges:      []model.ZoneRangeModel{{ZoneRangeId: 1, ZipcodeFrom: 2273, ZipcodeTo: 2273, IsoCountry: "NLD"}},
+			ZoneFuelCost:    0,
+			ZoneDrivingTime: 0,
+		},
+	}
+
+	assert.Equal(t, expected, result)
+}
+
+func TestCreateZoneRange(t *testing.T) {
+	// create sample data
+	id := int64(0)
+	zipcodeFrom := int64(1012)
+	zipcodeTo := int64(1052)
+	isoCountry := "NLD"
+
+	// call the function
+	result := createZoneRange(id, zipcodeFrom, zipcodeTo, isoCountry)
+
+	// assert the result
+	expected := model.ZoneRangeModel{
+		ZoneRangeId: 0,
+		ZipcodeFrom: 1012,
+		ZipcodeTo:   1052,
+		IsoCountry:  "NLD",
+	}
+
+	assert.Equal(t, expected, result)
+}
+
 func BenchmarkKMeansALot(t *testing.B) {
 	activities := make(activities, 0)
 	for i := 0; i < 100000; i++ {
@@ -598,6 +673,22 @@ func BenchmarkKMeansALot(t *testing.B) {
 		activities = append(activities, *result)
 	}
 	kMeans(activities, 30, 10)
+}
+
+func makeActivity1(t testing.TB, id int64, lat string, long string, zipcode string) *openapi.ActivityModel {
+	t.Helper()
+
+	//make activity and addressapplied model
+	activity := openapi.NewActivityModel()
+	address := openapi.NewAddressAppliedModel()
+	//set lat and long
+	address.SetLatitude(lat)
+	address.SetLongitude(long)
+	address.SetZipcode(zipcode)
+	activity.SetAddressApplied(*address)
+	activity.SetId(id)
+
+	return activity
 }
 
 func createCluster(t testing.TB, center coordinates, observations observations) cluster {
