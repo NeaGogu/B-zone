@@ -30,20 +30,20 @@ type BzoneDBModel struct {
 // PlotModel struct for ZonesPLotModel
 type PlotModel struct {
 	// Unique Plot ID
-	PlotId int64 `json:"plot_id,omitempty" bson:"plot_id,omitempty"`
+	PlotId string `json:"plot_id,omitempty" bson:"plot_id,omitempty"`
 	// Plot Name
 	Name string `json:"plot_name,omitempty" bson:"plot_name,omitempty"`
 	//Zones in the plot
 	// @deprecated use Zones instead
 	ZoneIds []int64 `json:"plot_zone_ids,omitempty" bson:"plot_zone_ids,omitempty"`
 	// Zones in the plot
-	Zones []ZoneModel `json:"plot_zones" bson:"plot_zones"` 
+	Zones []ZoneModel `json:"plot_zones" bson:"plot_zones"`
 	//created_at date time
 	PlotCreatedAt time.Time `json:"plot_created_at,omitempty" bson:"plot_created_at,omitempty"`
 	//saved_at date time
 	PlotSavedAt time.Time `json:"plot_saved_at,omitempty" bson:"plot_saved_at,omitempty"`
 
-	// origin of the plot: it can be bumbal, bzone or algo 
+	// origin of the plot: it can be bumbal, bzone or algo
 	// use the constants defined in this file to set this value for a single source of truth
 	Origin string `json:"origin,omitempty" bson:"origin,omitempty"`
 }
@@ -90,4 +90,3 @@ type ZoneRangeModel struct {
 	IsoCountry string `json:"iso_country,omitempty" bson:"iso_country,omitempty"`
 	//array of coordinates?
 }
-

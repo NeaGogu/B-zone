@@ -80,6 +80,7 @@ func (app *application) routes() http.Handler {
 	}))
 
 	app.infoLog.Println("CORS enabled!")
+
 	// for testing purposes, does not require JWT authorization
 	// should not be used in production
 	router.Route("/test", func(r chi.Router) {
@@ -109,6 +110,10 @@ func (app *application) routes() http.Handler {
 
 		r.Route("/zone/", func(r chi.Router) {
 			r.Post("/ranges", app.getZoneRanges)
+		})
+
+		r.Route("/plot", func(r chi.Router) {
+			r.Put("/sync", app.SyncBumbalZones)
 		})
 	})
 
