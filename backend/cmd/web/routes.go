@@ -113,6 +113,7 @@ func (app *application) routes() http.Handler {
 		})
 
 		r.Route("/plot", func(r chi.Router) {
+			r.Get("/{plotId}", app.GetPlotById)
 			r.Put("/sync", app.SyncBumbalZones)
 		})
 	})

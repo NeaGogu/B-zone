@@ -2,10 +2,12 @@ package models
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // GetPlotIDs
@@ -29,6 +31,32 @@ func (z *BzoneDBModel) GetPlotIDs(userId int) ([]PlotIDNamePair, error) {
 	}
 
 	return user.PlotIdNames, nil
+}
+
+func (b *BzoneDBModel) GetPlotById(plotId string) (*PlotModel, error) {
+
+	// get the plots collection
+	plotColl := b.DB.Collection(PlotCollection)
+
+	// query by plot_id
+	queryFilter := bson.M{"plot_id": bson.M{"$eq": plotId}}
+
+	var plot PlotModel
+	err := plotColl.FindOne(context.TODO(), queryFilter).Decode(&plot)
+	if err != nil {
+		// if the query does not find any result, then FindOne will return a
+		// mongo.ErrNoDocuments error. We can check for this error and return
+		// our own ErrDocumentNotFound error instead so that it can be handled
+		// differently
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrDocumentNotFound
+		}
+
+		// otherwise, return the error
+		return nil, err
+	}
+
+	return &plot, nil
 }
 
 func (b *BzoneDBModel) SavePlot(userId int, plot *PlotModel) error {

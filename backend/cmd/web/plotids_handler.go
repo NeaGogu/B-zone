@@ -4,11 +4,13 @@ import (
 	"bzone/backend/internal/bumbal"
 	"bzone/backend/internal/models"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt"
 )
 
@@ -70,6 +72,35 @@ func (app *application) getUserPlotIDs(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	return
+}
+
+func (app *application) GetPlotById(w http.ResponseWriter, r *http.Request) {
+
+	plotId := chi.URLParam(r, "plotId")
+	if plotId == "" {
+		http.Error(w, "Plot ID is required", http.StatusBadRequest)
+		return
+	}
+
+	app.infoLog.Println("Getting plot with id: ", plotId)
+
+	plot, err := app.bzoneDbModel.GetPlotById(plotId)
+	if err != nil {
+
+		// return a different error if the zone with zoneId does not exist
+		if errors.Is(err, models.ErrDocumentNotFound) {
+			app.notFound(w)
+			return
+		}
+
+		app.serverError(w, err)
+		return
+	}
+
+	// encode the output
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(plot)
 	return
 }
 
