@@ -80,6 +80,7 @@ func (app *application) routes() http.Handler {
 	}))
 
 	app.infoLog.Println("CORS enabled!")
+
 	// for testing purposes, does not require JWT authorization
 	// should not be used in production
 	router.Route("/test", func(r chi.Router) {
@@ -109,17 +110,32 @@ func (app *application) routes() http.Handler {
 		})
 
 		r.Route("/user", func(r chi.Router) {
-			r.Get("/plotidnames", app.getUserPlotIDs)
+			r.Get("/plots", app.getUserPlotIDs)
 		})
 
-		r.Route("/zone/", func(r chi.Router) {
-			r.Post("/ranges", app.getZoneRanges)
+		//r.Route("/zone/", func(r chi.Router) {
+		//	r.Post("/ranges", app.getZoneRanges)
+		//})
+
+		r.Route("/plot", func(r chi.Router) {
+			r.Get("/{plotId}", app.GetPlotById)
+			r.Put("/sync", app.SyncBumbalZones)
 		})
 
 		r.Route("/bzone", func(r chi.Router) {
 			r.Get("/plot", app.getBZonePlot)
 		})
 	})
+
+	// log all the routes mounted on the router
+	app.infoLog.Println("Mounted routes:")
+	err := chi.Walk(router, func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		app.infoLog.Printf("[%s]: '%s' has %d middlewares\n", method, route, len(middlewares))
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
 
 	return router
 }

@@ -1,11 +1,17 @@
 package main
 
 import (
+	"bzone/backend/internal/bumbal"
+	"bzone/backend/internal/models"
 	"encoding/json"
-	"github.com/golang-jwt/jwt"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt"
 )
 
 // getUserPlotIDs
@@ -66,5 +72,100 @@ func (app *application) getUserPlotIDs(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	return
+}
+
+func (app *application) GetPlotById(w http.ResponseWriter, r *http.Request) {
+
+	plotId := chi.URLParam(r, "plotId")
+	if plotId == "" {
+		http.Error(w, "Plot ID is required", http.StatusBadRequest)
+		return
+	}
+
+	app.infoLog.Println("Getting plot with id: ", plotId)
+
+	plot, err := app.bzoneDbModel.GetPlotById(plotId)
+	if err != nil {
+
+		// return a different error if the zone with zoneId does not exist
+		if errors.Is(err, models.ErrDocumentNotFound) {
+			app.notFound(w)
+			return
+		}
+
+		app.serverError(w, err)
+		return
+	}
+
+	// encode the output
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(plot)
+	return
+}
+
+func (app *application) SyncBumbalZones(w http.ResponseWriter, r *http.Request) {
+	// FIX: move this logic to a middleware
+	t := r.Header.Get("Authorization") // -> "Bearer <TOKEN>"
+
+	token := strings.TrimPrefix(t, "Bearer ")
+
+	// check if we indeed have a bearer token
+	if token == "" {
+		http.Error(w, "There is a problem with your token", http.StatusBadRequest)
+		return
+	}
+
+	// parse the token to extract its information, no need to verify the token sig
+	parsedToken, _, err := new(jwt.Parser).ParseUnverified(token, jwt.MapClaims{})
+	if err != nil {
+		app.errorLog.Println(err.Error())
+		http.Error(w, "There is a problem with your token", http.StatusBadRequest)
+		return
+	}
+
+	claims := parsedToken.Claims.(jwt.MapClaims)
+	// get the user id from the decoded claims
+	uid, ok := claims["user_id"].(string)
+	if !ok {
+		app.serverError(w, fmt.Errorf("Could not get user id from claims"))
+	}
+
+	// convert the user id from string to int as this is how it is stored in the database
+	userId, err := strconv.Atoi(uid)
+
+	app.infoLog.Println("Syncing bumbal zones for user: ", userId)
+
+	// TODO: validation and all that jazz
+
+	bumbalZones, err := bumbal.GetZoneListReponse(token)
+	if err != nil {
+		// TODO provide a better error message for the client
+		app.serverError(w, err)
+		return
+	}
+
+	// convert the bumbal zones to a plot model
+	plotModel, err := bumbalZones.ToPlotModel()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	//flush all the old zones with origin: bumbal
+	_, err = app.bzoneDbModel.DeletePlotsByOrigin(models.OriginBumbal, userId)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// save the plot model to the database
+	err = app.bzoneDbModel.SavePlot(userId, plotModel)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 	return
 }
