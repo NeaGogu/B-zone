@@ -71,6 +71,24 @@ func (sol *Solution) calcCost() {
 			sol.Cost += dist(r.Activities[len(r.Activities)-1], r.Depot)
 		}
 	}
+
+	// FIXME
+	// scale cost by work load distribution
+	// sol.Cost *= sol.routeLengthVariance() + 1.0
+	sol.Cost += math.Pow(sol.routeLengthVariance(), 2) / 2.0
+	// fmt.Println(sol.routeLengthVariance())
+}
+
+func (sol *Solution) routeLengthVariance() float64 {
+	sum := fp.Reduce(sol.Routes, func(route Route, s int) int {
+		return s + len(route.Activities)
+	}, 0)
+	mean := float64(sum) / float64(len(sol.Routes))
+	sos := fp.Reduce(sol.Routes, func(route Route, acc float64) float64 {
+		return acc + math.Pow(float64(len(route.Activities))-mean, 2)
+	}, 0)
+	variance := sos / float64(len(sol.Routes)-1)
+	return variance
 }
 
 func (sol *Solution) mutate(inst MDVRPInstance, maxMutations int, mutationRate float64) {
