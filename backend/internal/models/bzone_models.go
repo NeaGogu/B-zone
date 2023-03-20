@@ -63,9 +63,9 @@ type ZoneModel struct {
 // PlotIDNamePair struct containing the ID of a plot and its name
 type PlotIDNamePair struct {
 	// Unique Plot ID
-	PlotId int64 `json:"user_plot_id,omitempty" bson:"user_plot_id,omitempty"`
+	PlotId string `json:"user_plot_id" bson:"user_plot_id"`
 	// Plot Name
-	Name string `json:"user_plot_name,omitempty" bson:"user_plot_name,omitempty"`
+	Name string `json:"user_plot_name" bson:"user_plot_name"`
 }
 
 // UserModel struct for UsersModel
@@ -75,7 +75,7 @@ type UserModel struct {
 	// unique per user
 	Uuid string `json:"uuid,omitempty" bson:"uuid,omitempty"`
 	// plots per user
-	PlotIdNames []PlotIDNamePair `json:"user_id_name,omitempty" bson:"user_id_name,omitempty"`
+	PlotIdNames []PlotIDNamePair `json:"user_plots" bson:"user_plots"`
 }
 
 // ZoneRangeModel struct for ZoneRangeModel

@@ -56,7 +56,11 @@ func (b *BzoneDBModel) SavePlot(userId int, plot *PlotModel) error {
 
 	fmt.Printf("Inserted plot with ID: %v\n", res.InsertedID)
 
-	// TODO add the plot id to the user's plot ids
+	// TODO: add the plot id to the user's plot ids
+	err = b.AddPlotToUserOrCreate(plot, userId)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
