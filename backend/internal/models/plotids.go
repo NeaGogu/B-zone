@@ -8,10 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type PlotIDName struct {
-	IDNamePairs []PlotIDNamePair `json:"user_id_name" bson:"user_id_name"`
-}
-
 // GetPlotIDs
 //
 //	@Description: returns the plot IDs and their names that are assigned to the specific user ID
@@ -19,26 +15,20 @@ type PlotIDName struct {
 //	@param userId
 //	@return []PlotIDName
 //	@return error
-func (z *BzoneDBModel) GetPlotIDs(userId int) ([]PlotIDName, error) {
+func (z *BzoneDBModel) GetPlotIDs(userId int) ([]PlotIDNamePair, error) {
 	// get the users collection
 	coll := z.DB.Collection(UserCollection)
 
 	// query for the right user id
 	queryFilter := bson.M{"user_id": bson.M{"$eq": userId}}
-	cur, err := coll.Find(context.TODO(), queryFilter)
+	var user UserModel
+
+	err := coll.FindOne(context.TODO(), queryFilter).Decode(&user)
 	if err != nil {
 		return nil, err
 	}
 
-	defer cur.Close(context.TODO())
-
-	// put the plot ids and their name in the results variable
-	var results []PlotIDName
-	if err = cur.All(context.TODO(), &results); err != nil {
-		return nil, err
-	}
-
-	return results, nil
+	return user.PlotIdNames, nil
 }
 
 func (b *BzoneDBModel) SavePlot(userId int, plot *PlotModel) error {
@@ -56,7 +46,7 @@ func (b *BzoneDBModel) SavePlot(userId int, plot *PlotModel) error {
 
 	fmt.Printf("Inserted plot with ID: %v\n", res.InsertedID)
 
-	// TODO: add the plot id to the user's plot ids
+	// add the plot id to the user's plot ids
 	err = b.AddPlotToUserOrCreate(plot, userId)
 	if err != nil {
 		return err

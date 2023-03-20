@@ -105,7 +105,7 @@ func (app *application) routes() http.Handler {
 		})
 
 		r.Route("/user", func(r chi.Router) {
-			r.Get("/plotidnames", app.getUserPlotIDs)
+			r.Get("/plots", app.getUserPlotIDs)
 		})
 
 		r.Route("/zone/", func(r chi.Router) {
