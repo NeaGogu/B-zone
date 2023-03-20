@@ -46,6 +46,7 @@ func main() {
 	}
 	fmt.Println(sol)
 	fmt.Println(genetic.Solution2ZoneMap(sol))
+	fmt.Println(genetic.Solution2ZoneModels(sol))
 }
 
 func makeActivity(actLat string, actLon string, actZip string, depotLat string, depotLon string, depotZip string) *openapi.ActivityModel {

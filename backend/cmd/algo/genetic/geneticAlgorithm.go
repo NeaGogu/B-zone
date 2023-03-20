@@ -1,6 +1,7 @@
 package genetic
 
 import (
+	"bzone/backend/internal/models"
 	openapi "bzone/backend/internal/swag_gen"
 	"fmt"
 	fp "github.com/rjNemo/underscore"
@@ -68,6 +69,17 @@ func Solution2ZoneMap(solution Solution) map[int][]int {
 		zoneMap[i] = fp.Unique(fp.Map(route.Activities, func(pos Pos) int { return pos.Zipcode }))
 	}
 	return zoneMap
+}
+
+func Solution2ZoneModels(solution Solution) []models.ZoneModel {
+	zones := make([]models.ZoneModel, len(solution.Routes))
+	for i, route := range solution.Routes {
+		zips := fp.Unique(fp.Map(route.Activities, func(pos Pos) int { return pos.Zipcode }))
+		zones[i] = models.ZoneModel{ZoneRanges: fp.Map(zips, func(zip int) models.ZoneRangeModel {
+			return models.ZoneRangeModel{ZipcodeFrom: int64(zip), ZipcodeTo: int64(zip)}
+		})}
+	}
+	return zones
 }
 
 // GeneticAlgorithm runs a genetic algorithm with the specified hyperparameters and returns the best solution found
