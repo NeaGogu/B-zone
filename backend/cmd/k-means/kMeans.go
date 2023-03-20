@@ -565,16 +565,17 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]model.Zo
 	zoneRanges := make([]model.ZoneRangeModel, 0)
 	var initialZipcode, lastZipcode int64
 	var err error
+	firstLoop := true
 
 	for zipCode := range zipcodeSet {
 		zipcodeInt, err := strconv.ParseInt(zipCode, 10, 64)
 		if err != nil {
 			return nil, err
 		}
-
-		if initialZipcode == 0 {
+		if firstLoop {
 			initialZipcode = zipcodeInt
 			lastZipcode = zipcodeInt
+			firstLoop = false
 		} else {
 			if lastZipcode+1 == zipcodeInt {
 				lastZipcode = zipcodeInt
@@ -590,6 +591,7 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]model.Zo
 			}
 		}
 	}
+	//append last zone
 	zoneRange, err := createZoneRange(strconv.Itoa(idCounter), initialZipcode, lastZipcode, "NLD")
 	if err != nil {
 		return nil, err
