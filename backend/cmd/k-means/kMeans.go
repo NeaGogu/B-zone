@@ -3,7 +3,6 @@ package kMeans
 
 import (
 	model "bzone/backend/internal/models"
-	openapi "bzone/backend/internal/swag_gen"
 	"errors"
 	"fmt"
 	"math"
@@ -38,7 +37,7 @@ type observations []observation
 type clusters []cluster
 
 // Type that defines multiple activity models
-type activities []openapi.ActivityModel
+type activities []model.ActivityModelBumbal
 
 // Type that creates a set to store zip codes
 type set struct {
@@ -78,13 +77,13 @@ var zeroClusters = clusters{
 	zeroCluster,
 }
 
-func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clusters, error) {
+func KMeans(activities activities, nrClusters int, nrCandidateClusters int) ([]model.ZoneModel, error) {
 	if len(activities) <= 0 {
-		return clusters{}, ErrNoActivities
+		return nil, ErrNoActivities
 	}
 
 	if nrClusters <= 0 {
-		return clusters{}, ErrNrClustersTooSmall
+		return nil, ErrNrClustersTooSmall
 	}
 	//variable used to store error and return when a function returns an error.
 	var err error
@@ -92,13 +91,13 @@ func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clu
 	observations, err = activitiesToObservations(activities, observations)
 	//return if error raises while converting activities to observations
 	if err != nil {
-		return zeroClusters, err
+		return nil, err
 	}
 	var clusters = make(clusters, 0, nrClusters)
 	clusters, err = initializeClusters(observations, clusters, nrClusters, nrCandidateClusters, rand.New(rand.NewSource(time.Now().UnixNano())))
 	//return if error raises while initializing clusters
 	if err != nil {
-		return zeroClusters, err
+		return nil, err
 	}
 
 	converged := false
@@ -115,9 +114,9 @@ func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clu
 
 			_, closestCenter, err := distanceToNearestCluster(observation, clusters)
 			if err != nil {
-				return zeroClusters, fmt.Errorf("got an error in distanceToNearestCluster: %v", err)
+				return nil, fmt.Errorf("got an error in distanceToNearestCluster: %v", err)
 			}
-			//assign observation to closest cluster
+			//assign observation to the closest cluster
 			clusters[closestCenter].observations = append(clusters[closestCenter].observations, observation)
 		}
 
@@ -129,7 +128,12 @@ func kMeans(activities activities, nrClusters int, nrCandidateClusters int) (clu
 		}
 
 	}
-	return clusters, err
+
+	//TODO: error
+	zipcodeList, _ := clusterToZipcodeSet(clusters, activities)
+	clusterSet, _ := zipcodeSetToZoneModel(zipcodeList)
+
+	return clusterSet, err
 }
 
 // updateCluster requires a pointer to a clusters(list of cluster) and updates all centers of the given clusters.
@@ -206,7 +210,7 @@ func initializeClusters(observations observations, clusters clusters, nrClusters
 		if err != nil {
 			return clusters, fmt.Errorf("got error in call to bestCandidateFunc: %w", err)
 		}
-		// Append best candidate cluster to clusters
+		// Append the best candidate cluster to clusters
 		clusters = append(clusters, bestCandidate)
 
 	}
@@ -391,10 +395,13 @@ func activitiesToObservations(activities activities, observations observations) 
 		return nil, ErrNoObservations
 	}
 
-	var newId int64
-	//loop over all activities in activities (activities is a list of openapi.ActivityModel)
+	//loop over all activities in activities (activities is a list of bumbal.ActivityModelBumbal)
 	for _, activity := range activities {
-		newId = activity.GetId()
+		newId, err := strconv.ParseInt(activity.GetId(), 10, 64)
+		//return if error raises while parsing
+		if err != nil {
+			return nil, err
+		}
 
 		newLatitude, err := strconv.ParseFloat(*activity.AddressApplied.Latitude, 64)
 		//return if error raises while parsing
@@ -448,7 +455,10 @@ func haversineDistance(point1, point2 coordinates) float64 {
 }
 
 func clusterToZoneModel(clusters clusters, activities activities) ([]model.ZoneModel, error) {
-	zipcodeSets := clusterToZipcodeSet(clusters, activities)
+	zipcodeSets, err := clusterToZipcodeSet(clusters, activities)
+	if err != nil {
+		return nil, err
+	}
 	zones, err := zipcodeSetToZoneModel(zipcodeSets)
 	if err != nil {
 		return nil, err
@@ -456,7 +466,7 @@ func clusterToZoneModel(clusters clusters, activities activities) ([]model.ZoneM
 	return zones, nil
 }
 
-func clusterToZipcodeSet(clusters clusters, actactivities activities) []map[string]struct{} {
+func clusterToZipcodeSet(clusters clusters, actactivities activities) ([]map[string]struct{}, error) {
 	//make a slice that holds sets of zipcodes
 	listZipcodeSet := make([]map[string]struct{}, 0)
 	for _, cluster := range clusters {
@@ -466,7 +476,11 @@ func clusterToZipcodeSet(clusters clusters, actactivities activities) []map[stri
 		for _, observation := range cluster.observations {
 			for _, activity := range actactivities {
 				//match id to get zipcode of observation
-				if activity.GetId() == observation.id {
+				activityId, err := strconv.ParseInt(activity.GetId(), 10, 64)
+				if err != nil {
+					return nil, err
+				}
+				if activityId == observation.id {
 					zipcode := *activity.AddressApplied.Zipcode
 					zipcodeSet[zipcode] = struct{}{}
 				}
@@ -474,7 +488,7 @@ func clusterToZipcodeSet(clusters clusters, actactivities activities) []map[stri
 		}
 		listZipcodeSet = append(listZipcodeSet, zipcodeSet)
 	}
-	return listZipcodeSet
+	return listZipcodeSet, nil
 }
 
 // func zipcodeSetToZoneModel(listZipcodeSet []map[string]struct{}) []model.ZoneModel {
@@ -568,7 +582,7 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]model.Zo
 	firstLoop := true
 
 	for zipCode := range zipcodeSet {
-		zipcodeInt, err := strconv.ParseInt(zipCode, 10, 64)
+		zipcodeInt, err := strconv.ParseInt(zipCode[:4], 10, 64)
 		if err != nil {
 			return nil, err
 		}

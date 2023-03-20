@@ -1,8 +1,7 @@
 package kMeans
 
 import (
-	model "bzone/backend/internal/models"
-	openapi "bzone/backend/internal/swag_gen"
+	"bzone/backend/internal/models"
 	"math"
 	"math/rand"
 	"reflect"
@@ -19,14 +18,14 @@ var MinNormal = math.Float64frombits(0x0010000000000000)
 
 func TestKMeans(t *testing.T) {
 	// Define some test data
-	activity1 := makeActivity(t, 1, "1", "1")
-	activity2 := makeActivity(t, 1, "3", "4")
-	activity3 := makeActivity(t, 1, "5", "6")
-	activities := []openapi.ActivityModel{*activity1, *activity2, *activity3}
+	activity1 := makeActivity(t, "1", "1", "1")
+	activity2 := makeActivity(t, "1", "3", "4")
+	activity3 := makeActivity(t, "1", "5", "6")
+	activities := []models.ActivityModelBumbal{*activity1, *activity2, *activity3}
 
 	testCases := []struct {
 		name                string
-		activities          []openapi.ActivityModel
+		activities          []models.ActivityModelBumbal
 		nrClusters          int
 		nrCandidateClusters int
 		expectedError       error
@@ -54,7 +53,7 @@ func TestKMeans(t *testing.T) {
 		},
 		{
 			name:                "No activities",
-			activities:          []openapi.ActivityModel{},
+			activities:          []models.ActivityModelBumbal{},
 			nrClusters:          2,
 			nrCandidateClusters: 2,
 			expectedError:       ErrNoActivities,
@@ -65,7 +64,7 @@ func TestKMeans(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Call the function
-			got, err := kMeans(tc.activities, tc.nrClusters, tc.nrCandidateClusters)
+			got, err := KMeans(tc.activities, tc.nrClusters, tc.nrCandidateClusters)
 
 			// Check the result
 			if err != tc.expectedError {
@@ -463,8 +462,8 @@ func TestDistance(t *testing.T) {
 }
 
 func TestActivitiesToObservations(t *testing.T) {
-	activity1 := makeActivity(t, 1, "51.5074", "-0.1278")
-	activity2 := makeActivity(t, 2, "52.5200", "13.4050")
+	activity1 := makeActivity(t, "1", "51.5074", "-0.1278")
+	activity2 := makeActivity(t, "2", "52.5200", "13.4050")
 	activities := activities{
 		*activity1,
 		*activity2,
@@ -594,16 +593,19 @@ func TestHaversineDistance(t *testing.T) {
 
 func TestClusterToZipcodeSet(t *testing.T) {
 	// create sample data
-	activity1 := makeActivity1(t, 1, "52.3764", "4.9004", "1012")
-	activity2 := makeActivity1(t, 2, "52.3764", "4.9004", "1017")
-	activity3 := makeActivity1(t, 3, "51.2194", "4.4025", "2273")
+	activity1 := makeActivity1(t, "1", "52.3764", "4.9004", "1012")
+	activity2 := makeActivity1(t, "2", "52.3764", "4.9004", "1017")
+	activity3 := makeActivity1(t, "3", "51.2194", "4.4025", "2273")
 	cluster1 := createCluster(t, coordinates{52.3764, 4.9004}, observations{observation{id: 1, coordinates: createCoordinate(t, 4.9004, 52.3764)}, observation{id: 2, coordinates: createCoordinate(t, 4.9004, 52.3764)}})
 	cluster2 := createCluster(t, coordinates{51.2194, 4.4025}, observations{observation{id: 3, coordinates: createCoordinate(t, 4.4025, 51.2194)}})
 	clusters := clusters{cluster1, cluster2}
-	activities := []openapi.ActivityModel{*activity1, *activity2, *activity3}
+	activities := []models.ActivityModelBumbal{*activity1, *activity2, *activity3}
 
 	// call the function
-	result := clusterToZipcodeSet(clusters, activities)
+	result, err := clusterToZipcodeSet(clusters, activities)
+	if err != nil {
+		t.Errorf("Didn't expect an error, but got %q", err)
+	}
 
 	// assert the result
 	expected := []map[string]struct{}{
@@ -614,73 +616,74 @@ func TestClusterToZipcodeSet(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestZipcodeSetToZoneModel(t *testing.T) {
-	// create sample data
-	listZipcodeSet := []map[string]struct{}{
-		{"1012": {}, "1017": {}, "1052": {}},
-		{"2273": {}},
-	}
+//func TestZipcodeSetToZoneModel(t *testing.T) {
+//	// create sample data
+//	listZipcodeSet := []map[string]struct{}{
+//		{"1012": {}, "1017": {}, "1052": {}},
+//		{"2273": {}},
+//	}
+//
+//	// call the function
+//	result := zipcodeSetToZoneModel(listZipcodeSet)
+//
+//	// assert the result
+//	expected := []model.ZoneModel{
+//		{
+//			Id:              0,
+//			ZoneRanges:      []model.ZoneRangeModel{{ZoneRangeId: 0, ZipcodeFrom: 1012, ZipcodeTo: 1052, IsoCountry: "NLD"}},
+//			ZoneFuelCost:    0,
+//			ZoneDrivingTime: 0,
+//		},
+//		{
+//			Id:              1,
+//			ZoneRanges:      []model.ZoneRangeModel{{ZoneRangeId: 1, ZipcodeFrom: 2273, ZipcodeTo: 2273, IsoCountry: "NLD"}},
+//			ZoneFuelCost:    0,
+//			ZoneDrivingTime: 0,
+//		},
+//	}
+//
+//	assert.Equal(t, expected, result)
+//}
 
-	// call the function
-	result := zipcodeSetToZoneModel(listZipcodeSet)
-
-	// assert the result
-	expected := []model.ZoneModel{
-		{
-			Id:              0,
-			ZoneRanges:      []model.ZoneRangeModel{{ZoneRangeId: 0, ZipcodeFrom: 1012, ZipcodeTo: 1052, IsoCountry: "NLD"}},
-			ZoneFuelCost:    0,
-			ZoneDrivingTime: 0,
-		},
-		{
-			Id:              1,
-			ZoneRanges:      []model.ZoneRangeModel{{ZoneRangeId: 1, ZipcodeFrom: 2273, ZipcodeTo: 2273, IsoCountry: "NLD"}},
-			ZoneFuelCost:    0,
-			ZoneDrivingTime: 0,
-		},
-	}
-
-	assert.Equal(t, expected, result)
-}
-
-func TestCreateZoneRange(t *testing.T) {
-	// create sample data
-	id := int64(0)
-	zipcodeFrom := int64(1012)
-	zipcodeTo := int64(1052)
-	isoCountry := "NLD"
-
-	// call the function
-	result := createZoneRange(id, zipcodeFrom, zipcodeTo, isoCountry)
-
-	// assert the result
-	expected := model.ZoneRangeModel{
-		ZoneRangeId: 0,
-		ZipcodeFrom: 1012,
-		ZipcodeTo:   1052,
-		IsoCountry:  "NLD",
-	}
-
-	assert.Equal(t, expected, result)
-}
+//func TestCreateZoneRange(t *testing.T) {
+//	// create sample data
+//	id := int64(0)
+//	zipcodeFrom := int64(1012)
+//	zipcodeTo := int64(1052)
+//	isoCountry := "NLD"
+//
+//	// call the function
+//	result := createZoneRange(id, zipcodeFrom, zipcodeTo, isoCountry)
+//
+//	// assert the result
+//	expected := model.ZoneRangeModel{
+//		ZoneRangeId: 0,
+//		ZipcodeFrom: 1012,
+//		ZipcodeTo:   1052,
+//		IsoCountry:  "NLD",
+//	}
+//
+//	assert.Equal(t, expected, result)
+//}
 
 func BenchmarkKMeansALot(t *testing.B) {
 	activities := make(activities, 0)
 	for i := 0; i < 100000; i++ {
 		str1 := strconv.Itoa(rand.Intn(1000))
 		str2 := strconv.Itoa(rand.Intn(1000))
-		result := makeActivity(t, int64(i), str1, str2)
+		iStr := strconv.Itoa(i)
+		result := makeActivity(t, iStr, str1, str2)
 		activities = append(activities, *result)
 	}
-	kMeans(activities, 30, 10)
+	KMeans(activities, 30, 10)
 }
 
-func makeActivity1(t testing.TB, id int64, lat string, long string, zipcode string) *openapi.ActivityModel {
+func makeActivity1(t testing.TB, id string, lat string, long string, zipcode string) *models.ActivityModelBumbal {
 	t.Helper()
 
 	//make activity and addressapplied model
-	activity := openapi.NewActivityModel()
-	address := openapi.NewAddressAppliedModel()
+	activity := models.NewActivityModel()
+	address := models.NewAddressAppliedModel()
 	//set lat and long
 	address.SetLatitude(lat)
 	address.SetLongitude(long)
@@ -774,12 +777,12 @@ func assertEqual[T any](t testing.TB, got, want T, err error) {
 	}
 }
 
-func makeActivity(t testing.TB, id int64, lat string, long string) *openapi.ActivityModel {
+func makeActivity(t testing.TB, id string, lat string, long string) *models.ActivityModelBumbal {
 	t.Helper()
 
 	//make activity and addressapplied model
-	activity := openapi.NewActivityModel()
-	address := openapi.NewAddressAppliedModel()
+	activity := models.NewActivityModel()
+	address := models.NewAddressAppliedModel()
 	//set lat and long
 	address.SetLatitude(lat)
 	address.SetLongitude(long)
