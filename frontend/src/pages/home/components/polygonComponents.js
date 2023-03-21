@@ -1,10 +1,10 @@
 // External dependencies
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
 import randomColor from "randomcolor";
 
-var zipCodes = []
+// var zipCodes = []
 
 /** 
 * Fetches the initial zone configuration a user has from Bumbal, returns promise of the response from Bumbal API.
@@ -114,9 +114,10 @@ async function getCoordinates(zipsList) {
 }
 
 // Main function to visualize the polygons on the map.
-const PolygonVis = () => {
+const PolygonVis = ({ zipCodes }) => {
     // Map context.
     const context = useLeafletContext()
+    const zipCodesRef = useRef(zipCodes);
 
     useEffect(() => {
         // Async function in order to wait for response from API.
@@ -134,9 +135,9 @@ const PolygonVis = () => {
 
             // Get initial zones from Bumbal.
             let initialZones = await getInitialZones();
-            zipCodes = await getZipCodes(initialZones);
+            zipCodesRef.current = await getZipCodes(initialZones);
             console.log('zipcodes')
-            coordinatesList = await getCoordinates(zipCodes)
+            coordinatesList = await getCoordinates(zipCodesRef.current)
 
             // Iterates through zones.
             for (let i = 0; i < coordinatesList.length; i++) {
@@ -153,7 +154,8 @@ const PolygonVis = () => {
             }
         };
         fetchData()
-    }, [context.layerContainer])
+    }, [context.layerContainer, zipCodesRef])
+
     return null
 }
 

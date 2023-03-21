@@ -33,6 +33,7 @@ export default function Home() {
 
     // For radio.
     const [value, setValue] = useState(1);
+    const [zipCodes, ] = useState([]);
     const onChange = (e) => {
         setValue(e.target.value);
     };
@@ -156,14 +157,14 @@ export default function Home() {
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                     <div style={{ paddingRight: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} />
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zipCodes={zipCodes} />
                                     </div>
                                     <div style={{ paddingLeft: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} />
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zipCodes={zipCodes}  />
                                     </div>
                                 </div>
                             ) : (
-                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} />
+                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zipCodes={zipCodes}  />
                             )}
                         </Content>
                     </Layout>
