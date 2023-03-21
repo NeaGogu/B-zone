@@ -141,16 +141,15 @@ func (app *application) SyncBumbalZones(w http.ResponseWriter, r *http.Request) 
 
 	app.infoLog.Println("Syncing bumbal zones for user: ", userId)
 
-	// TODO: validation and all that jazz
-
+	// get zones from Bumbal through their API
 	bumbalZones, err := bumbal.GetZoneListReponse(token)
 	if err != nil {
-		// TODO provide a better error message for the client
+		// TODO: provide a better error message for the client
 		app.serverError(w, err)
 		return
 	}
 
-	// convert the bumbal zones to a plot model
+	// convert the bumbal zones to an internal plot model
 	plotModel, err := bumbalZones.ToPlotModel()
 	if err != nil {
 		app.serverError(w, err)
@@ -158,6 +157,7 @@ func (app *application) SyncBumbalZones(w http.ResponseWriter, r *http.Request) 
 	}
 
 	//flush all the old zones with origin: bumbal
+	app.infoLog.Println("Deleting old bumbal zones for user: ", userId)
 	_, err = app.bzoneDbModel.DeletePlotsByOrigin(models.OriginBumbal, userId)
 	if err != nil {
 		app.serverError(w, err)
@@ -165,6 +165,7 @@ func (app *application) SyncBumbalZones(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// save the plot model to the database
+	app.infoLog.Println("Saving new bumbal zones for user: ", userId)
 	err = app.bzoneDbModel.SavePlot(userId, plotModel)
 	if err != nil {
 		app.serverError(w, err)
@@ -237,6 +238,7 @@ func (app *application) SavePlot(w http.ResponseWriter, r *http.Request) {
 	// NOTE: for now we assume that all plots coming to this endpoint are created by the user
 	receivedPlot.Origin = models.OriginBzone
 
+	app.infoLog.Printf("Saving plot with id %s for user %d ", receivedPlot.PlotId, userId)
 	err = app.bzoneDbModel.SavePlot(userId, &receivedPlot)
 	if err != nil {
 		app.serverError(w, err)
