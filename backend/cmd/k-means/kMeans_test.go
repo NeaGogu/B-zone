@@ -85,6 +85,189 @@ func TestKMeans(t *testing.T) {
 	}
 }
 
+func TestUpdateCluster(t *testing.T) {
+	// Define test cases
+	tests := []struct {
+		name     string
+		clusters clusters
+		want     clusters
+	}{
+		{
+			name: "Happy path",
+			clusters: clusters{
+				createCluster(t, createCoordinate(t, 52.0, 4.0), observations{
+					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 1),
+					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 2),
+				}),
+				createCluster(t, createCoordinate(t, 51.0, 4.3), observations{
+					createObservation(t, createCoordinate(t, 51.9194, 4.4818), 3),
+					createObservation(t, createCoordinate(t, 51.9194, 4.4818), 4),
+					createObservation(t, createCoordinate(t, 51.9194, 4.4818), 5),
+				}),
+			},
+			want: clusters{
+				createCluster(t, createCoordinate(t, 52.370216, 4.895168), observations{
+					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 1),
+					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 2),
+				}),
+				createCluster(t, createCoordinate(t, 51.9194, 4.4818), observations{
+					createObservation(t, createCoordinate(t, 51.9194, 4.4818), 3),
+					createObservation(t, createCoordinate(t, 51.9194, 4.4818), 4),
+					createObservation(t, createCoordinate(t, 51.9194, 4.4818), 5),
+				}),
+			},
+		},
+		{
+			name:     "Empty clusters",
+			clusters: clusters{},
+			want:     clusters{},
+		},
+	}
+
+	// Run tests
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := updateCluster(tt.clusters)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("updateCluster() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClearObservations(t *testing.T) {
+	// Define test cases
+	tests := []struct {
+		name     string
+		clusters clusters
+		want     clusters
+	}{
+		{
+			name: "Happy path",
+			clusters: clusters{
+				createCluster(t, createCoordinate(t, 52.370216, 4.895168), observations{
+					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 1),
+					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 2),
+				}),
+				createCluster(t, createCoordinate(t, 51.9194, 4.4818), observations{
+					createObservation(t, createCoordinate(t, 51.9194, 4.4818), 3),
+					createObservation(t, createCoordinate(t, 51.9194, 4.4818), 4),
+				}),
+			},
+			want: clusters{
+				createCluster(t, createCoordinate(t, 52.370216, 4.895168), observations{}),
+				createCluster(t, createCoordinate(t, 51.9194, 4.4818), observations{}),
+			},
+		},
+		{
+			name:     "Empty clusters",
+			clusters: clusters{},
+			want:     clusters{},
+		},
+	}
+
+	// Run tests
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Make a deep copy of the input clusters
+			input := make(clusters, len(tt.clusters))
+			copy(input, tt.clusters)
+
+			// Call the function
+			clearObservations(&input)
+
+			// Check if the output matches the expected output
+			if !reflect.DeepEqual(input, tt.want) {
+				t.Errorf("clearObservations() got %v, want %v", input, tt.want)
+			}
+		})
+	}
+}
+
+func TestInitializeClusters(t *testing.T) {
+	// Define some test data
+	obs1 := createObservation(t, createCoordinate(t, 1, 2), 1)
+	obs2 := createObservation(t, createCoordinate(t, 3, 4), 2)
+	obs3 := createObservation(t, createCoordinate(t, 5, 6), 3)
+	observations := []observation{obs1, obs2, obs3}
+
+	testCases := []struct {
+		name                string
+		nrClusters          int
+		nrCandidateClusters int
+		wantError           bool
+		expectedError       error
+		expectedClusters    clusters
+	}{
+		{
+			name:                "NrClusters larger than length of observations",
+			nrClusters:          4,
+			nrCandidateClusters: 2,
+			expectedError:       ErrNrObservationsTooSmall,
+			wantError:           true,
+			expectedClusters:    clusters{},
+		},
+		{
+			name:                "NrCandidateClusters smaller or equal to 0",
+			nrClusters:          2,
+			nrCandidateClusters: 0,
+			expectedError:       ErrNrCandidateClustersTooSmall,
+			wantError:           true,
+			expectedClusters:    clusters{},
+		},
+		{
+			name:                "NrCandidateClusters larger than length of observations",
+			nrClusters:          2,
+			nrCandidateClusters: 4,
+			expectedError:       ErrNrObservationsTooSmall,
+			wantError:           true,
+			expectedClusters:    clusters{},
+		},
+		{
+			name:                "NrClusters equal to length of observations",
+			nrClusters:          3,
+			nrCandidateClusters: 2,
+			expectedError:       nil,
+			wantError:           false,
+			expectedClusters: clusters{
+				createCluster(t, obs3.coordinates, []observation{obs3}),
+				createCluster(t, obs1.coordinates, []observation{obs1}),
+				createCluster(t, obs1.coordinates, []observation{obs1}),
+			},
+		},
+		{
+			name:                "Happy path",
+			nrClusters:          2,
+			nrCandidateClusters: 2,
+			expectedError:       nil,
+			wantError:           false,
+			expectedClusters: clusters{
+				createCluster(t, obs3.coordinates, []observation{obs3}),
+				createCluster(t, obs1.coordinates, []observation{obs1}),
+			},
+		},
+	}
+
+	// Loop over test cases and run each one
+	// Seed the random number generator to ensure reproducibility
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			randSeed := rand.New(rand.NewSource(12345))
+			// Call the function
+			clusters := clusters{}
+			got, err := initializeClusters(observations, clusters, tc.nrClusters, tc.nrCandidateClusters, randSeed)
+
+			// Check the result
+			if err != tc.expectedError {
+				t.Errorf("initializeClusters() error = %v, want %v", err, tc.expectedError)
+			}
+			if !tc.wantError && !reflect.DeepEqual(got, tc.expectedClusters) {
+				t.Errorf("initializeClusters() = %v, want %v", got, tc.expectedClusters)
+			}
+		})
+	}
+}
+
 func TestChooseCandidates(t *testing.T) {
 	// Define some test data
 	obs1 := createObservation(t, createCoordinate(t, 1, 2), 1)
@@ -105,18 +288,6 @@ func TestChooseCandidates(t *testing.T) {
 	got := chooseCandidates(observations, probabilities, nrCandidateClusters, randSeed)
 
 	assert.Equal(t, want, got)
-}
-
-func TestProbabilities(t *testing.T) {
-	// Define some test data
-	distances := []float64{1.0, 2.0, 3.0}
-
-	// Call the function and check the result
-	want := []float64{1.0, 4.0, 9.0}
-	got := Probabilities(distances)
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Probabilities() = %v, want %v", got, want)
-	}
 }
 
 func TestTotalSumDistance(t *testing.T) {
@@ -254,7 +425,17 @@ func TestTotalListDistance(t *testing.T) {
 		})
 	}
 }
+func TestProbabilities(t *testing.T) {
+	// Define some test data
+	distances := []float64{1.0, 2.0, 3.0}
 
+	// Call the function and check the result
+	want := []float64{1.0, 4.0, 9.0}
+	got := Probabilities(distances)
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Probabilities() = %v, want %v", got, want)
+	}
+}
 func TestBestCandidateFunc(t *testing.T) {
 	// Create some test data
 	obs1 := createObservation(t, createCoordinate(t, 1, 2), 1)
@@ -490,90 +671,6 @@ func TestActivitiesToObservations(t *testing.T) {
 
 }
 
-func TestInitializeClusters(t *testing.T) {
-	// Define some test data
-	obs1 := createObservation(t, createCoordinate(t, 1, 2), 1)
-	obs2 := createObservation(t, createCoordinate(t, 3, 4), 2)
-	obs3 := createObservation(t, createCoordinate(t, 5, 6), 3)
-	observations := []observation{obs1, obs2, obs3}
-
-	testCases := []struct {
-		name                string
-		nrClusters          int
-		nrCandidateClusters int
-		wantError           bool
-		expectedError       error
-		expectedClusters    clusters
-	}{
-		{
-			name:                "NrClusters larger than length of observations",
-			nrClusters:          4,
-			nrCandidateClusters: 2,
-			expectedError:       ErrNrObservationsTooSmall,
-			wantError:           true,
-			expectedClusters:    clusters{},
-		},
-		{
-			name:                "NrCandidateClusters smaller or equal to 0",
-			nrClusters:          2,
-			nrCandidateClusters: 0,
-			expectedError:       ErrNrCandidateClustersTooSmall,
-			wantError:           true,
-			expectedClusters:    clusters{},
-		},
-		{
-			name:                "NrCandidateClusters larger than length of observations",
-			nrClusters:          2,
-			nrCandidateClusters: 4,
-			expectedError:       ErrNrObservationsTooSmall,
-			wantError:           true,
-			expectedClusters:    clusters{},
-		},
-		{
-			name:                "NrClusters equal to length of observations",
-			nrClusters:          3,
-			nrCandidateClusters: 2,
-			expectedError:       nil,
-			wantError:           false,
-			expectedClusters: clusters{
-				createCluster(t, obs3.coordinates, []observation{obs3}),
-				createCluster(t, obs1.coordinates, []observation{obs1}),
-				createCluster(t, obs1.coordinates, []observation{obs1}),
-			},
-		},
-		{
-			name:                "Happy path",
-			nrClusters:          2,
-			nrCandidateClusters: 2,
-			expectedError:       nil,
-			wantError:           false,
-			expectedClusters: clusters{
-				createCluster(t, obs3.coordinates, []observation{obs3}),
-				createCluster(t, obs1.coordinates, []observation{obs1}),
-			},
-		},
-	}
-
-	// Loop over test cases and run each one
-	// Seed the random number generator to ensure reproducibility
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			randSeed := rand.New(rand.NewSource(12345))
-			// Call the function
-			clusters := clusters{}
-			got, err := initializeClusters(observations, clusters, tc.nrClusters, tc.nrCandidateClusters, randSeed)
-
-			// Check the result
-			if err != tc.expectedError {
-				t.Errorf("initializeClusters() error = %v, want %v", err, tc.expectedError)
-			}
-			if !tc.wantError && !reflect.DeepEqual(got, tc.expectedClusters) {
-				t.Errorf("initializeClusters() = %v, want %v", got, tc.expectedClusters)
-			}
-		})
-	}
-}
-
 func TestHaversineDistance(t *testing.T) {
 	// Define some test data
 	point1 := coordinates{latitude: 51.4416, longitude: 5.4697} // btw Eindhoven :D
@@ -595,12 +692,6 @@ func TestClusterToZoneModel(t *testing.T) {
 	activity2 := makeActivity(t, "2", "52.3764", "4.9004", "1000AC")
 	activity3 := makeActivity(t, "3", "51.2194", "4.4025", "2000AB")
 	activity4 := makeActivity(t, "4", "51.2194", "4.4025", "2000AC")
-	// clusters := clusters{
-	// 	cluster{center: createCoordinate(t, 1, 2),
-	// 		observations: observations{createObservation(t, createCoordinate(t, 1, 2), 1), createObservation(t, createCoordinate(t, 1, 2), 2)}},
-	// 	cluster{center: createCoordinate(t, 1, 2),
-	// 		observations: observations{createObservation(t, createCoordinate(t, 1, 2), 3), createObservation(t, createCoordinate(t, 1, 2), 4)}},
-	// }
 
 	tests := []struct {
 		name       string

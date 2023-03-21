@@ -136,6 +136,7 @@ func KMeans(activities activities, nrClusters int, nrCandidateClusters int) ([]m
 	return clusterSet, err
 }
 
+// TODO: error when observations are incorrectly assigned
 // updateCluster requires a pointer to a clusters(list of cluster) and updates all centers of the given clusters.
 func updateCluster(clusters clusters) clusters {
 	for index, cluster := range clusters {
@@ -271,11 +272,11 @@ func totalSumDistance(observations observations, checkCluster clusters) (float64
 	sumDistance := 0.0
 	for _, observation := range observations {
 		distance, _, err := distanceToNearestCluster(observation, checkCluster)
-		sumDistance += distance
 		//return if distanceToNearestCluster returned an error
 		if err != nil {
 			return 0, fmt.Errorf("got error in call to distanceToNearestCluster: %w", err)
 		}
+		sumDistance += distance
 	}
 	return sumDistance, nil
 }
