@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -66,14 +65,11 @@ func (b *BzoneDBModel) SavePlot(userId int, plot *PlotModel) error {
 	// userColl := b.DB.Collection(UserCollection)
 	plotColl := b.DB.Collection(PlotCollection)
 
-	fmt.Printf("Saving plot: %v", plot)
 	// first, add the plot to the plots collection
-	res, err := plotColl.InsertOne(context.TODO(), plot)
+	_, err := plotColl.InsertOne(context.TODO(), plot)
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("Inserted plot with ID: %v\n", res.InsertedID)
 
 	// add the plot id to the user's plot ids
 	err = b.AddPlotToUserOrCreate(plot, userId)
