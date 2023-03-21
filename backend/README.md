@@ -87,7 +87,7 @@ There are two big benefits:
 Here is an overview of the backend endpoints, together with instructions on how to access them:
 
 1. Endpoint for running the `k-means algorithm`:
-    - the `url` for the request is: http://localhost:4000/bumbal/algorithm/kmeans
+    - the `url` for this `GET` request is: http://localhost:4000/bumbal/algorithm/kmeans
     - the request should have a `json` body which looks like this: 
     - ![image](https://user-images.githubusercontent.com/53708808/226574702-fe906675-0c77-47b5-b618-059c1d525e1f.png)
     - for convenience: `{"number_of_clusters":2,"number_of_candidate_clusters":1}`
