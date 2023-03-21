@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 )
 
 // A coordinates type contains longitude and latitude
@@ -533,7 +534,9 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]models.Z
 	// Convert the zip codes to integers and sort them
 	zipcodes := make([]int64, 0, len(zipcodeSet))
 	for zipCode := range zipcodeSet {
-		trimmedZipCode := strings.TrimRight(zipCode, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+		trimmedZipCode := strings.TrimRightFunc(zipCode, func(r rune) bool {
+			return !unicode.IsDigit(r)
+		})
 		if len(trimmedZipCode) != 4 {
 			return nil, fmt.Errorf("zipcode %q trimmed to %q is not 4 digits long", zipCode, trimmedZipCode)
 		}
