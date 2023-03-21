@@ -222,10 +222,7 @@ func initializeClusters(observations observations, clusters clusters, nrClusters
 	// Select the next cluster centers one at a time, based on the distance from the existing centers
 
 	// For each point calculate the distance to the last chosen candidate center
-	distances, err := totalListDistance(observations, clusters[len(clusters)-1])
-	if err != nil {
-		return zeroClusters, fmt.Errorf("got an error in totalListDistance: %v", err)
-	}
+	distances := totalListDistance(observations, clusters[len(clusters)-1])
 
 	for len(clusters) < nrClusters {
 
@@ -246,36 +243,29 @@ func initializeClusters(observations observations, clusters clusters, nrClusters
 	return clusters, nil
 }
 
+// chooseCandidates selects candidate cluster centers randomly with probability proportional to the distance to the nearest existing center.
 func chooseCandidates(observations observations, probabilities []float64, nrCandidateClusters int, r *rand.Rand) clusters {
-	// Choose the next clusterCandidate centers randomly with probability proportional to the distance
 	candidates := make([]cluster, 0, nrCandidateClusters)
+
+	// Select nrCandidateClusters number of candidates
 	for i := 0; i < nrCandidateClusters; i++ {
-		// Algo for running sum this could be used to improve efficiency when observations is really large this has to only loop over probabilties once
-		// sum := 0.0
-		// selectedIdx := -1
-		// for i, p := range probs {
-		// 	sum += p
-		// 	if rand.Float64()*sum < p {
-		// 		selectedIdx = i
-		// 	}
-		// }
-		// If no data point was selected, return a default value
-		// if selectedIdx == -1 {
-		// 	return selectedIdx
-		// }
+		// Algo for running sum could be used to improve efficiency when observations is really large that has to loop over probabilties only once
+		// Calculate the sum of all probabilities
 		sum := 0.0
 		for _, p := range probabilities {
 			sum += p
 		}
+		// Generate a random number between 0 and the sum of all probabilities
 		randomNumber := r.Float64() * sum
+		// Select the observation that corresponds to the first probability value that is greater than or equal to the random number
 		for i, p := range probabilities {
 			randomNumber -= p
 			if randomNumber <= 0.0 {
+				// Create a new cluster centered at the selected observation
 				coordinates := coordinates{
 					latitude:  observations[i].coordinates.latitude,
 					longitude: observations[i].coordinates.longitude,
 				}
-				//cannot go out of bounds since probabilties is the same length as observations and index starts at 0
 				observationChosen := observations[i : i+1]
 
 				candidates = append(candidates, cluster{
@@ -283,184 +273,209 @@ func chooseCandidates(observations observations, probabilities []float64, nrCand
 					observations: observationChosen,
 				})
 				break
-
 			}
 		}
 	}
+
 	return candidates
 }
 
-// totalSumDistance takes observations (list of observation) and clusters (list of cluster) as input and returns a list that contains for each observation the distance to the closest cluster and
-// a list that contains for each observation the index of the closest cluster
+// totalSumDistance calculates the total sum of distances of each observation to its closest cluster and returns it.
+// It also returns an error if the provided list of clusters is empty.
 func totalSumDistance(observations observations, checkCluster clusters) (float64, error) {
+	// Return an error if the list of clusters is empty
 	if len(checkCluster) <= 0 {
 		return 0.0, ErrNoClusters
 	}
+
 	sumDistance := 0.0
+	// Calculate the distance of each observation to its closest cluster and add it to the sumDistance variable
 	for _, observation := range observations {
 		distance, _, err := distanceToNearestCluster(observation, checkCluster)
-		//return if distanceToNearestCluster returned an error
+		// If distanceToNearestCluster returned an error, return it as an error from this function
 		if err != nil {
 			return 0, fmt.Errorf("got error in call to distanceToNearestCluster: %w", err)
 		}
 		sumDistance += distance
 	}
+
+	// Return the total sum of distances to the closest clusters
 	return sumDistance, nil
 }
 
-// totalListDistance takes observations (list of observation) and clusters (list of cluster) as input and returns a list that contains for each observation the distance to the closest cluster and
-// a list that contains for each observation the index of the closest cluster
-func totalListDistance(observations observations, cluster cluster) ([]float64, error) {
-	// For each point calculate the distance to the nearest cluster center
+// totalListDistance calculates the distances of each observation in the provided observations slice to the given cluster center and returns a slice of distances.
+func totalListDistance(observations observations, cluster cluster) []float64 {
+	// For each observation, calculate the distance to the provided cluster center
 	distances := make([]float64, len(observations))
 	for index, observation := range observations {
-		var err error
+		// Calculate the distance between the observation and the cluster center
 		distances[index] = distance(observation, cluster)
-		if err != nil {
-			return []float64{}, fmt.Errorf("got an error in distanceToNearestCluster: %v", err)
-		}
+
 	}
-	return distances, nil
+	// Return the slice of distances
+	return distances
 }
 
-// Probabilities takes observations (list of observation) and distances (list of float64) as input and calculates the probability of an observation being chosen as proportional probability to the distance
+// Probabilities calculates the probability of selecting each observation from the provided distances to be proportional to the squared distance.
+// It returns a slice of probabilities for each observation.
 func Probabilities(distances []float64) []float64 {
-	//calculate probabilities
+	// Initialize a slice to store the probabilities
 	probabilities := make([]float64, len(distances))
-	// Squaring the distance makes the probability of selecting a data point decrease more steeply as the distance increases, compared to using the distance itself.
-	// This has the effect of encouraging the algorithm to select cluster centers that are farther apart and better representative of the data.
+
+	// Calculate the probability of selecting each observation proportional to the squared distance
 	for index, distance := range distances {
+		// Squaring the distance makes the probability of selecting a data point decrease more steeply as the distance increases, compared to using the distance itself.
+		// This has the effect of encouraging the algorithm to select cluster centers that are farther apart and better representative of the data.
 		probabilities[index] = distance * distance
 	}
+
+	// Return the slice of probabilities
 	return probabilities
-	// Explanation of proporional probability because i failed probability and statistics and don't get it :(
-	// To choose the next cluster center randomly with probability proportional to the distance,
-	// generate a random number r between 0 and the sum of the probabilities, which is r = 38.9.
-	// Then, iterate over the probabilities, subtracting each probability from r until r becomes negative.
-	// The data point corresponding to the first negative value is selected as the next cluster center.
-
-	// For example, suppose that we subtract the probabilities in order from r and reach a negative value after subtracting the sixth probability
-
-	// r = 38.9 - 5.29 = 33.61
-	// r = 33.61 - 2.25 = 31.36
-	// r = 31.36 - 0.64 = 30.72
-	// r = 30.72 - 10.24 = 20.48
-	// r = 20.48 - 1.21 = 19.27
-	// r = 19.27 - 8.41 = 10.86 (negative)
-	// In this case, the data point corresponding to the sixth probability (with distance 2.9) is selected as the next cluster center.
 }
 
-//func selectCandidate()
-
-// bestCandidateFunc requires as input a candidates (list of cluster), clusters and observations. Given these 3 the function calculates and returns
-// which candidate minimizes the total distance when added to the clusters
+// bestCandidateFunc takes a list of candidate cluster centers, a list of existing clusters, and a list of observations as input.
+// It calculates the total sum of distances of each observation to its closest cluster when each candidate center is added to the existing clusters,
+// and returns the candidate center that minimizes the total distance, along with no error. It returns an error if there is an error in the distance calculation or if the list of candidates is empty.
 func bestCandidateFunc(candidates clusters, clusters clusters, observations observations) (cluster, error) {
-
+	// Return an error if the list of candidates is empty
 	if len(candidates) <= 0 {
 		return zeroCluster, ErrNrCandidateClustersTooSmall
 	}
+
+	// Initialize the best candidate and best distance variables
 	bestCandidate := candidates[0]
 	bestDistance := math.Inf(1)
+
 	// Loop over all candidate centers
 	for index, candidate := range candidates {
-		//candidate to clusters
+		// Add the candidate center to the existing clusters
 		checkCluster := append(clusters, candidate)
 
-		//calculate the sum of distances and if smaller this is the best candidate so far
+		// Calculate the total sum of distances of each observation to its closest cluster when the candidate center is added to the existing clusters
 		sumDistance, err := totalSumDistance(observations, checkCluster)
 		if err != nil {
 			return cluster{}, fmt.Errorf("got error in call to totalSumDistance: %w", err)
 		}
 
-		//if the sumDistance of this candidate is lower replace the bestDistance and bestCandidate
+		// If the sumDistance of this candidate is lower than the current bestDistance, replace the bestDistance and bestCandidate variables
 		if sumDistance < bestDistance {
 			bestDistance = sumDistance
 			bestCandidate = candidates[index]
 		}
 	}
+
+	// Return the candidate center that minimizes the total distance and no error
 	return bestCandidate, nil
 }
 
-// distanceToNearestCluster requires a pointer to an observations (list of observation) and a pointer to an clusters (list of cluster)
-// and returns the cluster that is nearest and the index to the cluster
+// distanceToNearestCluster takes an observation and a list of clusters as input, and calculates the distance from the observation to the nearest cluster.
+// It returns the distance to the nearest cluster, the index of the nearest cluster, and no error.
+// It returns an error if the list of clusters is nil.
 func distanceToNearestCluster(observation observation, clusters clusters) (float64, int, error) {
-	//throw error if nr of observations is smaller than or equal to 0
+	// Throw an error if the list of clusters is nil
 	if clusters == nil {
 		return 0, 0, errors.New("no observation passed in distanceToNearestCluster")
 	}
 
-	// Compute the distance from x to the nearest cluster in clusters
+	// Initialize the minimum distance and minimum cluster variables
 	minDist := math.Inf(1)
 	minCluster := 0
+
+	// Loop over all clusters and calculate the distance to the observation
 	for index, cluster := range clusters {
 		dist := distance(observation, cluster)
+
+		// If the distance to this cluster is smaller than the current minimum distance, update the minimum distance and minimum cluster variables
 		if dist < minDist {
 			minDist = dist
 			minCluster = index
 		}
 	}
+
+	// Return the minimum distance and minimum cluster index with no error
 	return minDist, minCluster, nil
 }
 
 // distance takes as input an observation and a cluster and calculates the difference between the observation and the cluster
 func distance(observation observation, cluster cluster) float64 {
+	// Calculate the difference between the observation and the cluster for both the latitude and longitude
 	latitudeDifference := observation.coordinates.latitude - cluster.center.latitude
 	longitudeDifference := observation.coordinates.longitude - cluster.center.longitude
-	return math.Sqrt((latitudeDifference * latitudeDifference) + (longitudeDifference * longitudeDifference))
+
+	// Calculate the distance between the observation and the cluster using the Pythagorean theorem
+	distance := math.Sqrt((latitudeDifference * latitudeDifference) + (longitudeDifference * longitudeDifference))
+
+	// Return the distance
+	return distance
 }
 
+// distanceKilometers takes as input an observation and a cluster and calculates the distance between the observation and the cluster in kilometers
 func distanceKilometers(observation observation, cluster cluster) float64 {
-	resultHaverstine := haversineDistance(observation.coordinates, cluster.center)
-	return resultHaverstine
+	// Calculate the distance between the observation and the cluster using the haversine formula
+	resultHaversine := haversineDistance(observation.coordinates, cluster.center)
+
+	// Return the distance in kilometers
+	return resultHaversine
 }
 
-// activitiesToObservations requires a pointer to an activities (list of ActivityModel) and a pointer to an observations (list of observation)
-// converts the activity.AddressApplied latitude and longitude to an observation langtitude and longitude and grabs the activity.Id, combines these two into an
-// observation and appends this to the observations.
+// activitiesToObservations takes a list of activities and a list of observations as input, and converts the latitude and longitude values from the activities to observations.
+// It appends each new observation to the observations list and returns the updated list.
+// It throws an error if the number of activities is smaller than or equal to 0.
 func activitiesToObservations(activities activities, observations observations) (observations, error) {
-	//throw error if nr of observations is smaller than or equal to 0
+	// Throw an error if the number of activities is smaller than or equal to 0
 	if len(activities) <= 0 {
 		return nil, ErrNoObservations
 	}
 
-	//loop over all activities in activities (activities is a list of bumbal.ActivityModelBumbal)
+	// Loop over all activities in activities (activities is a list of bumbal.ActivityModel)
 	for _, activity := range activities {
+		// Convert the activity ID to an integer
 		newId, err := strconv.ParseInt(activity.GetId(), 10, 64)
-		//return if error raises while parsing
+		// Return an error if an error occurs while parsing the ID
 		if err != nil {
 			return nil, err
 		}
 
+		// Convert the activity latitude to a float
 		newLatitude, err := strconv.ParseFloat(*activity.AddressApplied.Latitude, 64)
-		//return if error raises while parsing
+		// Return an error if an error occurs while parsing the latitude
 		if err != nil {
 			return nil, err
 		}
-		newlongitude, err := strconv.ParseFloat(*activity.AddressApplied.Longitude, 64)
-		//return if error raises while parsing
+
+		// Convert the activity longitude to a float
+		newLongitude, err := strconv.ParseFloat(*activity.AddressApplied.Longitude, 64)
+		// Return an error if an error occurs while parsing the longitude
 		if err != nil {
 			return nil, err
 		}
-		//create new coordinates using the long and lat we got from the activity
+
+		// Create a new coordinates struct using the latitude and longitude values
 		newCoordinates := coordinates{
 			latitude:  newLatitude,
-			longitude: newlongitude,
+			longitude: newLongitude,
 		}
 
-		//create new observation with newCoordinates and id of the activity
+		// Create a new observation with the new coordinates and the activity ID
 		newObservation := observation{
 			id:          newId,
 			coordinates: newCoordinates,
 		}
+
+		// Append the new observation to the observations list
 		observations = append(observations, newObservation)
 	}
+
+	// Return the updated observations list and no error
 	return observations, nil
 }
 
+// toRadians takes a float64 value in degrees and converts it to radians
 func toRadians(degrees float64) float64 {
 	return degrees * math.Pi / 180
 }
 
+// haversineDistance takes two coordinates as input and calculates the distance between them using the Haversine formula
 func haversineDistance(point1, point2 coordinates) float64 {
 	// Convert latitude and longitude to radians
 	lat1 := toRadians(point1.latitude)
@@ -476,12 +491,17 @@ func haversineDistance(point1, point2 coordinates) float64 {
 	a := math.Pow(math.Sin(deltaLat/2), 2) + math.Cos(lat1)*math.Cos(lat2)*math.Pow(math.Sin(deltaLon/2), 2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 
-	// Calculate the distance using the Haversine formula
+	// Calculate the distance using the Haversine formula and the Earth's radius
 	distance := earthRadius * c
 
 	return distance
 }
 
+// clusterToZoneModel takes a list of clusters and a list of activities as input and converts the clusters to ZoneModels.
+// It first converts the clusters to sets of zipcodes using the clusterToZipcodeSet function.
+// It then converts the sets of zipcodes to ZoneModels using the zipcodeSetToZoneModel function.
+// If an error occurs in either of these functions, it returns the error.
+// Otherwise, it returns a list of ZoneModels.
 func clusterToZoneModel(clusters clusters, activities activities) ([]model.ZoneModel, error) {
 	zipcodeSets, err := clusterToZipcodeSet(clusters, activities)
 	if err != nil {
@@ -494,19 +514,28 @@ func clusterToZoneModel(clusters clusters, activities activities) ([]model.ZoneM
 	return zones, nil
 }
 
+// clusterToZipcodeSet takes a list of clusters and a list of activities as input and converts the clusters to sets of zipcodes.
+// It loops over each cluster, and for each observation in the cluster, it matches the observation ID to an activity ID to get the corresponding zipcode.
+// It then adds the zipcode to a set for the cluster.
+// It returns a list of sets of zipcodes, one set per cluster.
+// If an error occurs while parsing the activity ID or getting the zipcode, it returns the error.
 func clusterToZipcodeSet(clusters clusters, activities activities) ([]map[string]struct{}, error) {
 	if len(activities) <= 0 {
-		return nil, errors.New("Length of activities is too small (clusterToZipCodeSet)")
+		return nil, errors.New("length of activities is too small (clusterToZipCodeSet)")
 	}
-	//make a slice that holds sets of zipcodes
+
+	// Make a slice that holds sets of zipcodes
 	listZipcodeSet := make([]map[string]struct{}, 0)
+
+	// Loop over each cluster
 	for _, cluster := range clusters {
-		//set that holds zipcodes for each cluster
+		// Set that holds zipcodes for each cluster
 		zipcodeSet := make(map[string]struct{})
-		//loop over all observations in cluster and add zipcode
+
+		// Loop over all observations in the cluster and add the corresponding zipcode to the set
 		for _, observation := range cluster.observations {
 			for _, activity := range activities {
-				//match id to get zipcode of observation
+				// Match the activity ID to the observation ID to get the corresponding zipcode
 				activityId, err := strconv.ParseInt(activity.GetId(), 10, 64)
 				if err != nil {
 					return nil, err
@@ -517,26 +546,38 @@ func clusterToZipcodeSet(clusters clusters, activities activities) ([]map[string
 				}
 			}
 		}
+
+		// Append the set of zipcodes to the list of sets
 		listZipcodeSet = append(listZipcodeSet, zipcodeSet)
 	}
+
+	// Return the list of sets of zipcodes and no error
 	return listZipcodeSet, nil
 }
 
+// zipcodeSetToZoneModel takes a list of sets of zipcodes as input and converts each set to a ZoneModel.
+// It loops over each set of zipcodes, and for each set, it calls the createZoneRanges function to create a list of ZoneRanges.
+// It then creates a ZoneModel with the ZoneRanges, and adds it to a list of ZoneModels.
+// The function returns the list of ZoneModels and no error.
+// If an error occurs while creating the ZoneRanges, it returns the error.
 func zipcodeSetToZoneModel(listZipcodeSet []map[string]struct{}) ([]model.ZoneModel, error) {
 	idCounter := 0
 	zones := make([]model.ZoneModel, 0)
 
+	// Loop over each set of zipcodes
 	for _, zipcodeSet := range listZipcodeSet {
+		// If the set is empty, skip to the next set
 		if len(zipcodeSet) == 0 {
 			continue
 		}
 
+		// Call the createZoneRanges function to create a list of ZoneRanges for the set
 		zoneRanges, err := createZoneRanges(idCounter, zipcodeSet)
-		fmt.Println(zoneRanges)
 		if err != nil {
 			return nil, err
 		}
 
+		// Create a ZoneModel with the ZoneRanges and add it to the list of ZoneModels
 		zone := model.ZoneModel{
 			Id:              strconv.Itoa(idCounter),
 			ZoneRanges:      zoneRanges,
@@ -546,9 +587,17 @@ func zipcodeSetToZoneModel(listZipcodeSet []map[string]struct{}) ([]model.ZoneMo
 		idCounter++
 		zones = append(zones, zone)
 	}
+
+	// Return the list of ZoneModels and no error
 	return zones, nil
 }
 
+// createZoneRanges takes an ID counter and a set of zipcodes as input and converts the set to a list of ZoneRanges.
+// It first converts the zipcodes to integers and sorts them.
+// It then loops over the sorted zipcodes and creates a new ZoneRange for each contiguous range of zipcodes.
+// It adds each new ZoneRange to a list of ZoneRanges.
+// The function then merges overlapping ZoneRanges and returns the merged list of ZoneRanges and no error.
+// If an error occurs while creating or merging the ZoneRanges, it returns the error.
 func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]models.ZoneRangeModel, error) {
 	if len(zipcodeSet) <= 0 {
 		return nil, fmt.Errorf("length of zipcodeSet is too small: %q", zipcodeSet)
@@ -573,18 +622,22 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]models.Z
 		return zipcodes[i] < zipcodes[j]
 	})
 
+	// Create a list of ZoneRanges
 	zoneRanges := make([]models.ZoneRangeModel, 0)
 
 	var initialZipcode, lastZipcode int64
 	firstLoop := true
 
+	// Loop over each sorted zipcode and create a new ZoneRange for each contiguous range
 	for _, zipcodeInt := range zipcodes {
 		if firstLoop {
+			// Initialize the initialZipcode and lastZipcode for the first range
 			initialZipcode = zipcodeInt
 			lastZipcode = zipcodeInt
 			firstLoop = false
 		} else {
 			if lastZipcode+1 == zipcodeInt {
+				// Expand the last range if the current zipcode is contiguous
 				lastZipcode = zipcodeInt
 			} else {
 				// Create a new ZoneRangeModel for the previous range
@@ -626,9 +679,14 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]models.Z
 		mergedRanges = append(mergedRanges, mergedRange)
 	}
 
+	// Return the merged list of ZoneRanges and no error
 	return mergedRanges, nil
 }
 
+// createZoneRange takes an ID string, a starting zipcode, an ending zipcode, and an ISO country code as input and returns a new ZoneRangeModel.
+// It checks that the starting zipcode is not greater than the ending zipcode. If it is, the function returns an error.
+// It then converts the ID string to an integer and initializes a new ZoneRangeModel with the converted ID, the starting and ending zipcodes, and the ISO country code.
+// The function returns the new ZoneRangeModel and no error.
 func createZoneRange(id string, zipcodeFrom int64, zipcodeTo int64, IsoCountry string) (model.ZoneRangeModel, error) {
 	if zipcodeFrom > zipcodeTo {
 		return model.ZoneRangeModel{}, errors.New("zipcodeFrom cannot be greater than zipcodeTo")
@@ -636,11 +694,14 @@ func createZoneRange(id string, zipcodeFrom int64, zipcodeTo int64, IsoCountry s
 
 	idInt, _ := strconv.ParseInt(id, 10, 64)
 
+	// Create a new ZoneRangeModel with the given ID, zipcodes, and ISO country code
 	zoneRange := model.ZoneRangeModel{
 		ZoneRangeId: idInt,
 		ZipcodeFrom: zipcodeFrom,
 		ZipcodeTo:   zipcodeTo,
 		IsoCountry:  IsoCountry,
 	}
+
+	// Return the new ZoneRangeModel and no error
 	return zoneRange, nil
 }

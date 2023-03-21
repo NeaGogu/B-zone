@@ -428,9 +428,9 @@ func TestTotalListDistance(t *testing.T) {
 			var gotDistances []float64
 			var err error
 			if len(tt.clusters) > 0 {
-				gotDistances, err = totalListDistance(tt.observations, tt.clusters[len(tt.clusters)-1])
+				gotDistances = totalListDistance(tt.observations, tt.clusters[len(tt.clusters)-1])
 			} else {
-				gotDistances, err = totalListDistance(tt.observations, cluster{})
+				gotDistances = totalListDistance(tt.observations, cluster{})
 			}
 
 			if tt.wantErr && err == nil {
@@ -500,81 +500,62 @@ func TestBestCandidateFunc(t *testing.T) {
 
 }
 func TestDistanceToNearestCluster(t *testing.T) {
-	//Create clusters to test with
+	// Create clusters to test with
 	clusters := clusters{
 		createCluster(t, createCoordinate(t, 4, 6), make(observations, 0)),
 		createCluster(t, createCoordinate(t, 0, 0), make(observations, 0)),
 	}
+
+	// Define test cases as a slice of structs
+	testCases := []struct {
+		name         string
+		observation  observation
+		wantDistance float64
+		wantIndex    int
+	}{
+		{
+			name:         "Center difference on longitude",
+			observation:  createObservation(t, createCoordinate(t, 2, 6), 1),
+			wantDistance: 2.0,
+			wantIndex:    0,
+		},
+		{
+			name:         "Center difference on latitude",
+			observation:  createObservation(t, createCoordinate(t, 4, 8), 1),
+			wantDistance: 2.0,
+			wantIndex:    0,
+		},
+		{
+			name:         "Point is in the middle of two centers",
+			observation:  createObservation(t, createCoordinate(t, 2, 3), 1),
+			wantDistance: 3.605551275464,
+			wantIndex:    0,
+		},
+		{
+			name:         "Point is on center",
+			observation:  createObservation(t, createCoordinate(t, 0, 0), 1),
+			wantDistance: 0.0,
+			wantIndex:    1,
+		},
+	}
+
 	// GIS/handheld gps precision
 	epsilon := 0.00001
-	t.Run("Center difference on longitude", func(t *testing.T) {
-		// Create observation with difference on the longitude and compare if distance and cluster index are correct
-		observation := createObservation(t, createCoordinate(t, 2, 6), 1)
-		gotDistance, gotIndex, err := distanceToNearestCluster(observation, clusters)
-		wantDistance := 2.0
-		if err != nil {
-			t.Errorf("didn't want an error but got: %q", err)
-		}
-		result := AlmostEqual(t, gotDistance, wantDistance, epsilon)
-		if !result {
-			t.Errorf("The difference between gotDistance: %f and wantDistance: %f is too large", gotDistance, wantDistance)
-		}
-		wantIndex := 0
-		if !(gotIndex == wantIndex) {
-			t.Errorf("The selected cluster :%v is not the closest cluster %v", gotIndex, wantIndex)
-		}
-	})
-	t.Run("Center difference on latitude", func(t *testing.T) {
-		// Create observation with difference on the latitude and compare if distance and cluster index are correct
-		observation := createObservation(t, createCoordinate(t, 4, 8), 1)
-		gotDistance, gotIndex, err := distanceToNearestCluster(observation, clusters)
-		wantDistance := 2.0
-		if err != nil {
-			t.Errorf("didn't want an error but got: %q", err)
-		}
-		result := AlmostEqual(t, gotDistance, wantDistance, epsilon)
-		if !result {
-			t.Errorf("The difference between gotDistance: %f and wantDistance: %f is too large", gotDistance, wantDistance)
-		}
-		wantIndex := 0
-		if !(gotIndex == wantIndex) {
-			t.Errorf("The selected cluster :%v is not the closest cluster %v", gotIndex, wantIndex)
-		}
-	})
-	t.Run("point is in the middle of two centers", func(t *testing.T) {
-		// Create observation that is exaclty in the middle compare if distance and cluster index are correct
-		observation := createObservation(t, createCoordinate(t, 2, 3), 1)
-		gotDistance, gotIndex, err := distanceToNearestCluster(observation, clusters)
-		wantDistance := 3.605551275464
-		if err != nil {
-			t.Errorf("didn't want an error but got: %q", err)
-		}
-		result := AlmostEqual(t, gotDistance, wantDistance, epsilon)
-		if !result {
-			t.Errorf("The difference between gotDistance: %f and wantDistance: %f is too large", gotDistance, wantDistance)
-		}
-		wantIndex := 0
-		if !(gotIndex == wantIndex) {
-			t.Errorf("The selected cluster :%v is not the closest cluster %v", gotIndex, wantIndex)
-		}
-	})
-	t.Run("point is on center", func(t *testing.T) {
-		// Create observation that is exaclty on the cluster and compare if distance and cluster index are correct
-		observation := createObservation(t, createCoordinate(t, 0, 0), 1)
-		gotDistance, gotIndex, err := distanceToNearestCluster(observation, clusters)
-		wantDistance := 0.0
-		if err != nil {
-			t.Errorf("didn't want an error but got: %q", err)
-		}
-		result := AlmostEqual(t, gotDistance, wantDistance, epsilon)
-		if !result {
-			t.Errorf("The difference between gotDistance: %f and wantDistance: %f is too large", gotDistance, wantDistance)
-		}
-		wantIndex := 1
-		if !(gotIndex == wantIndex) {
-			t.Errorf("The selected cluster :%v is not the closest cluster %v", gotIndex, wantIndex)
-		}
-	})
+
+	// Loop over each test case and run the test
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Call the distanceToNearestCluster function and get the results
+			gotDistance, gotIndex, err := distanceToNearestCluster(tc.observation, clusters)
+
+			// Check for errors
+			assert.NoError(t, err, "unexpected error")
+
+			// Check if the distance and cluster index are correct
+			assert.InDeltaf(t, tc.wantDistance, gotDistance, epsilon, "distance: got %f, want %f", gotDistance, tc.wantDistance)
+			assert.Equalf(t, tc.wantIndex, gotIndex, "cluster index: got %d, want %d", gotIndex, tc.wantIndex)
+		})
+	}
 }
 
 func TestDistance(t *testing.T) {
@@ -828,111 +809,6 @@ func TestClusterToZipcodeSet(t *testing.T) {
 
 	assert.Equal(t, expected, result)
 }
-
-// func TestZipcodeSetToZoneModel(t *testing.T) {
-// 	// Use a test version of createZoneRanges to isolate the test from its implementation
-// 	origCreateZoneRanges := createZoneRanges
-// 	defer func() { createZoneRanges = origCreateZoneRanges }()
-// 	createZoneRanges = testCreateZoneRanges
-
-// 	testCases := []struct {
-// 		name           string
-// 		listZipcodeSet []map[string]struct{}
-// 		expectedZones  []model.ZoneModel
-// 		expectedErr    error
-// 	}{
-// 		{
-// 			name:           "Empty list",
-// 			listZipcodeSet: []map[string]struct{}{},
-// 			expectedZones:  []model.ZoneModel{},
-// 			expectedErr:    nil,
-// 		},
-// 		{
-// 			name: "List with an empty set",
-// 			listZipcodeSet: []map[string]struct{}{
-// 				{},
-// 			},
-// 			expectedZones: []model.ZoneModel{},
-// 			expectedErr:   nil,
-// 		},
-// 		{
-// 			name: "List with a single non-empty set",
-// 			listZipcodeSet: []map[string]struct{}{
-// 				{
-// 					"12345": {},
-// 					"67890": {},
-// 				},
-// 			},
-// 			expectedZones: []model.ZoneModel{
-// 				{
-// 					Id: "0",
-// 					ZoneRanges: []model.ZoneRangeModel{
-// 						{
-// 							ZoneRangeId: 1,
-// 							ZipcodeFrom: 12345,
-// 							ZipcodeTo:   67890,
-// 						},
-// 					},
-// 					ZoneFuelCost:    0,
-// 					ZoneDrivingTime: 0,
-// 				},
-// 			},
-// 			expectedErr: nil,
-// 		},
-// 		{
-// 			name: "List with multiple non-empty sets",
-// 			listZipcodeSet: []map[string]struct{}{
-// 				{
-// 					"12345": {},
-// 					"67890": {},
-// 				},
-// 				{
-// 					"22222": {},
-// 					"33333": {},
-// 				},
-// 			},
-// 			expectedZones: []model.ZoneModel{
-// 				{
-// 					Id: "0",
-// 					ZoneRanges: []model.RangeModel{
-// 						{
-// 							Min: "12345",
-// 							Max: "67890",
-// 						},
-// 					},
-// 					ZoneFuelCost:    0,
-// 					ZoneDrivingTime: 0,
-// 				},
-// 				{
-// 					Id: "1",
-// 					ZoneRanges: []model.RangeModel{
-// 						{
-// 							Min: "22222",
-// 							Max: "33333",
-// 						},
-// 					},
-// 					ZoneFuelCost:    0,
-// 					ZoneDrivingTime: 0,
-// 				},
-// 			},
-// 			expectedErr: nil,
-// 		},
-// 	}
-
-// 	for _, tc := range testCases {
-// 		t.Run(tc.name, func(t *testing.T) {
-// 			zones, err := zipcodeSetToZoneModel(tc.listZipcodeSet)
-
-// 			if !reflect.DeepEqual(zones, tc.expectedZones) {
-// 				t.Errorf("Expected zones: %+v, got: %+v", tc.expectedZones, zones)
-// 			}
-
-// 			if !errors.Is(err, tc.expectedErr) {
-// 				t.Errorf("Expected error: %v, got: %v", tc.expectedErr, err)
-// 			}
-// 		})
-// 	}
-// }
 
 func TestZipcodeSetToZoneModel(t *testing.T) {
 	tests := []struct {
