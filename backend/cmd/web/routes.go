@@ -122,7 +122,7 @@ func (app *application) routes() http.Handler {
 		})
 
 		r.Route("/bumbal", func(r chi.Router) {
-			r.Get("/algorithm/kmeans", bumbal.RunKMeans)
+			r.Put("/algorithm/kmeans", bumbal.RunKMeans)
 		})
 
 	})
