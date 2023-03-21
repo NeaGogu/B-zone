@@ -10,6 +10,12 @@ import (
 	"sync"
 )
 
+type MDVRPInstance struct {
+	Activities []Pos
+	Depots     []Pos
+	NRoutes    int
+}
+
 // GenerateMDVRPInstance converts a slice of openapi.ActivityModel to a MDVRPInstance
 func GenerateMDVRPInstance(activities []openapi.ActivityModel, nRoutes int) MDVRPInstance {
 	inst := MDVRPInstance{NRoutes: nRoutes}
