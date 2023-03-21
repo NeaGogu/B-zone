@@ -568,7 +568,7 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]models.Z
 				}
 				idCounter++
 				zoneRanges = append(zoneRanges, zoneRange)
-				// Update initialZipcode for the next range
+				// Update initialZipcode and lastZipcode for the next range
 				initialZipcode = zipcodeInt
 				lastZipcode = zipcodeInt
 			}
@@ -582,7 +582,25 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]models.Z
 	}
 	zoneRanges = append(zoneRanges, zoneRange)
 
-	return zoneRanges, nil
+	// Merge overlapping zone ranges
+	mergedRanges := make([]models.ZoneRangeModel, 0, len(zoneRanges))
+
+	for i := 0; i < len(zoneRanges); i++ {
+		mergedRange := zoneRanges[i]
+
+		for j := i + 1; j < len(zoneRanges); j++ {
+			if zoneRanges[j].ZipcodeFrom <= mergedRange.ZipcodeTo+1 {
+				mergedRange.ZipcodeTo = zoneRanges[j].ZipcodeTo
+				i++
+			} else {
+				break
+			}
+		}
+
+		mergedRanges = append(mergedRanges, mergedRange)
+	}
+
+	return mergedRanges, nil
 }
 
 func createZoneRange(id string, zipcodeFrom int64, zipcodeTo int64, IsoCountry string) (model.ZoneRangeModel, error) {
