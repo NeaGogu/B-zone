@@ -3,6 +3,7 @@ package kMeans
 import (
 	"bzone/backend/internal/models"
 	model "bzone/backend/internal/models"
+	"errors"
 	"math"
 	"math/rand"
 	"reflect"
@@ -688,10 +689,10 @@ func TestHaversineDistance(t *testing.T) {
 
 func TestClusterToZoneModel(t *testing.T) {
 	// create sample data
-	activity1 := makeActivity(t, "1", "52.3764", "4.9004", "1000AB")
-	activity2 := makeActivity(t, "2", "52.3764", "4.9004", "1000AC")
-	activity3 := makeActivity(t, "3", "51.2194", "4.4025", "2000AB")
-	activity4 := makeActivity(t, "4", "51.2194", "4.4025", "2000AC")
+	activity1 := makeActivity(t, "1", "52.3764", "4.9004", "1000ab")
+	activity2 := makeActivity(t, "2", "52.3764", "4.9004", "1000cd")
+	activity3 := makeActivity(t, "3", "51.2194", "4.4025", "2000da")
+	activity4 := makeActivity(t, "4", "51.2194", "4.4025", "2000ab")
 
 	tests := []struct {
 		name       string
@@ -772,11 +773,15 @@ func TestClusterToZoneModel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := clusterToZoneModel(tt.clusters, tt.activities)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("clusterToZoneModel() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
-			assert.Equal(t, tt.want, got)
+			for _, zone := range tt.want {
+				assert.Contains(t, got, zone)
+			}
+			assert.Equal(t, len(tt.want), len(got))
 		})
 	}
 }
@@ -803,6 +808,314 @@ func TestClusterToZipcodeSet(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, result)
+}
+
+// func TestZipcodeSetToZoneModel(t *testing.T) {
+// 	// Use a test version of createZoneRanges to isolate the test from its implementation
+// 	origCreateZoneRanges := createZoneRanges
+// 	defer func() { createZoneRanges = origCreateZoneRanges }()
+// 	createZoneRanges = testCreateZoneRanges
+
+// 	testCases := []struct {
+// 		name           string
+// 		listZipcodeSet []map[string]struct{}
+// 		expectedZones  []model.ZoneModel
+// 		expectedErr    error
+// 	}{
+// 		{
+// 			name:           "Empty list",
+// 			listZipcodeSet: []map[string]struct{}{},
+// 			expectedZones:  []model.ZoneModel{},
+// 			expectedErr:    nil,
+// 		},
+// 		{
+// 			name: "List with an empty set",
+// 			listZipcodeSet: []map[string]struct{}{
+// 				{},
+// 			},
+// 			expectedZones: []model.ZoneModel{},
+// 			expectedErr:   nil,
+// 		},
+// 		{
+// 			name: "List with a single non-empty set",
+// 			listZipcodeSet: []map[string]struct{}{
+// 				{
+// 					"12345": {},
+// 					"67890": {},
+// 				},
+// 			},
+// 			expectedZones: []model.ZoneModel{
+// 				{
+// 					Id: "0",
+// 					ZoneRanges: []model.ZoneRangeModel{
+// 						{
+// 							ZoneRangeId: 1,
+// 							ZipcodeFrom: 12345,
+// 							ZipcodeTo:   67890,
+// 						},
+// 					},
+// 					ZoneFuelCost:    0,
+// 					ZoneDrivingTime: 0,
+// 				},
+// 			},
+// 			expectedErr: nil,
+// 		},
+// 		{
+// 			name: "List with multiple non-empty sets",
+// 			listZipcodeSet: []map[string]struct{}{
+// 				{
+// 					"12345": {},
+// 					"67890": {},
+// 				},
+// 				{
+// 					"22222": {},
+// 					"33333": {},
+// 				},
+// 			},
+// 			expectedZones: []model.ZoneModel{
+// 				{
+// 					Id: "0",
+// 					ZoneRanges: []model.RangeModel{
+// 						{
+// 							Min: "12345",
+// 							Max: "67890",
+// 						},
+// 					},
+// 					ZoneFuelCost:    0,
+// 					ZoneDrivingTime: 0,
+// 				},
+// 				{
+// 					Id: "1",
+// 					ZoneRanges: []model.RangeModel{
+// 						{
+// 							Min: "22222",
+// 							Max: "33333",
+// 						},
+// 					},
+// 					ZoneFuelCost:    0,
+// 					ZoneDrivingTime: 0,
+// 				},
+// 			},
+// 			expectedErr: nil,
+// 		},
+// 	}
+
+// 	for _, tc := range testCases {
+// 		t.Run(tc.name, func(t *testing.T) {
+// 			zones, err := zipcodeSetToZoneModel(tc.listZipcodeSet)
+
+// 			if !reflect.DeepEqual(zones, tc.expectedZones) {
+// 				t.Errorf("Expected zones: %+v, got: %+v", tc.expectedZones, zones)
+// 			}
+
+// 			if !errors.Is(err, tc.expectedErr) {
+// 				t.Errorf("Expected error: %v, got: %v", tc.expectedErr, err)
+// 			}
+// 		})
+// 	}
+// }
+
+func TestZipcodeSetToZoneModel(t *testing.T) {
+	tests := []struct {
+		name          string
+		listZipcodes  []map[string]struct{}
+		expectedZones []model.ZoneModel
+		expectedError error
+	}{
+		{
+			name:          "Empty list of zip code sets",
+			listZipcodes:  []map[string]struct{}{},
+			expectedZones: []model.ZoneModel{},
+			expectedError: nil,
+		},
+		{
+			name: "Single zip code set",
+			listZipcodes: []map[string]struct{}{
+				{"1234": {}, "3456": {}},
+			},
+			expectedZones: []model.ZoneModel{
+				{
+					Id: "0",
+					ZoneRanges: []model.ZoneRangeModel{
+						{ZoneRangeId: 0, ZipcodeFrom: 1234, ZipcodeTo: 1234, IsoCountry: "NLD"},
+						{ZoneRangeId: 1, ZipcodeFrom: 3456, ZipcodeTo: 3456, IsoCountry: "NLD"},
+					},
+					ZoneFuelCost:    0,
+					ZoneDrivingTime: 0,
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Multiple zip code sets",
+			listZipcodes: []map[string]struct{}{
+				{"1234": {}, "2345": {}},
+				{"3456": {}, "4567": {}},
+			},
+			expectedZones: []model.ZoneModel{
+				{
+					Id: "0",
+					ZoneRanges: []model.ZoneRangeModel{
+						{ZoneRangeId: 0, ZipcodeFrom: 1234, ZipcodeTo: 1234, IsoCountry: "NLD"},
+						{ZoneRangeId: 1, ZipcodeFrom: 2345, ZipcodeTo: 2345, IsoCountry: "NLD"},
+					},
+					ZoneFuelCost:    0,
+					ZoneDrivingTime: 0,
+				},
+				{
+					Id: "1",
+					ZoneRanges: []model.ZoneRangeModel{
+						{ZoneRangeId: 1, ZipcodeFrom: 3456, ZipcodeTo: 3456, IsoCountry: "NLD"},
+						{ZoneRangeId: 2, ZipcodeFrom: 4567, ZipcodeTo: 4567, IsoCountry: "NLD"},
+					},
+					ZoneFuelCost:    0,
+					ZoneDrivingTime: 0,
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Invalid zip code set (too short)",
+			listZipcodes: []map[string]struct{}{
+				{"123a": {}, "2345": {}},
+			},
+			expectedZones: nil,
+			expectedError: errors.New("zipcode \"123a\" trimmed to \"123\" is not 4 digits long"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actualZones, actualError := zipcodeSetToZoneModel(tt.listZipcodes)
+			assert.Equal(t, tt.expectedError, actualError)
+			assert.Equal(t, tt.expectedZones, actualZones)
+		})
+	}
+}
+
+func TestCreateZoneRanges(t *testing.T) {
+	tests := []struct {
+		name                 string
+		idCounter            int
+		zipcodeSet           map[string]struct{}
+		expectedZoneRanges   []model.ZoneRangeModel
+		expectedErrorMessage string
+	}{
+		{
+			name:                 "Empty zip code set",
+			idCounter:            0,
+			zipcodeSet:           map[string]struct{}{},
+			expectedZoneRanges:   nil,
+			expectedErrorMessage: "length of zipcodeSet is too small: map[]",
+		},
+		{
+			name:       "Single zip code set",
+			idCounter:  0,
+			zipcodeSet: map[string]struct{}{"1234": {}, "1235": {}, "1236": {}},
+			expectedZoneRanges: []model.ZoneRangeModel{
+				{
+					ZoneRangeId: 0,
+					ZipcodeFrom: 1234,
+					ZipcodeTo:   1236,
+					IsoCountry:  "NLD",
+				},
+			},
+			expectedErrorMessage: "",
+		},
+		{
+			name:       "Multiple zip code sets",
+			idCounter:  0,
+			zipcodeSet: map[string]struct{}{"1234": {}, "1235": {}, "2345": {}},
+			expectedZoneRanges: []model.ZoneRangeModel{
+				{
+					ZoneRangeId: 0,
+					ZipcodeFrom: 1234,
+					ZipcodeTo:   1235,
+					IsoCountry:  "NLD",
+				},
+				{
+					ZoneRangeId: 1,
+					ZipcodeFrom: 2345,
+					ZipcodeTo:   2345,
+					IsoCountry:  "NLD",
+				},
+			},
+			expectedErrorMessage: "",
+		},
+		{
+			name:                 "Invalid zip code",
+			idCounter:            0,
+			zipcodeSet:           map[string]struct{}{"123b": {}, "2345": {}},
+			expectedZoneRanges:   nil,
+			expectedErrorMessage: "zipcode \"123b\" trimmed to \"123\" is not 4 digits long",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actualZoneRanges, actualError := createZoneRanges(tt.idCounter, tt.zipcodeSet)
+			if actualError == nil && tt.expectedErrorMessage != "" {
+				t.Errorf("expected error message '%v', but got nil", tt.expectedErrorMessage)
+			} else if actualError != nil && tt.expectedErrorMessage == "" {
+				t.Errorf("expected no error, but got '%v'", actualError)
+			} else if actualError != nil && tt.expectedErrorMessage != actualError.Error() {
+				t.Errorf("expected error message '%v', but got '%v'", tt.expectedErrorMessage, actualError.Error())
+			}
+			assert.Equal(t, tt.expectedZoneRanges, actualZoneRanges)
+		})
+	}
+}
+
+func TestCreateZoneRange(t *testing.T) {
+	tests := []struct {
+		name                 string
+		id                   string
+		zipcodeFrom          int64
+		zipcodeTo            int64
+		isoCountry           string
+		expectedZoneRange    model.ZoneRangeModel
+		expectedErrorMessage string
+	}{
+		{
+			name:        "Valid case",
+			id:          "1",
+			zipcodeFrom: 1000,
+			zipcodeTo:   2000,
+			isoCountry:  "NLD",
+			expectedZoneRange: model.ZoneRangeModel{
+				ZoneRangeId: 1,
+				ZipcodeFrom: 1000,
+				ZipcodeTo:   2000,
+				IsoCountry:  "NLD",
+			},
+			expectedErrorMessage: "",
+		},
+		{
+			name:                 "Invalid case: invalid zipcode range",
+			id:                   "1",
+			zipcodeFrom:          2000,
+			zipcodeTo:            1000,
+			isoCountry:           "NLD",
+			expectedZoneRange:    model.ZoneRangeModel{},
+			expectedErrorMessage: "zipcodeFrom cannot be greater than zipcodeTo",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actualZoneRange, actualError := createZoneRange(tt.id, tt.zipcodeFrom, tt.zipcodeTo, tt.isoCountry)
+			if actualError == nil && tt.expectedErrorMessage != "" {
+				t.Errorf("expected error message '%v', but got nil", tt.expectedErrorMessage)
+			} else if actualError != nil && tt.expectedErrorMessage == "" {
+				t.Errorf("expected no error, but got '%v'", actualError)
+			} else if actualError != nil && tt.expectedErrorMessage != actualError.Error() {
+				t.Errorf("expected error message '%v', but got '%v'", tt.expectedErrorMessage, actualError.Error())
+			}
+			if !reflect.DeepEqual(actualZoneRange, tt.expectedZoneRange) {
+				t.Errorf("unexpected zone range: got %v, want %v", actualZoneRange, tt.expectedZoneRange)
+			}
+		})
+	}
 }
 
 func BenchmarkKMeansALot(t *testing.B) {

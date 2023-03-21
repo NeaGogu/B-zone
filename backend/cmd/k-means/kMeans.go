@@ -2,13 +2,16 @@
 package kMeans
 
 import (
+	"bzone/backend/internal/models"
 	model "bzone/backend/internal/models"
 	"errors"
 	"fmt"
 	"math"
 	"math/rand"
 	"reflect"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -505,6 +508,7 @@ func zipcodeSetToZoneModel(listZipcodeSet []map[string]struct{}) ([]model.ZoneMo
 		}
 
 		zoneRanges, err := createZoneRanges(idCounter, zipcodeSet)
+		fmt.Println(zoneRanges)
 		if err != nil {
 			return nil, err
 		}
@@ -521,17 +525,34 @@ func zipcodeSetToZoneModel(listZipcodeSet []map[string]struct{}) ([]model.ZoneMo
 	return zones, nil
 }
 
-func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]model.ZoneRangeModel, error) {
-	zoneRanges := make([]model.ZoneRangeModel, 0)
-	var initialZipcode, lastZipcode int64
-	firstLoop := true
-	var lastZoneAppended bool
+func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]models.ZoneRangeModel, error) {
+	if len(zipcodeSet) <= 0 {
+		return nil, fmt.Errorf("length of zipcodeSet is too small: %q", zipcodeSet)
+	}
 
+	// Convert the zip codes to integers and sort them
+	zipcodes := make([]int64, 0, len(zipcodeSet))
 	for zipCode := range zipcodeSet {
-		zipcodeInt, err := strconv.ParseInt(zipCode[:4], 10, 64)
+		trimmedZipCode := strings.TrimRight(zipCode, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+		if len(trimmedZipCode) != 4 {
+			return nil, fmt.Errorf("zipcode %q trimmed to %q is not 4 digits long", zipCode, trimmedZipCode)
+		}
+		zipcodeInt, err := strconv.ParseInt(trimmedZipCode, 10, 64)
 		if err != nil {
 			return nil, err
 		}
+		zipcodes = append(zipcodes, zipcodeInt)
+	}
+	sort.Slice(zipcodes, func(i, j int) bool {
+		return zipcodes[i] < zipcodes[j]
+	})
+
+	zoneRanges := make([]models.ZoneRangeModel, 0)
+
+	var initialZipcode, lastZipcode int64
+	firstLoop := true
+
+	for _, zipcodeInt := range zipcodes {
 		if firstLoop {
 			initialZipcode = zipcodeInt
 			lastZipcode = zipcodeInt
@@ -540,26 +561,26 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]model.Zo
 			if lastZipcode+1 == zipcodeInt {
 				lastZipcode = zipcodeInt
 			} else {
+				// Create a new ZoneRangeModel for the previous range
 				zoneRange, err := createZoneRange(strconv.Itoa(idCounter), initialZipcode, lastZipcode, "NLD")
 				if err != nil {
 					return nil, err
 				}
 				idCounter++
 				zoneRanges = append(zoneRanges, zoneRange)
+				// Update initialZipcode for the next range
 				initialZipcode = zipcodeInt
 				lastZipcode = zipcodeInt
-				lastZoneAppended = true
 			}
 		}
 	}
-	// append last zone if not already appended
-	if !lastZoneAppended {
-		zoneRange, err := createZoneRange(strconv.Itoa(idCounter), initialZipcode, lastZipcode, "NLD")
-		if err != nil {
-			return nil, err
-		}
-		zoneRanges = append(zoneRanges, zoneRange)
+
+	// Append the last zone range
+	zoneRange, err := createZoneRange(strconv.Itoa(idCounter), initialZipcode, lastZipcode, "NLD")
+	if err != nil {
+		return nil, err
 	}
+	zoneRanges = append(zoneRanges, zoneRange)
 
 	return zoneRanges, nil
 }
