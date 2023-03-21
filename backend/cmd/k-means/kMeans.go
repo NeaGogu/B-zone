@@ -39,11 +39,6 @@ type clusters []cluster
 // Type that defines multiple activity models
 type activities []model.ActivityModelBumbal
 
-// Type that creates a set to store zip codes
-type set struct {
-	member map[string]struct{}
-}
-
 // radius of the Earth in kilometers (for haversine distance)
 const earthRadius = 6371
 
@@ -129,9 +124,14 @@ func KMeans(activities activities, nrClusters int, nrCandidateClusters int) ([]m
 
 	}
 
-	//TODO: error
-	zipcodeList, _ := clusterToZipcodeSet(clusters, activities)
-	clusterSet, _ := zipcodeSetToZoneModel(zipcodeList)
+	zipcodeList, err := clusterToZipcodeSet(clusters, activities)
+	if err != nil {
+		return nil, fmt.Errorf("got an error in clusterToZipCodeSet: %v", err)
+	}
+	clusterSet, err := zipcodeSetToZoneModel(zipcodeList)
+	if err != nil {
+		return nil, fmt.Errorf("got an error in zipcodeSetToZoneModel: %v", err)
+	}
 
 	return clusterSet, err
 }
@@ -466,7 +466,10 @@ func clusterToZoneModel(clusters clusters, activities activities) ([]model.ZoneM
 	return zones, nil
 }
 
-func clusterToZipcodeSet(clusters clusters, actactivities activities) ([]map[string]struct{}, error) {
+func clusterToZipcodeSet(clusters clusters, activities activities) ([]map[string]struct{}, error) {
+	if len(activities) <= 0 {
+		return nil, errors.New("Length of activities is too small (clusterToZipCodeSet)")
+	}
 	//make a slice that holds sets of zipcodes
 	listZipcodeSet := make([]map[string]struct{}, 0)
 	for _, cluster := range clusters {
@@ -474,7 +477,7 @@ func clusterToZipcodeSet(clusters clusters, actactivities activities) ([]map[str
 		zipcodeSet := make(map[string]struct{})
 		//loop over all observations in cluster and add zipcode
 		for _, observation := range cluster.observations {
-			for _, activity := range actactivities {
+			for _, activity := range activities {
 				//match id to get zipcode of observation
 				activityId, err := strconv.ParseInt(activity.GetId(), 10, 64)
 				if err != nil {
@@ -490,64 +493,6 @@ func clusterToZipcodeSet(clusters clusters, actactivities activities) ([]map[str
 	}
 	return listZipcodeSet, nil
 }
-
-// func zipcodeSetToZoneModel(listZipcodeSet []map[string]struct{}) []model.ZoneModel {
-// 	var idCounter string
-// 	idCounter = "0"
-// 	zones := make([]model.ZoneModel, 0)
-// 	//loop trough all zones
-// 	for _, zipcodeSet := range listZipcodeSet {
-// 		zoneRanges := make([]model.ZoneRangeModel, 0)
-
-// 		var initialZipcode int64
-// 		//set first zipcode
-// 		for i := range zipcodeSet {
-// 			//TODO: error handling
-// 			initialZipcode, _ = strconv.ParseInt(i, 10, 64)
-// 			break
-// 		}
-// 		var lastZipcode int64
-// 		//set last zipcode
-// 		for i := range zipcodeSet {
-// 			//TODO: error handling
-// 			lastZipcode, _ = strconv.ParseInt(i, 10, 64)
-// 			break
-// 		}
-
-// 		//for each set make a list of zonerangemodels
-// 		for zipCode := range zipcodeSet {
-// 			var zipcodeInt int64
-// 			//TODO: error handling
-// 			zipcodeInt, _ = strconv.ParseInt(zipCode, 10, 64)
-// 			if initialZipcode-zipcodeInt != 1 {
-// 				zipcodeList := createZoneRange(idCounter, initialZipcode, lastZipcode, "NLD")
-// 				zoneRanges = append(zoneRanges, zipcodeList)
-// 				initialZipcode = zipcodeInt
-// 			}
-// 			lastZipcode = zipcodeInt
-// 		}
-
-// 		zone := model.ZoneModel{
-// 			Id:              idCounter,
-// 			ZoneRanges:      zoneRanges,
-// 			ZoneFuelCost:    0,
-// 			ZoneDrivingTime: 0,
-// 		}
-// 		idCounter++
-// 		zones = append(zones, zone)
-// 	}
-// 	return zones
-// }
-
-// func createZoneRange(id int64, zipcodeFrom int64, zipcodeTo int64, IsoCountry string) model.ZoneRangeModel {
-// 	zoneRange := model.ZoneRangeModel{
-// 		ZoneRangeId: id,
-// 		ZipcodeFrom: zipcodeFrom,
-// 		ZipcodeTo:   zipcodeTo,
-// 		IsoCountry:  IsoCountry,
-// 	}
-// 	return zoneRange
-// }
 
 func zipcodeSetToZoneModel(listZipcodeSet []map[string]struct{}) ([]model.ZoneModel, error) {
 	idCounter := 0
@@ -578,8 +523,8 @@ func zipcodeSetToZoneModel(listZipcodeSet []map[string]struct{}) ([]model.ZoneMo
 func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]model.ZoneRangeModel, error) {
 	zoneRanges := make([]model.ZoneRangeModel, 0)
 	var initialZipcode, lastZipcode int64
-	var err error
 	firstLoop := true
+	var lastZoneAppended bool
 
 	for zipCode := range zipcodeSet {
 		zipcodeInt, err := strconv.ParseInt(zipCode[:4], 10, 64)
@@ -602,15 +547,18 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]model.Zo
 				zoneRanges = append(zoneRanges, zoneRange)
 				initialZipcode = zipcodeInt
 				lastZipcode = zipcodeInt
+				lastZoneAppended = true
 			}
 		}
 	}
-	//append last zone
-	zoneRange, err := createZoneRange(strconv.Itoa(idCounter), initialZipcode, lastZipcode, "NLD")
-	if err != nil {
-		return nil, err
+	// append last zone if not already appended
+	if !lastZoneAppended {
+		zoneRange, err := createZoneRange(strconv.Itoa(idCounter), initialZipcode, lastZipcode, "NLD")
+		if err != nil {
+			return nil, err
+		}
+		zoneRanges = append(zoneRanges, zoneRange)
 	}
-	zoneRanges = append(zoneRanges, zoneRange)
 
 	return zoneRanges, nil
 }
