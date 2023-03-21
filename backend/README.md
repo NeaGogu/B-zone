@@ -80,4 +80,22 @@ There are two big benefits:
 
 2. It scales really nicely if we want to add another executable application to our project. For example, we might want to add a CLI to automate some administrative tasks in the future. With this structure, we could create this CLI application under `cmd/cli` and it will be able to import and reuse all the code you’ve written under the internal directory.
 
+# API Endpoint Guide for our frontend friends
 
+![grogu](https://user-images.githubusercontent.com/53708808/226573731-2376ac58-cb0b-40a5-bbc8-b0590f503d43.png)
+
+Here is an overview of the backend endpoints, together with instructions on how to access them:
+
+1. Endpoint for running the `k-means algorithm`:
+    - the `url` for the request is: http://localhost:4000/bumbal/algorithm/kmeans
+    - the request should have a `json` body which looks like this: 
+    - ![image](https://user-images.githubusercontent.com/53708808/226574702-fe906675-0c77-47b5-b618-059c1d525e1f.png)
+    - the two fields are integer numbers
+    - please make sure to also include the users's `authentication token` in the request!
+    - the body of the response is in `json` format
+    - use the field named `result`, which contains a `list` of type ZoneModel
+    - here is an example:
+    - ![image](https://user-images.githubusercontent.com/53708808/226575577-102ed80b-5171-455d-a218-2b15a8908f58.png)
+    - wow now you can finally say `SSIIIUUUUUU`
+
+2. 
