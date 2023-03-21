@@ -90,7 +90,8 @@ Here is an overview of the backend endpoints, together with instructions on how 
     - the `url` for the request is: http://localhost:4000/bumbal/algorithm/kmeans
     - the request should have a `json` body which looks like this: 
     - ![image](https://user-images.githubusercontent.com/53708808/226574702-fe906675-0c77-47b5-b618-059c1d525e1f.png)
-    - the two fields are integer numbers
+    - for convenience: `{"number_of_clusters":2,"number_of_candidate_clusters":1}`
+    - the two fields are integer numbers, set them as needed, it's not mandatory to use the ones from the examples
     - please make sure to also include the users's `authentication token` in the request!
     - the body of the response is in `json` format
     - use the field named `result`, which contains a `list` of type ZoneModel
