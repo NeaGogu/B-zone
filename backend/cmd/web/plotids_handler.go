@@ -155,6 +155,8 @@ func (app *application) SyncBumbalZones(w http.ResponseWriter, r *http.Request) 
 		app.serverError(w, err)
 		return
 	}
+	// provide a name for the plot because the bumbal API does not provide one
+	plotModel.Name = "Bumbal zone" + " - " + time.Now().Format("2006-01-02 15:04:05")
 
 	//flush all the old zones with origin: bumbal
 	app.infoLog.Println("Deleting old bumbal zones for user: ", userId)
