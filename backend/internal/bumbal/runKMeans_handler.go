@@ -22,16 +22,15 @@ type ClustersInfo struct {
 // Output struct used for the body of the response
 type Output struct {
 	Result []models.ZoneModel `json:"result,omitempty"`
-	GG     string             `json:"GG,omitempty"`
 }
 
-// ReceiveActivities
+// RunKMeans
 //
-//	 @Description: the main handler, does the request to bumbal and calls the kmeans algorithm based
+//	 @Description: the main handler, does the request to Bumbal and calls the K-Means algorithm based
 //					on the input
 //	 @param w
 //	 @param r
-func ReceiveActivities(w http.ResponseWriter, r *http.Request) {
+func RunKMeans(w http.ResponseWriter, r *http.Request) {
 	// Make the request to Bumbal
 	resp, err := requestBumbalActivity(w, r)
 	if err != nil {
@@ -71,7 +70,6 @@ func ReceiveActivities(w http.ResponseWriter, r *http.Request) {
 		// set up the response
 		var output Output
 		output.Result = computedZones
-		output.GG = "noroc vericilor"
 
 		// encode the response
 		w.Header().Set("Content-Type", "application/json")
