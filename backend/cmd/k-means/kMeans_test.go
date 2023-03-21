@@ -92,6 +92,7 @@ func TestUpdateCluster(t *testing.T) {
 		name     string
 		clusters clusters
 		want     clusters
+		wantErr  bool
 	}{
 		{
 			name: "Happy path",
@@ -117,11 +118,31 @@ func TestUpdateCluster(t *testing.T) {
 					createObservation(t, createCoordinate(t, 51.9194, 4.4818), 5),
 				}),
 			},
+			wantErr: false,
 		},
 		{
 			name:     "Empty clusters",
 			clusters: clusters{},
 			want:     clusters{},
+			wantErr:  false,
+		},
+		{
+			name: "Cluster with no observations",
+			clusters: clusters{
+				createCluster(t, createCoordinate(t, 52.0, 4.0), observations{
+					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 1),
+					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 2),
+				}),
+				createCluster(t, createCoordinate(t, 51.0, 4.3), observations{}), // empty cluster
+			},
+			want: clusters{
+				createCluster(t, createCoordinate(t, 52.370216, 4.895168), observations{
+					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 1),
+					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 2),
+				}),
+				createCluster(t, createCoordinate(t, 51.0, 4.3), observations{}),
+			},
+			wantErr: false,
 		},
 	}
 
@@ -129,9 +150,7 @@ func TestUpdateCluster(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := updateCluster(tt.clusters)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("updateCluster() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

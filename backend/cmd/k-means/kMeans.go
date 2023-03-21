@@ -84,16 +84,23 @@ func KMeans(activities activities, nrClusters int, nrCandidateClusters int) ([]m
 	if nrClusters <= 0 {
 		return nil, ErrNrClustersTooSmall
 	}
-	//variable used to store error and return when a function returns an error.
-	var err error
+
+	//variable to store observations
 	var observations = make(observations, 0)
-	observations, err = activitiesToObservations(activities, observations)
+
+	observations, err := activitiesToObservations(activities, observations)
+
 	//return if error raises while converting activities to observations
 	if err != nil {
 		return nil, err
 	}
+
+	//variable to store clusters
 	var clusters = make(clusters, 0, nrClusters)
+
+	//initialize clusters with random source of current time
 	clusters, err = initializeClusters(observations, clusters, nrClusters, nrCandidateClusters, rand.New(rand.NewSource(time.Now().UnixNano())))
+
 	//return if error raises while initializing clusters
 	if err != nil {
 		return nil, err
@@ -108,30 +115,37 @@ func KMeans(activities activities, nrClusters int, nrCandidateClusters int) ([]m
 		//clear all the assigned activities
 		clearObservations(&clusters)
 
-		//for each activity calculate the closest cluster and assign activity to that cluster
+		//for each observation calculate the closest cluster and assign observation to that cluster
 		for _, observation := range observations {
 
 			_, closestCenter, err := distanceToNearestCluster(observation, clusters)
+
+			//return if error raises in distanceToNearestCluster
 			if err != nil {
 				return nil, fmt.Errorf("got an error in distanceToNearestCluster: %v", err)
 			}
+
 			//assign observation to the closest cluster
 			clusters[closestCenter].observations = append(clusters[closestCenter].observations, observation)
 		}
 
 		//update the clusters
-		clusters = updateCluster(clusters)
+		clusters := updateCluster(clusters)
 
+		//stop if oldClusters are equal to updated clusters
 		if reflect.DeepEqual(clusters, oldClusters) {
 			converged = true
 		}
 
 	}
 
+	//convert clusters to sets of zipcodes
 	zipcodeList, err := clusterToZipcodeSet(clusters, activities)
 	if err != nil {
 		return nil, fmt.Errorf("got an error in clusterToZipCodeSet: %v", err)
 	}
+
+	//convert clusters to a list of zone models
 	clusterSet, err := zipcodeSetToZoneModel(zipcodeList)
 	if err != nil {
 		return nil, fmt.Errorf("got an error in zipcodeSetToZoneModel: %v", err)
@@ -140,23 +154,32 @@ func KMeans(activities activities, nrClusters int, nrCandidateClusters int) ([]m
 	return clusterSet, err
 }
 
-// TODO: error when observations are incorrectly assigned
-// updateCluster requires a pointer to a clusters(list of cluster) and updates all centers of the given clusters.
+// updateCluster updates all centers of the given clusters.
 func updateCluster(clusters clusters) clusters {
 	for index, cluster := range clusters {
+		if len(cluster.observations) == 0 {
+			continue // skip over empty clusters
+		}
+
 		sumLatitude := 0.00
 		sumlongitude := 0.00
-		//calculate the sum of all longitude / latitudes of points that are closest to the cluster
+
+		// calculate the sum of all longitude / latitudes of points assigned to the cluster
 		for _, observation := range cluster.observations {
 			sumLatitude += observation.coordinates.latitude
 			sumlongitude += observation.coordinates.longitude
 		}
-		//Set new center equal to the average of all the points
-		clusters[index].center = coordinates{
+
+		// set new center equal to the average of all the points assigned to the cluster
+		newCenter := coordinates{
 			latitude:  sumLatitude / float64(len(cluster.observations)),
 			longitude: sumlongitude / float64(len(cluster.observations)),
 		}
+
+		// update center of the current cluster
+		clusters[index].center = newCenter
 	}
+
 	return clusters
 }
 
