@@ -114,6 +114,12 @@ func (route *Route) applyGreedy(i int) error {
 	return nil
 }
 
+// applyInsertGreedy inserts pos greedily in route.
+func (route *Route) applyInsertGreedy(pos Pos) {
+	route.Activities = append(route.Activities, pos)
+	_ = route.applyGreedy(len(route.Activities) - 1)
+}
+
 // applyChangeDepot changes the Depot of route
 // Returns an error if d<0 or d>=len(inst.depots)
 func (route *Route) applyChangeDepot(inst MDVRPInstance, d int) error {

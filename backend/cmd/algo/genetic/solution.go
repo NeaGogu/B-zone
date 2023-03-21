@@ -49,11 +49,24 @@ func (sol *Solution) calcCost() {
 		}
 	}
 
-	// TODO: fix
-	// scale cost by work load distribution
-	// sol.Cost *= sol.routeLengthVariance() + 1.0
-	sol.Cost += math.Pow(sol.routeLengthVariance(), 2) / 2.0
-	// fmt.Println(sol.routeLengthVariance())
+	sol.Cost += sol.routeLengthVariance() + 1.0
+
+	sol.Cost += float64(sol.zipsPerRouteSum()) * 10.0
+
+	sol.Cost += 100.0 / float64(sol.nDepots())
+}
+
+func (sol *Solution) nDepots() int {
+	return len(fp.Unique(fp.Map(sol.Routes, func(route Route) Pos {
+		return route.Depot
+	})))
+}
+
+func (sol *Solution) zipsPerRouteSum() int {
+	zipsPerRoute := fp.Map(sol.Routes, func(route Route) int {
+		return len(fp.Unique(fp.Map(route.Activities, func(pos Pos) int { return pos.Zipcode })))
+	})
+	return fp.Sum(zipsPerRoute)
 }
 
 func (sol *Solution) routeLengthVariance() float64 {
@@ -73,7 +86,7 @@ func (sol *Solution) mutate(inst MDVRPInstance, maxMutations int, mutationRate f
 		if rand.Float64() > mutationRate {
 			continue
 		}
-		switch rand.Intn(6) {
+		switch rand.Intn(7) {
 		case 0:
 			sol.randSolSwap()
 		case 1:
@@ -86,6 +99,8 @@ func (sol *Solution) mutate(inst MDVRPInstance, maxMutations int, mutationRate f
 			sol.randRouteGreedy()
 		case 5:
 			sol.randChangeDepot(inst)
+		case 6:
+			sol.randMigrateZip()
 		}
 	}
 }
@@ -119,6 +134,22 @@ func (sol *Solution) randMigrate() {
 	}
 	j := rand.Intn(len(sol.Routes[r1].Activities) + 1)
 	err := sol.applyMigrate(r0, i, r1, j)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (sol *Solution) randMigrateZip() {
+	r0 := rand.Intn(len(sol.Routes))
+	for len(sol.Routes[r0].Activities) == 0 {
+		r0 = rand.Intn(len(sol.Routes))
+	}
+	zip := sol.Routes[r0].Activities[rand.Intn(len(sol.Routes[r0].Activities))].Zipcode
+	r1 := rand.Intn(len(sol.Routes))
+	for r0 == r1 {
+		r1 = rand.Intn(len(sol.Routes))
+	}
+	err := sol.applyMigrateZip(r0, r1, zip)
 	if err != nil {
 		panic(err)
 	}
@@ -216,6 +247,28 @@ func (sol *Solution) applyMigrate(r0, i, r1, j int) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+// applyMigrateZip moves all activities with zipcode zip from route r0 to route r1 greedily
+// Returns an error if r0,r1<0 or r0,r1>=len(sol.routes)
+// or r0==r1
+func (sol *Solution) applyMigrateZip(r0, r1, zip int) error {
+	if r0 < 0 || r0 >= len(sol.Routes) || r1 < 0 || r1 >= len(sol.Routes) {
+		return errors.New(fmt.Sprintf("index out of bounds: either r0=%d, r1=%d not in range [0,len(sol.routes)) = [0,%d)", r0, r1, len(sol.Routes)))
+	}
+	if r0 == r1 {
+		return errors.New(fmt.Sprintf("r0 should not equal r1: r0=%d, r1=%d", r0, r1))
+	}
+
+	for _, activity := range sol.Routes[r0].Activities {
+		if activity.Zipcode == zip {
+			sol.Routes[r1].applyInsertGreedy(activity)
+		}
+	}
+	sol.Routes[r0].Activities = fp.Filter(sol.Routes[r0].Activities, func(pos Pos) bool {
+		return pos.Zipcode != zip
+	})
 	return nil
 }
 
