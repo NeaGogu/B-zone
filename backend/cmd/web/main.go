@@ -16,7 +16,7 @@ import (
 type application struct {
 	errorLog       *log.Logger
 	infoLog        *log.Logger
-	zipCodeDbModel *models.ZipCodeDBModel
+	zipCodeDbModel models.ZipCodeDBWrapper
 	bzoneDbModel   *models.BzoneDBModel
 }
 

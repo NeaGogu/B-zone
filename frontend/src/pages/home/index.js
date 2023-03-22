@@ -38,6 +38,9 @@ export default function Home() {
         setValue(e.target.value);
     };
 
+    //track which zone is selected
+    const [zoneId, setZoneId] = useState('initial');
+
     // For number.
     const [intensity, setIntensity] = useState(500)
     const onChangeNumber = (e) => {
@@ -142,6 +145,7 @@ export default function Home() {
                             setValue={setValue.bind(this)}
                             setIntensity={setIntensity.bind(this)}
                             intensity={intensity}
+                            setZoneId={setZoneId}
                         />
                     </Sider>
 
@@ -157,14 +161,14 @@ export default function Home() {
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                     <div style={{ paddingRight: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} setZipCodes={setZipCodes} />
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
                                     </div>
                                     <div style={{ paddingLeft: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} setZipCodes={setZipCodes}  />
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes}/>
                                     </div>
                                 </div>
                             ) : (
-                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} setZipCodes={setZipCodes}  />
+                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes}/>
                             )}
                         </Content>
                     </Layout>

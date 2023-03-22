@@ -13,6 +13,13 @@ const (
 	CoordCollection = "coordinates"
 )
 
+// ZipCodeDBWrapper is an interface that defines the methods that can be used to interact with the zip code database
+// this interface is used to mock the database in the tests
+type ZipCodeDBWrapper interface {
+	GetZipCodes(reqZipCodeFrom int, reqZipCodeTo int) ([]ZipCode, error)
+}
+
+// implements the ZipCodeDBWrapper interface
 type ZipCodeDBModel struct {
 	DB *mongo.Database
 }
@@ -39,8 +46,8 @@ func (z *ZipCodeDBModel) GetZipCodes(reqZipCodeFrom int, reqZipCodeTo int) ([]Zi
 
 	defer cur.Close(context.TODO())
 	// @see https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/cursor/#std-label-golang-cursor
-	// TODO might want to initialize slice with a zise of cur.BatchSize
-	// TODO too many results might cause memory issues... need to investigate -> pagination?
+	// TODO: might want to initialize slice with a zise of cur.BatchSize
+	// TODO: too many results might cause memory issues... need to investigate -> pagination?
 	var results []ZipCode
 	if err = cur.All(context.TODO(), &results); err != nil {
 		return nil, err
