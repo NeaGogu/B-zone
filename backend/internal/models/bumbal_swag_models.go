@@ -1,6 +1,6 @@
 package models
 
-// Models for retrieving activities from Bumbal
+// ActivityListResponseBumbal Models for retrieving activities from Bumbal
 type ActivityListResponseBumbal struct {
 	Items           *[]ActivityModelBumbal `json:"items,omitempty"`
 	CountFiltered   int32                  `json:"count_filtered,omitempty"`
