@@ -4,7 +4,7 @@ import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
 import randomColor from "randomcolor";
 
-// var zipCodes = []
+ var zipCodes = []
 
 /** 
 * Fetches the initial zone configuration a user has from Bumbal, returns promise of the response from Bumbal API.
@@ -240,7 +240,7 @@ const PolygonVis = (props) => {
             }
         };
         fetchData()
-    }, [context.layerContainer])
+    }, [context.layerContainer, setZipCodes])
 
     // updating the polygon based on selection
     useEffect(() => {
@@ -257,15 +257,10 @@ const PolygonVis = (props) => {
             // Async function in order to wait for response from API.
             const fetchData = async () => {
                 var coordinatesList = []
-    
-                // Delete old heat layer if it exists.
-                context.layerContainer.eachLayer(function (layer) {
-                    console.log(layer)
-                })
+                 
                 
                 // check if bumbal zone is wanted or zone by id?
-                // FOR NOW CALCULATE IS ID OF CALCULATED ZONE
-                
+                // FOR NOW CALCULATE IS ID OF CALCULATED ZONE       
 
                 if (zoneId === 'calculate') {
                     zipCodes = await calculateZone()
@@ -280,8 +275,8 @@ const PolygonVis = (props) => {
                     coordinatesList = await getCoordinates(zipCodes)
 
                 }
-                console.log('inside useeef')
-                console.log(zipCodes)
+                // console.log('inside useeef')
+                // console.log(zipCodes)
     
                 // Iterates through zones.
                 for (let i = 0; i < coordinatesList.length; i++) {
@@ -299,7 +294,7 @@ const PolygonVis = (props) => {
             };
             fetchData()
         }        
-    }, [context.layerContainer, zoneId])
+    }, [context.layerContainer, zoneId, setZipCodes])
     return null
 }
 

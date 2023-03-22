@@ -100,10 +100,11 @@ export default function Home() {
         setSavedZones(savedZones);
     }, []);
 
-    useEffect(() => {
-        console.log('home')
-        console.log(zipCodes)
-    }, [zipCodes]);
+    // WAS USED FOR CHECKING PROPER UPDATES
+    // useEffect(() => {
+    //     console.log('home')
+    //     console.log(zipCodes)
+    // }, [zipCodes]);
 
     return (
         <ConfigProvider
