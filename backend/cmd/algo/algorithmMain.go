@@ -2,7 +2,7 @@ package main
 
 import (
 	"bzone/backend/cmd/algo/genetic"
-	openapi "bzone/backend/internal/swag_gen"
+	model "bzone/backend/internal/models"
 	"fmt"
 	"math/rand"
 )
@@ -22,7 +22,7 @@ func main() {
 	// }
 
 	nActivities := 100
-	activities := make([]openapi.ActivityModel, nActivities)
+	activities := make([]model.ActivityModelBumbal, nActivities)
 	for i := 0; i < nActivities; i++ {
 		lat := rand.Intn(100)
 		lon := rand.Intn(100)
@@ -49,15 +49,15 @@ func main() {
 	fmt.Println(genetic.Solution2ZoneModels(sol))
 }
 
-func makeActivity(actLat string, actLon string, actZip string, depotLat string, depotLon string, depotZip string) *openapi.ActivityModel {
-	activity := openapi.NewActivityModel()
-	address := openapi.NewAddressAppliedModel()
+func makeActivity(actLat string, actLon string, actZip string, depotLat string, depotLon string, depotZip string) *model.ActivityModelBumbal {
+	activity := model.NewActivityModel()
+	address := model.NewAddressAppliedModel()
 	address.SetLatitude(actLat)
 	address.SetLongitude(actLon)
 	address.SetZipcode(actZip)
 	activity.SetAddressApplied(*address)
 
-	depotAddress := openapi.NewAddressModel()
+	depotAddress := model.NewAddressModel()
 	depotAddress.SetLatitude(depotLat)
 	depotAddress.SetLongitude(depotLon)
 	depotAddress.SetZipcode(depotZip)

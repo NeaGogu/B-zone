@@ -2,7 +2,6 @@ package genetic
 
 import (
 	"bzone/backend/internal/models"
-	openapi "bzone/backend/internal/swag_gen"
 	"fmt"
 	fp "github.com/rjNemo/underscore"
 	"math/rand"
@@ -17,7 +16,7 @@ type MDVRPInstance struct {
 }
 
 // GenerateMDVRPInstance converts a slice of openapi.ActivityModel to a MDVRPInstance
-func GenerateMDVRPInstance(activities []openapi.ActivityModel, nRoutes int) MDVRPInstance {
+func GenerateMDVRPInstance(activities []models.ActivityModelBumbal, nRoutes int) MDVRPInstance {
 	inst := MDVRPInstance{NRoutes: nRoutes}
 	inst.Activities = make([]Pos, len(activities))
 	inst.Depots = make([]Pos, len(activities))
@@ -82,7 +81,7 @@ func Solution2ZoneModels(solution Solution) []models.ZoneModel {
 	for i, route := range solution.Routes {
 		zips := fp.Unique(fp.Map(route.Activities, func(pos Pos) int { return pos.Zipcode }))
 		zones[i] = models.ZoneModel{ZoneRanges: fp.Map(zips, func(zip int) models.ZoneRangeModel {
-			return models.ZoneRangeModel{ZipcodeFrom: int64(zip), ZipcodeTo: int64(zip)}
+			return models.ZoneRangeModel{ZipcodeFrom: zip, ZipcodeTo: zip}
 		})}
 	}
 	return zones
