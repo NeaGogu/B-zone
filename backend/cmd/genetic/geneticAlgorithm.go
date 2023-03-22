@@ -2,7 +2,6 @@ package genetic
 
 import (
 	"bzone/backend/internal/models"
-	"fmt"
 	fp "github.com/rjNemo/underscore"
 	"math/rand"
 	"strconv"
@@ -100,7 +99,6 @@ func GeneticAlgorithm(inst MDVRPInstance, nOffspring, nParents, nGenerations, to
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("Generation:", gen, "best cost:", bestSol.Cost)
 		parents := selectParents(population, nParents, tournamentSize)
 		population = makeOffspring(inst, parents, nOffspring, maxMutations, mutationRate, crossoverRate)
 		population[0] = bestSol
@@ -193,8 +191,7 @@ func passOnRoute(parent1, parent2, child *Solution, index int) {
 	var err error
 	parent1.Routes, route, err = remove(parent1.Routes, rand.Intn(len(parent1.Routes)))
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 	child.Routes[index] = route
 	parent2.removePoints(route.Activities)
