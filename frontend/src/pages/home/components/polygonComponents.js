@@ -276,6 +276,7 @@ const PolygonVis = (props) => {
     // this use effect is called when instantiating the polygons, making them to be the ones from bumbal's api
     // CHANGE IT TO BE BASED ON LAST VIEWED
     useEffect(() => {
+        console.log('hellobro')
         // maybe not needed
         context.layerContainer.eachLayer(function (layer) {
             context.layerContainer.removeLayer(layer)
@@ -285,21 +286,35 @@ const PolygonVis = (props) => {
 
         // Async function in order to wait for response from API.
         const fetchData = async () => {
-            let coordinatesList = []
-
-            // Delete old heat layer if it exists.
-            context.layerContainer.eachLayer(function (layer) {
-                console.log(layer)
-            })
-
-            // Get initial zones from Bumbal.
-            let initialZones = await getInitialZones();
-            zipCodes = await getZipCodes(initialZones);
-            // console.log(zipCodes)
-            coordinatesList = await getCoordinates(zipCodes)
+            var coordinatesList = []
+             
             
+            // check if bumbal zone is wanted or zone by id?
+            // FOR NOW CALCULATE IS ID OF CALCULATED ZONE       
 
-            // Iterates through zones.
+            if (zoneId === 'calculate') {
+                const calculation = await calculateZone()
+                convertToStructure(calculation[0])
+                setZipCodes(convertToStructure(calculation[0]));
+                coordinatesList = await getCoordinates(calculation[0])
+            } 
+            else if (zoneId==='initial'){
+                let initialZones = await getInitialZones();
+                zipCodes = await getZipCodes(initialZones);
+                // console.log(zipCodes)
+                coordinatesList = await getCoordinates(zipCodes)
+            }
+            else {
+                // Get initial zones from Bumbal.
+                let querryZone = await querryDatabase(zoneId);
+                coordinatesList = await getCoordinates(querryZone)
+            
+            }
+
+            // console.log('inside useeef')
+            // console.log(zipCodes)
+
+            //Iterates through zones.
             for (let i = 0; i < coordinatesList.length; i++) {
                 // Tterates through zone ranges inside of zones.
                 let color = randomColor({ luminosity: 'dark' });
@@ -316,61 +331,7 @@ const PolygonVis = (props) => {
         fetchData()
     }, [context.layerContainer, setZipCodes])
 
-    // updating the polygon based on selection
-    useEffect(() => {
-        // prevention from initial render being rendered twice
-        if (renderRef.current === 1) {
-            // increase the rendering in order for it to render on next update
-            renderRef.current += 1;
-        } else {
-            console.log('polygon')
-            console.log(zoneId)
-            // remove old polygon layers
-            context.layerContainer.eachLayer(function (layer) {
-                context.layerContainer.removeLayer(layer)
-            })
-            
-            // Async function in order to wait for response from API.
-            const fetchData = async () => {
-                var coordinatesList = []
-                 
-                
-                // check if bumbal zone is wanted or zone by id?
-                // FOR NOW CALCULATE IS ID OF CALCULATED ZONE       
-
-                if (zoneId === 'calculate') {
-                    const calculation = await calculateZone()
-                    convertToStructure(calculation[0])
-                    setZipCodes(convertToStructure(calculation[0]));
-                    coordinatesList = await getCoordinates(calculation[0])
-                } 
-                else {
-                    // Get initial zones from Bumbal.
-                    let querryZone = await querryDatabase(zoneId);
-                    coordinatesList = await getCoordinates(querryZone)
-                
-                }
-
-                // console.log('inside useeef')
-                // console.log(zipCodes)
     
-                //Iterates through zones.
-                for (let i = 0; i < coordinatesList.length; i++) {
-                    // Tterates through zone ranges inside of zones.
-                    let color = randomColor({ luminosity: 'dark' });
-                    for (let j = 0; j < coordinatesList[i].length; j++) {
-                        // Iteratres through coordinates in zone ranges.
-                        for (let k = 0; k < coordinatesList[i][j].length; k++) {
-                            let polygon = L.polygon(coordinatesList[i][j][k].zone_coordinates)
-                            polygon.setStyle({ color: color })
-                            context.layerContainer.addLayer(polygon)
-                        }
-                    }
-                }
-            };
-            fetchData()
-        }        
-    }, [context.layerContainer, zoneId, setZipCodes])
     return null
 }
 

@@ -61,8 +61,7 @@ function LocationMarker() {
 
 // Main function to hold the map, location marker and the layers.
 function MapComponent(props) {
-    const { value, intensity, zoneId, setZipCodes } = props;
-    
+    const { value, intensity, zoneId, setZipCodes } = props;    
 
     return (
         <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: 500, flex: "1" }}>
@@ -76,9 +75,11 @@ function MapComponent(props) {
                     </LayerGroup>
                 </LayersControl.Overlay>
 
-                <LayersControl.Overlay name='Zones'>
-                    <LayerGroup>
-                        <PolygonVis zoneId={zoneId} setZipCodes={setZipCodes} />
+                <LayersControl.Overlay name='Zones' checked={true}>
+                    <LayerGroup >
+                        <div key={zoneId}>
+                            <PolygonVis zoneId={zoneId} setZipCodes={setZipCodes}/>
+                        </div>
                     </LayerGroup>
                 </LayersControl.Overlay>
             </LayersControl>

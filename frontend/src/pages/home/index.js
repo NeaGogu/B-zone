@@ -155,6 +155,7 @@ export default function Home() {
         //         name: localStorage.getItem(key)
         //     }));
         // setSavedZones(savedZones);
+        // eslint-disable-next-line
     }, []);
 
     // WAS USED FOR CHECKING PROPER UPDATES
