@@ -51,6 +51,71 @@ Normally you should not bother with anything else, you can just run the containe
 
 ![image](https://user-images.githubusercontent.com/70640237/224294005-238c103f-add2-49f2-9d5d-f7658ad4df92.png)
 
+# API endpoints
+> !! All API calls should contain the JWT token as a Bearer Authorization header!!
+
+- `[PUT] /plot/sync` -> call this right after logging in with bumbal; this ensures that the latest zones saved in bumbal are synced with our backend ( **OLD PLOTS WITH ORIGIN "bumbal" ARE REMOVED WHEN CALLING THIS**)
+- `[GET] /user/plots` -> get a list of (plot id, plot name) that the user has saved on our backend. The response body looks like this:
+```json
+[
+	{
+		"user_plot_id": "47ca8b57-f43b-49b5-b33c-0041e56b1444",
+		"user_plot_name": "Bumbal zone - 2023-03-21 21:08:16"
+	},
+	{
+		"user_plot_id": "a8d28475-6e40-4fd6-8e0a-e7ae5673a260",
+		"user_plot_name": "another plot"
+	}
+]
+```
+- `[GET] /plot/<PLOT_ID>` -> get a PlotModel object that corresponds with the ID provided in the path. The response body looks like this:
+```json
+{
+	"plot_id": "0be65878-32c6-4d30-9686-a483acb906e7",
+	"plot_name": "a new plot hi",
+	"plot_zones": [
+		{
+			"zone_id": "",
+			"zone_ranges": [
+				{
+					"zipcode_from": 1234,
+					"zipcode_to": 4312
+				},
+				{
+					"zipcode_from": 1234,
+					"zipcode_to": 4312
+				}
+			],
+			"zone_fuel_cost": 0,
+			"zone_driving_time": 0
+		}
+	],
+	"plot_created_at": "2023-03-21T20:19:04.518Z",
+	"plot_saved_at": "2023-03-21T20:19:04.518Z",
+	"origin": "bzone"
+}
+```
+- `[POST] /plot/save` -> used to save a new plot configuration. THIS DOES NOT UPDATE EXISTING PLOTS. The request body should have this structure:
+```json
+{
+	"plot_id": "blabla", <- not taken into account; can be ommited
+	"plot_name": "a new plot hi", <- requirerd!
+	"plot_zones": [     <- required!
+		{
+			"zone_ranges": [ <- required!
+				{
+					"zipcode_from": 1234, <- required!
+					"zipcode_to": 4312 <- required!
+				},
+				{
+					"zipcode_from": 1234,
+					"zipcode_to": 4312
+				}
+			]
+		}
+	]
+}
+```
 
 
 # Project structure and organization
