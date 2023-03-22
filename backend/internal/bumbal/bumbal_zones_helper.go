@@ -128,7 +128,5 @@ func GetZoneListReponse(jwt string) (*BumbalZoneListResponse, error) {
 		return nil, err
 	}
 
-	fmt.Printf("res model %+v\n\n", resModel)
-
 	return &resModel, nil
 }

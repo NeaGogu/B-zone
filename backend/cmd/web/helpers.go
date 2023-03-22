@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+// custom error type that will be used to report errors when decoding request JSON body
+// implements the error interface
 type malformedRequest struct {
 	status int
 	msg    string

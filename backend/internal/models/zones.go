@@ -40,6 +40,7 @@ func (m *BzoneDBModel) GetZoneById(zoneId string) (*ZoneModel, error) {
 }
 
 // helper method to query the database for a list of zones
+// @deprecated
 func (m *BzoneDBModel) GetZonesListById(zoneIds ...string) ([]*ZoneModel, error) {
 
 	// Get the zones collection

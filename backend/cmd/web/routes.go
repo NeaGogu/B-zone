@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bzone/backend/internal/bumbal"
 	"net/http"
 
 	"github.com/go-chi/chi/middleware"
@@ -120,11 +121,17 @@ func (app *application) routes() http.Handler {
 		r.Route("/plot", func(r chi.Router) {
 			r.Get("/{plotId}", app.GetPlotById)
 			r.Put("/sync", app.SyncBumbalZones)
+			r.Post("/save", app.SavePlot)
 		})
 
 		r.Route("/bzone", func(r chi.Router) {
 			r.Get("/plot", app.getBZonePlot)
 		})
+
+		r.Route("/bumbal", func(r chi.Router) {
+			r.Put("/algorithm/kmeans", bumbal.RunKMeans)
+		})
+
 	})
 
 	// log all the routes mounted on the router
