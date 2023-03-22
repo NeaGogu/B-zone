@@ -14,7 +14,15 @@ type MDVRPInstance struct {
 	NRoutes    int
 }
 
-// GenerateMDVRPInstance converts a slice of openapi.ActivityModel to a MDVRPInstance
+// RunGeneticAlgorithm converts the activities ([]models.ActivityModelBumbal) into the input for GeneticAlgorithm,
+// runs GeneticAlgorithm with some default parameters, and, finally, converts the output into a []models.ZoneModel.
+func RunGeneticAlgorithm(activities []models.ActivityModelBumbal, nZones, nGenerations int) []models.ZoneModel {
+	inst := GenerateMDVRPInstance(activities, nZones)
+	sol := GeneticAlgorithm(inst, 100, 100, nGenerations, 5, 100, 0.05, 0.5)
+	return Solution2ZoneModels(sol)
+}
+
+// GenerateMDVRPInstance converts a slice of models.ActivityModelBumbal to a MDVRPInstance
 func GenerateMDVRPInstance(activities []models.ActivityModelBumbal, nRoutes int) MDVRPInstance {
 	inst := MDVRPInstance{NRoutes: nRoutes}
 	inst.Activities = make([]Pos, len(activities))
@@ -65,14 +73,6 @@ func GenerateMDVRPInstance(activities []models.ActivityModelBumbal, nRoutes int)
 	inst.Depots = fp.Unique(inst.Depots)
 
 	return inst
-}
-
-func Solution2ZoneMap(solution Solution) map[int][]int {
-	zoneMap := make(map[int][]int)
-	for i, route := range solution.Routes {
-		zoneMap[i] = fp.Unique(fp.Map(route.Activities, func(pos Pos) int { return pos.Zipcode }))
-	}
-	return zoneMap
 }
 
 func Solution2ZoneModels(solution Solution) []models.ZoneModel {
