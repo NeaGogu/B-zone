@@ -693,12 +693,15 @@ func createZoneRange(id string, zipcodeFrom int64, zipcodeTo int64, IsoCountry s
 	}
 
 	idInt, _ := strconv.ParseInt(id, 10, 64)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	// Create a new ZoneRangeModel with the given ID, zipcodes, and ISO country code
 	zoneRange := model.ZoneRangeModel{
-		ZoneRangeId: idInt,
-		ZipcodeFrom: zipcodeFrom,
-		ZipcodeTo:   zipcodeTo,
+		ZoneRangeId: int(idInt),
+		ZipcodeFrom: int(zipcodeFrom),
+		ZipcodeTo:   int(zipcodeTo),
 		IsoCountry:  IsoCountry,
 	}
 

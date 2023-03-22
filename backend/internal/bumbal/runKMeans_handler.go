@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-const baseUrl = "https://sep202302.bumbal.eu/api/v2/"
+// const baseUrl = "https://sep202302.bumbal.eu/api/v2/"
 const (
 	activitiesUrl = "activity"
 )
