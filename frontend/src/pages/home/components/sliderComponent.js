@@ -138,14 +138,14 @@ function SiderComponent(props) {
 
             <SubMenu key="sub2" title="Saved Zones">
                 {savedZones.map((zone) => (
-                    <Menu.Item key={zone.key} style={{ height: '80px', padding: 0 }}>
+                    <Menu.Item key={zone.user_plot_id} style={{ height: '80px', padding: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ paddingLeft: '10px' }}>{zone.name}</span>
-                            {zone.name !== 'Initial Zone' && (
+                            <span style={{ paddingLeft: '10px' }}>{zone.user_plot_name}</span>
+                            {zone.user_plot_name !== 'Initial Zone' && (
                                 <Button
                                     style={{ float: 'right' }}
                                     onClick={() => {
-                                        localStorage.removeItem(zone.key);
+                                        //localStorage.removeItem(zone.key);
                                         onDeleteZone(zone.key);
                                     }}
                                 >
@@ -156,7 +156,7 @@ function SiderComponent(props) {
                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                             <Button style={{ flex: 1, marginRight: '3px' }} onClick={()=>{
                                 toggleMap()
-                                setZoneId('initial')
+                                setZoneId(zone.user_plot_id)
                             }}>
                                 View
                             </Button>

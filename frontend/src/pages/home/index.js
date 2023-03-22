@@ -66,11 +66,8 @@ export default function Home() {
     }
 
     // This makes sure the initial zone configuration is always shown.
-    const [savedZones, setSavedZones] = useState([
-        { key: 'saved-initial', name: 'Initial Zone' },
-
-    ]);
-    localStorage.setItem('saved-initial', 'Initial Zone');
+    const [savedZones, setSavedZones] = useState([]);
+    //localStorage.setItem('saved-initial', 'Initial Zone');
 
     const handleDeleteZone = (key) => {
         localStorage.removeItem(key);
@@ -90,21 +87,53 @@ export default function Home() {
         localStorage.setItem(key, name);
     }
 
+    // function to get saved zones, to be better described
+    async function getSavedZones() {
+        let saved = []
+        await fetch("http://localhost:4000/user/plots",{
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+        }).then((response) =>{
+            if (!response.ok){
+                alert('error retrieving zones')
+            }
+            return response.json();
+        }) . then((data) => {
+            saved = data
+        })
+        return saved
+    }
+
+    // initially runs when rendering home page
     useEffect(() => {
-        const savedZones = Object.keys(localStorage)
-            .filter(key => key.startsWith('saved-'))
-            .map(key => ({
-                key,
-                name: localStorage.getItem(key)
-            }));
-        setSavedZones(savedZones);
+        const fetchData = async () =>{
+            
+            let saved = await getSavedZones()
+            setSavedZones(saved)
+            console.log(savedZones)
+            console.log('inhome')
+
+        }
+        fetchData()
+        
+        // const savedZones = Object.keys(localStorage)
+        //     .filter(key => key.startsWith('saved-'))
+        //     .map(key => ({
+        //         key,
+        //         name: localStorage.getItem(key)
+        //     }));
+        // setSavedZones(savedZones);
     }, []);
 
     // WAS USED FOR CHECKING PROPER UPDATES
-    // useEffect(() => {
-    //     console.log('home')
-    //     console.log(zipCodes)
-    // }, [zipCodes]);
+    useEffect(() => {
+        console.log('home')
+        console.log(zoneId)
+    }, [zoneId]);
 
     return (
         <ConfigProvider
