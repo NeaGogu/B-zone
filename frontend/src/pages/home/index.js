@@ -31,6 +31,9 @@ export default function Home() {
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
 
+    //key to update sider
+    const [siderkey, setSiderKey] = useState(1);
+
     // For radio.
     const [value, setValue] = useState(1);
     const [zipCodes, setZipCodes ] = useState([]);
@@ -92,6 +95,7 @@ export default function Home() {
 
         })
         console.log(bodyValues)
+
         //send request to api to add zone
         fetch("http://localhost:4000/plot/save",{
             method: 'POST', 
@@ -107,12 +111,10 @@ export default function Home() {
                 console.log('error in response to set zone')
             }
         })
-        //const key = `saved-${Date.now()}-${Math.random()}`;
-        //const newZone = { key, name };
+ 
         const saved = await getSavedZones();
         setSavedZones(saved)
-        //setSavedZones([...savedZones, newZone]);
-        //localStorage.setItem(key, name);
+    
     }
 
     // function to get saved zones, to be better described
@@ -143,26 +145,21 @@ export default function Home() {
             let saved = await getSavedZones()
             setSavedZones(saved)
             console.log(savedZones)
+            setSiderKey(siderkey+1);
             console.log('inhome')
 
         }
         fetchData()
-        
-        // const savedZones = Object.keys(localStorage)
-        //     .filter(key => key.startsWith('saved-'))
-        //     .map(key => ({
-        //         key,
-        //         name: localStorage.getItem(key)
-        //     }));
-        // setSavedZones(savedZones);
+
         // eslint-disable-next-line
     }, []);
 
+
     // WAS USED FOR CHECKING PROPER UPDATES
-    useEffect(() => {
-        console.log('home')
-        console.log(zoneId)
-    }, [zoneId]);
+    // useEffect(() => {
+    //     console.log('home')
+    //     console.log(zoneId)
+    // }, [zoneId]);
 
     return (
         <ConfigProvider
@@ -184,8 +181,8 @@ export default function Home() {
                     <Menu theme="dark" mode="horizontal" />
                 </Header>
 
-                <Layout>
-                    <Sider
+                <Layout >
+                    <Sider key={siderkey}
                         width={"225"}
                         style={{
                             background: colorBgContainer,

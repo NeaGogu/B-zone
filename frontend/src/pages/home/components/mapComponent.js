@@ -76,10 +76,10 @@ function MapComponent(props) {
                 </LayersControl.Overlay>
 
                 <LayersControl.Overlay name='Zones' checked={true}>
-                    <LayerGroup >
-                        <div key={zoneId}>
+                    <LayerGroup key={zoneId} >
+                       
                             <PolygonVis zoneId={zoneId} setZipCodes={setZipCodes}/>
-                        </div>
+                     
                     </LayerGroup>
                 </LayersControl.Overlay>
             </LayersControl>

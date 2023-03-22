@@ -99,10 +99,6 @@ function SiderComponent(props) {
         setValue(e.target.value);
     };
 
-    useEffect(()=>{
-       console.log('update slider')
-    },[savedZones])
-
     return (
         <Menu
             mode="inline"
