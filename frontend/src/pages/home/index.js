@@ -106,9 +106,6 @@ export default function Home() {
             if(!response.ok){
                 console.log('error in response to set zone')
             }
-            return response.json()
-        }).then((data) => {
-            console.log(data)
         })
         //const key = `saved-${Date.now()}-${Math.random()}`;
         //const newZone = { key, name };
