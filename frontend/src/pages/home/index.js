@@ -58,6 +58,10 @@ export default function Home() {
     * @return {void}
     */
     function handleSaveClick() {
+        if (zipCodes.length ===0){
+            alert('nothing to save')
+            return null;
+        }
         const name = window.prompt('Enter a name for the save:');
         if (name) {
             addSavedZone(name);
@@ -80,11 +84,38 @@ export default function Home() {
     * @param {string} name - The name given to the saved zone configuration.
     * @return {void}
     */
-    function addSavedZone(name) {
-        const key = `saved-${Date.now()}-${Math.random()}`;
-        const newZone = { key, name };
-        setSavedZones([...savedZones, newZone]);
-        localStorage.setItem(key, name);
+    async function addSavedZone(name) {
+        const userToken = localStorage.getItem('token')
+        const bodyValues = JSON.stringify({
+            "plot_name": name,
+            "plot_zones" : zipCodes.plot_zones
+
+        })
+        console.log(bodyValues)
+        //send request to api to add zone
+        fetch("http://localhost:4000/plot/save",{
+            method: 'POST', 
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userToken}`
+            },
+            body : bodyValues
+
+        }).then((response) => {
+            if(!response.ok){
+                console.log('error in response to set zone')
+            }
+            return response.json()
+        }).then((data) => {
+            console.log(data)
+        })
+        //const key = `saved-${Date.now()}-${Math.random()}`;
+        //const newZone = { key, name };
+        const saved = await getSavedZones();
+        setSavedZones(saved)
+        //setSavedZones([...savedZones, newZone]);
+        //localStorage.setItem(key, name);
     }
 
     // function to get saved zones, to be better described

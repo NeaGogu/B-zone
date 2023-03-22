@@ -1,5 +1,5 @@
 // External dependencies
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
@@ -98,6 +98,10 @@ function SiderComponent(props) {
         console.log('comp')
         setValue(e.target.value);
     };
+
+    useEffect(()=>{
+       console.log('update slider')
+    },[savedZones])
 
     return (
         <Menu

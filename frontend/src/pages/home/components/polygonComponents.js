@@ -113,6 +113,35 @@ async function getCoordinates(zipsList) {
     return coordinatesList
 }
 
+function convertToStructure(plot){
+    console.log(plot)
+    var plt = []
+    
+    for (let i = 0; i < plot.length; i++) {
+        var zone = []
+        var zone_ranges = []
+        for(let j = 0; j < plot[i].length; j++) {
+            var curr = {
+                zipcode_from : plot[i][j].zipFrom,
+                zipcode_to : plot[i][j].zipTo
+            }
+            zone_ranges.push(curr)
+        }
+        // zone_ranges.push(zone)
+        var zoneobj = {
+        "zone_ranges" : zone_ranges
+        }
+        plt.push(zoneobj)
+    }
+    var pltfinal = {
+        "plot_zones" : plt
+    }
+    console.log(pltfinal)
+    
+    return pltfinal
+
+}
+
 /** 
 * Fetches the calculated zone configuration from the backend, returns promise of the response from the backend.
 * @param {string} userToken - The user token retrieved from local storage.
@@ -163,7 +192,7 @@ async function calculateZone(){
     
 
     // cleaning up array
-    console.log(calculatedZones)
+    //console.log(calculatedZones)
     var zoneConfig = []
 
     // go into each zone
@@ -182,7 +211,7 @@ async function calculateZone(){
         zoneConfig.push(currZoneRange)
     }    
 
-    return zoneConfig
+    return [zoneConfig, calculatedZones]
     
 
 
@@ -268,6 +297,7 @@ const PolygonVis = (props) => {
             zipCodes = await getZipCodes(initialZones);
             // console.log(zipCodes)
             coordinatesList = await getCoordinates(zipCodes)
+            
 
             // Iterates through zones.
             for (let i = 0; i < coordinatesList.length; i++) {
@@ -309,9 +339,10 @@ const PolygonVis = (props) => {
                 // FOR NOW CALCULATE IS ID OF CALCULATED ZONE       
 
                 if (zoneId === 'calculate') {
-                    zipCodes = await calculateZone()
-                    setZipCodes(zipCodes);
-                    coordinatesList = await getCoordinates(zipCodes)
+                    const calculation = await calculateZone()
+                    convertToStructure(calculation[0])
+                    setZipCodes(convertToStructure(calculation[0]));
+                    coordinatesList = await getCoordinates(calculation[0])
                 } 
                 else {
                     // Get initial zones from Bumbal.
