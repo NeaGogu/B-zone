@@ -14,15 +14,16 @@ import '../index.css';
 const { SubMenu } = Menu;
 
 //Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
-const ZoneSubMenu = ({ onSubmit }) => {
+const ZoneSubMenu = ({ onSubmit, setZoneId }) => {
     const [averageFuelCost, setAverageFuelCost] = useState("");
     const [averageFuelUsage, setAverageFuelUsage] = useState("");
 
     const handleSubmit = (e) => {
-        e.preventDefault();
-        const isValid = onSubmit(averageFuelCost, averageFuelUsage);
+        //e.preventDefault();
+        //const isValid = onSubmit(averageFuelCost, averageFuelUsage);
+        const isValid = true;
         if (isValid) {
-            // Add calculations.
+            setZoneId('calculate')
         }
     };
 
@@ -68,17 +69,16 @@ const ZoneSubMenu = ({ onSubmit }) => {
 };
 
 function SiderComponent(props) {
-    const { values, intensity, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones } = props;
+    const { values, intensity, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId } = props;
 
-    console.log(values, intensity)
-
+    
     const toggleMap = () => {
         if (showComparison && !showMap) {
             setShowComparison(false);
             setShowMap(true);
         }
     };
-
+    
     const toggleComparison = () => {
         if (!showComparison && showMap) {
             setShowComparison(true);
@@ -86,12 +86,14 @@ function SiderComponent(props) {
         }
     };
 
+    // for intensity change
     const onChangeNumber = (e) => {
         console.log('comp')
         console.log(intensity)
         setIntensity(e)
     }
 
+    // for radio change
     const onChange = (e) => {
         console.log('comp')
         setValue(e.target.value);
@@ -131,7 +133,7 @@ function SiderComponent(props) {
             </SubMenu>
 
             <SubMenu key="sub4" title="Zones">
-                <ZoneSubMenu />
+                <ZoneSubMenu setZoneId={setZoneId}  />
             </SubMenu>
 
             <SubMenu key="sub2" title="Saved Zones">
@@ -152,7 +154,10 @@ function SiderComponent(props) {
                             )}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                            <Button style={{ flex: 1, marginRight: '3px' }} onClick={toggleMap}>
+                            <Button style={{ flex: 1, marginRight: '3px' }} onClick={()=>{
+                                toggleMap()
+                                setZoneId('initial')
+                            }}>
                                 View
                             </Button>
                             <Button style={{ flex: 1, marginLeft: '3px' }} onClick={toggleComparison}>
