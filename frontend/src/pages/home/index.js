@@ -33,7 +33,7 @@ export default function Home() {
 
     // For radio.
     const [value, setValue] = useState(1);
-    const [zipCodes, ] = useState([]);
+    const [zipCodes, setZipCodes ] = useState([]);
     const onChange = (e) => {
         setValue(e.target.value);
     };
@@ -99,8 +99,8 @@ export default function Home() {
 
     useEffect(() => {
         console.log('home')
-        console.log(value, intensity)
-    }, [value, intensity]);
+        console.log(zipCodes)
+    }, [zipCodes]);
 
     return (
         <ConfigProvider
@@ -157,14 +157,14 @@ export default function Home() {
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                     <div style={{ paddingRight: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zipCodes={zipCodes} />
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} setZipCodes={setZipCodes} />
                                     </div>
                                     <div style={{ paddingLeft: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zipCodes={zipCodes}  />
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} setZipCodes={setZipCodes}  />
                                     </div>
                                 </div>
                             ) : (
-                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zipCodes={zipCodes}  />
+                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} setZipCodes={setZipCodes}  />
                             )}
                         </Content>
                     </Layout>

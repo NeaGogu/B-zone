@@ -114,10 +114,10 @@ async function getCoordinates(zipsList) {
 }
 
 // Main function to visualize the polygons on the map.
-const PolygonVis = ({ zipCodes }) => {
+const PolygonVis = ({ setZipCodes }) => {
     // Map context.
     const context = useLeafletContext()
-    const zipCodesRef = useRef(zipCodes);
+    // const zipCodesRef = useRef(zipCodes);
 
     useEffect(() => {
         // Async function in order to wait for response from API.
@@ -135,9 +135,10 @@ const PolygonVis = ({ zipCodes }) => {
 
             // Get initial zones from Bumbal.
             let initialZones = await getInitialZones();
-            zipCodesRef.current = await getZipCodes(initialZones);
+            let initialzips = await getZipCodes(initialZones)
+            setZipCodes(initialzips);
             console.log('zipcodes')
-            coordinatesList = await getCoordinates(zipCodesRef.current)
+            coordinatesList = await getCoordinates(initialzips)
 
             // Iterates through zones.
             for (let i = 0; i < coordinatesList.length; i++) {
@@ -154,7 +155,7 @@ const PolygonVis = ({ zipCodes }) => {
             }
         };
         fetchData()
-    }, [context.layerContainer, zipCodesRef])
+    }, [context.layerContainer])
 
     return null
 }
