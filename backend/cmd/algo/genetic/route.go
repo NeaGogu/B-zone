@@ -14,12 +14,15 @@ type Route struct {
 	Activities []Pos
 }
 
+// greedyRoute greedily builds a Route from the points and depot.
+// Starting from the depot repeatedly the next Pos in the Route is the closest point to the last added Pos.
 func greedyRoute(depot Pos, points []Pos) Route {
 	route := Route{depot, make([]Pos, len(points))}
 	if len(points) == 0 {
 		return route
 	}
 
+	// Find the closest point to the depot
 	minDist := math.MaxFloat64
 	var minI int
 	for i, point := range points {
@@ -30,6 +33,7 @@ func greedyRoute(depot Pos, points []Pos) Route {
 	}
 	points, route.Activities[0], _ = remove(points, minI)
 
+	// repeatedly add the point that is closest to the last added point
 	j := 1
 	for len(points) > 0 {
 		minDist = math.MaxFloat64

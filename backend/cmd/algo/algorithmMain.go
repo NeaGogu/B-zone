@@ -37,15 +37,15 @@ func main() {
 			fmt.Sprintf("%d", int(dLat)/25*10+int(dLon)/25),
 		)
 	}
-	inst := genetic.GenerateMDVRPInstance(activities, 4)
+	inst := genetic.GenerateMDVRPInstance(activities, 12)
 
-	sol := genetic.GeneticAlgorithm(inst, 100, 100, 1000, 5, 5, 0.1, 0.5)
+	sol := genetic.GeneticAlgorithm(inst, 100, 100, 1000, 5, 100, 0.05, 0.5)
 	fmt.Println("Cost:", sol.Cost)
 	for i, route := range sol.Routes {
 		fmt.Println("Route", i, "length:", len(route.Activities))
 	}
 	fmt.Println(sol)
-	fmt.Println(genetic.Solution2ZoneMap(sol))
+	// fmt.Println(genetic.Solution2ZoneMap(sol))
 	fmt.Println(genetic.Solution2ZoneModels(sol))
 }
 

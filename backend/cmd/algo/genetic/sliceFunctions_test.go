@@ -1,7 +1,7 @@
 package genetic
 
 import (
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -23,9 +23,8 @@ func Test_indexOf(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := indexOf(tt.args.l, tt.args.a); got != tt.want {
-				t.Errorf("indexOf() = %v, want %v", got, tt.want)
-			}
+			got := indexOf(tt.args.l, tt.args.a)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -53,16 +52,13 @@ func Test_remove(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotS, gotElem, err := remove(tt.args.l, tt.args.i)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("remove() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				assert.Error(t, err)
 				return
 			}
-			if !reflect.DeepEqual(gotS, tt.wantS) {
-				t.Errorf("remove() gotS = %v, want %v", gotS, tt.wantS)
-			}
-			if !reflect.DeepEqual(gotElem, tt.wantElem) {
-				t.Errorf("remove() gotElem = %v, want %v", gotElem, tt.wantElem)
-			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantS, gotS)
+			assert.Equal(t, tt.wantElem, gotElem)
 		})
 	}
 }
@@ -90,13 +86,12 @@ func Test_insert(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotSlice, err := insert(tt.args.l, tt.args.a, tt.args.i)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("insert() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				assert.Error(t, err)
 				return
 			}
-			if !reflect.DeepEqual(gotSlice, tt.wantSlice) {
-				t.Errorf("insert() gotSlice = %v, want %v", gotSlice, tt.wantSlice)
-			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantSlice, gotSlice)
 		})
 	}
 }

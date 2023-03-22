@@ -4,7 +4,7 @@ import (
 	openapi "bzone/backend/internal/swag_gen"
 	"fmt"
 	fp "github.com/rjNemo/underscore"
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -137,9 +137,8 @@ func Test_generateMDVRPInstance(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GenerateMDVRPInstance(tt.activities, tt.nRoutes); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("generateMDVRPInstance() = %v, want %v", got, tt.want)
-			}
+			got := GenerateMDVRPInstance(tt.activities, tt.nRoutes)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

@@ -7,11 +7,18 @@ require (
 	github.com/go-chi/cors v1.2.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/rjNemo/underscore v0.5.0
+	github.com/stretchr/testify v1.7.0
 	go.mongodb.org/mongo-driver v1.11.2
 	golang.org/x/oauth2 v0.6.0
 )
 
-require golang.org/x/exp v0.0.0-20220314205449-43aec2f8a4e7 // indirect
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	golang.org/x/exp v0.0.0-20220314205449-43aec2f8a4e7 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
 
 require (
 	github.com/golang/protobuf v1.5.2 // indirect

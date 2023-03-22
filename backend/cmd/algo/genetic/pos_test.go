@@ -1,6 +1,7 @@
 package genetic
 
 import (
+	"github.com/stretchr/testify/assert"
 	"math"
 	"testing"
 )
@@ -25,9 +26,24 @@ func Test_dist(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := dist(tt.args.p0, tt.args.p1); got != tt.want {
-				t.Errorf("dist() = %v, want %v", got, tt.want)
-			}
+			got := dist(tt.args.p0, tt.args.p1)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestPos_copy(t *testing.T) {
+	tests := []struct {
+		name string
+		pos  Pos
+	}{
+		{"blank Pos", Pos{}},
+		{"all zero", Pos{0, 0, 0}},
+		{"funny numbers", Pos{42, 69, 5318008}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.pos.copy(), tt.pos)
 		})
 	}
 }
