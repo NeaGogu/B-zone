@@ -1,7 +1,7 @@
 package bumbal
 
 import (
-	kMeans "bzone/backend/cmd/k-means"
+	"bzone/backend/cmd/genetic"
 	"encoding/json"
 	"net/http"
 )
@@ -50,11 +50,7 @@ func RunGenetic(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// use the collected data as input for the Genetic algorithm
-		computedZones, err := kMeans.KMeans(*respModel.Items, zonesInfo.NZones, zonesInfo.NGenerations)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		computedZones := genetic.RunGeneticAlgorithm(*respModel.Items, zonesInfo.NZones, zonesInfo.NGenerations)
 
 		// set up the response
 		var output Output
