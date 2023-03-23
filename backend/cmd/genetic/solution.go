@@ -65,9 +65,7 @@ func (sol *Solution) calcCost() {
 
 // nDepots counts the number of depots used in the Solution.
 func (sol *Solution) nDepots() int {
-	return len(fp.Unique(fp.Map(sol.Routes, func(route Route) Pos {
-		return route.Depot
-	})))
+	return len(fp.Unique(fp.Map(sol.Routes, func(route Route) Pos { return route.Depot })))
 }
 
 // zipsPerRouteSum counts the number of zipcodes in each route and then sums all those.
@@ -80,6 +78,9 @@ func (sol *Solution) zipsPerRouteSum() int {
 
 // routeLengthVariance calculates the variance of the number of activities in each route.
 func (sol *Solution) routeLengthVariance() float64 {
+	if len(sol.Routes) <= 1 {
+		return 0
+	}
 	sum := fp.Reduce(sol.Routes, func(route Route, s int) int {
 		return s + len(route.Activities)
 	}, 0)

@@ -109,15 +109,16 @@ func (route *Route) applyGreedy(i int) error {
 
 	// find the best place to insert the activity
 	j := 0
-	minCost := dist(route.Depot, act) + dist(act, route.Activities[0])
+	minCost := dist(route.Depot, act) + dist(act, route.Activities[0]) - dist(route.Depot, route.Activities[0])
 	for k, pos := range route.Activities[1:] {
-		cost := dist(route.Activities[k], act) + dist(act, pos)
+		cost := dist(route.Activities[k], act) + dist(act, pos) - dist(route.Activities[k], pos)
 		if cost < minCost {
 			minCost = cost
 			j = k + 1
 		}
 	}
-	if dist(route.Depot, act)+dist(act, route.Activities[len(route.Activities)-1]) < minCost {
+	if dist(route.Depot, act)+dist(act, route.Activities[len(route.Activities)-1])-
+		dist(route.Depot, route.Activities[len(route.Activities)-1]) < minCost {
 		j = len(route.Activities)
 	}
 	// insert the activity in the best place

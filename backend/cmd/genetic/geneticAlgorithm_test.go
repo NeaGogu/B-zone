@@ -50,7 +50,7 @@ func Test_crossover_repeat(t *testing.T) {
 				t.Errorf("crossover() gotRoutes = %d, wantNRoutes %d", len(got.Routes), tt.wantInst.NRoutes)
 				return
 			}
-			if nAct := got.activityCount(t); len(tt.wantInst.Activities) != nAct {
+			if nAct := activityCount(t, &got); len(tt.wantInst.Activities) != nAct {
 				t.Errorf("crossover() len(activities) = %d, len(inst.activities) %d", nAct, len(tt.wantInst.Activities))
 				return
 			}
@@ -160,4 +160,12 @@ func makeActivity(t testing.TB, actLat string, actLon string, actZip string, dep
 	activity.SetDepotAddress(*depotAddress)
 
 	return activity
+}
+
+func activityCount(t testing.TB, sol *Solution) int {
+	t.Helper()
+	return fp.Reduce(sol.Routes,
+		func(route Route, count int) int {
+			return count + len(route.Activities)
+		}, 0)
 }

@@ -2,9 +2,8 @@ package genetic
 
 import (
 	"fmt"
-	fp "github.com/rjNemo/underscore"
+	"github.com/stretchr/testify/assert"
 	"math/rand"
-	"reflect"
 	"testing"
 )
 
@@ -195,11 +194,12 @@ func TestSolution_applySwap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.sol.applySwap(tt.args.r0, tt.args.i, tt.args.r1, tt.args.j); (err != nil) != tt.wantErr {
-				t.Errorf("applySwap() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if !reflect.DeepEqual(tt.sol, tt.want) {
-				t.Errorf("applySwap() sol = %v, want %v", tt.sol, tt.want)
+			err := tt.sol.applySwap(tt.args.r0, tt.args.i, tt.args.r1, tt.args.j)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, tt.sol)
 			}
 		})
 	}
@@ -426,11 +426,12 @@ func TestSolution_applyMigrate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.sol.applyMigrate(tt.args.r0, tt.args.i, tt.args.r1, tt.args.j); (err != nil) != tt.wantErr {
-				t.Errorf("applyMigrate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if !reflect.DeepEqual(tt.sol, tt.want) {
-				t.Errorf("applyMigrate() sol = %v, want %v", tt.sol, tt.want)
+			err := tt.sol.applyMigrate(tt.args.r0, tt.args.i, tt.args.r1, tt.args.j)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, tt.sol)
 			}
 		})
 	}
@@ -503,9 +504,7 @@ func TestSolution_calcCost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.sol.calcCost()
-			if !reflect.DeepEqual(tt.sol, tt.want) {
-				t.Errorf("calcCost(): got %v, want %v", tt.sol, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.sol)
 		})
 	}
 }
@@ -546,41 +545,21 @@ func TestSolution_mutate_repeat(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.sol.mutate(tt.inst, tt.maxMutations, tt.mutationRate)
-
-			if tt.wantInst.NRoutes != len(tt.sol.Routes) {
-				t.Errorf("mutate() gotRoutes = %d, wantNRoutes %d", len(tt.sol.Routes), tt.wantInst.NRoutes)
+			if !assert.Equal(t, tt.wantInst.NRoutes, len(tt.sol.Routes)) {
 				return
 			}
-			if nAct := tt.sol.activityCount(t); len(tt.wantInst.Activities) != nAct {
-				t.Errorf("mutate() len(activities) = %d, len(inst.activities) %d", nAct, len(tt.wantInst.Activities))
-				return
-			}
+			var gotActivities []Pos
 			for _, route := range tt.sol.Routes {
 				for _, activity := range route.Activities {
-					if !fp.Contains(tt.wantInst.Activities, activity) {
-						t.Errorf("mutate() got = %v, wantActivities %v", tt.sol, tt.wantInst.Activities)
-						return
-					}
+					gotActivities = append(gotActivities, activity)
 				}
 			}
-			for _, activity := range tt.wantInst.Activities {
-				has := false
-				for _, route := range tt.sol.Routes {
-					if fp.Contains(route.Activities, activity) {
-						has = true
-						break
-					}
-				}
-				if !has {
-					t.Errorf("mutate() got = %v, wantActivities %v", tt.sol, tt.wantInst.Activities)
-					return
-				}
-			}
+			assert.ElementsMatch(t, tt.inst.Activities, gotActivities)
 		})
 	}
 }
 
-func TestSolution_removePoints(t *testing.T) {
+func TestSolution_removeActivities(t *testing.T) {
 	tests := []struct {
 		name   string
 		sol    Solution
@@ -621,17 +600,160 @@ func TestSolution_removePoints(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.sol.removeActivities(tt.points)
-			if !reflect.DeepEqual(tt.sol, tt.want) {
-				t.Errorf("removeActivities() got = %v, want %v", tt.sol, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.sol)
 		})
 	}
 }
 
-func (sol *Solution) activityCount(t testing.TB) int {
-	t.Helper()
-	return fp.Reduce(sol.Routes,
-		func(route Route, count int) int {
-			return count + len(route.Activities)
-		}, 0)
+func TestSolution_copy(t *testing.T) {
+	tests := []struct {
+		name string
+		sol  Solution
+	}{
+		{"0 routes", Solution{[]Route{}, 42}},
+		{"1 routes", Solution{[]Route{{Pos{42, 69, 420}, []Pos{{1, 2, 3}}}}, 42}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.sol, tt.sol.copy())
+		})
+	}
+}
+
+func TestSolution_zipsPerRouteSum(t *testing.T) {
+	tests := []struct {
+		name string
+		sol  Solution
+		want int
+	}{
+		{"no routes", Solution{[]Route{}, 42}, 0},
+		{"1 singleton route", Solution{[]Route{{Pos{0, 0, 42}, []Pos{{0, 0, 42}}}}, 42}, 1},
+		{"1 route, 2 activities same zip", Solution{[]Route{{Pos{0, 0, 42}, []Pos{{0, 0, 42}, {1, 0, 42}}}}, 42}, 1},
+		{"1 route, 2 activities diff zip", Solution{[]Route{{Pos{0, 0, 42}, []Pos{{0, 0, 42}, {1, 0, 69}}}}, 42}, 2},
+		{"2 routes, 1 activity per route same zip", Solution{[]Route{{Pos{0, 0, 42}, []Pos{{0, 0, 42}}}, {Pos{0, 0, 42}, []Pos{{1, 0, 42}}}}, 42}, 2},
+		{"2 routes, 1 activity per route diff zip", Solution{[]Route{{Pos{0, 0, 42}, []Pos{{0, 0, 42}}}, {Pos{0, 0, 42}, []Pos{{1, 0, 69}}}}, 42}, 2},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.sol.zipsPerRouteSum())
+		})
+	}
+}
+
+func TestSolution_nDepots(t *testing.T) {
+	tests := []struct {
+		name string
+		sol  Solution
+		want int
+	}{
+		{"no routes", Solution{[]Route{}, 42}, 0},
+		{"1 singleton route", Solution{[]Route{{Pos{0, 0, 42}, []Pos{}}}, 42}, 1},
+		{"2 routes, same depot", Solution{[]Route{{Pos{0, 0, 42}, []Pos{}}, {Pos{0, 0, 42}, []Pos{}}}, 42}, 1},
+		{"2 routes, diff depot", Solution{[]Route{{Pos{0, 0, 42}, []Pos{}}, {Pos{0, 0, 69}, []Pos{}}}, 42}, 2},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.sol.nDepots())
+		})
+	}
+}
+
+func TestSolution_routeLengthVariance(t *testing.T) {
+	tests := []struct {
+		name string
+		sol  Solution
+		want float64
+	}{
+		{"no routes", Solution{[]Route{}, 42}, 0},
+		{"1 route", Solution{[]Route{{Pos{0, 0, 42}, []Pos{{0, 0, 42}}}}, 42}, 0},
+		{"2 routes, equal length", Solution{[]Route{{Pos{0, 0, 42}, []Pos{{0, 0, 42}}}, {Pos{0, 0, 42}, []Pos{{0, 0, 42}}}}, 42}, 0},
+		{"2 routes, diff length", Solution{[]Route{{Pos{0, 0, 42}, []Pos{{0, 0, 42}}}, {Pos{0, 0, 42}, []Pos{{0, 0, 42}, {0, 0, 42}}}}, 42}, 0.5},
+		{"3 routes, diff length", Solution{[]Route{{Pos{0, 0, 42}, []Pos{}}, {Pos{0, 0, 42}, []Pos{}}, {Pos{0, 0, 42}, []Pos{{0, 0, 42}, {0, 0, 42}, {0, 0, 42}}}}, 42}, 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.sol.routeLengthVariance())
+		})
+	}
+}
+
+func Test_randomSolution_repeat(t *testing.T) {
+	type testcase struct {
+		inst     MDMTSPInstance
+		name     string
+		wantInst MDMTSPInstance
+	}
+	tests := make([]testcase, 100)
+	for i := 0; i < 100; i++ {
+		inst := MDMTSPInstance{
+			Activities: []Pos{
+				{3, 5, 42},
+				{6, 5, 42},
+				{3, 4, 42},
+				{10, 10, 69},
+				{1, 2, 42},
+				{33, 7, 69},
+			},
+			Depots:  []Pos{{5, 5, 42}, {9, 9, 50}},
+			NRoutes: rand.Intn(5) + 2,
+		}
+		tests[i] = testcase{
+			inst:     inst,
+			name:     fmt.Sprintf("%d", i),
+			wantInst: inst,
+		}
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sol := randomSolution(tt.inst)
+			if !assert.Equal(t, tt.wantInst.NRoutes, len(sol.Routes)) {
+				return
+			}
+			var gotActivities []Pos
+			for _, route := range sol.Routes {
+				for _, activity := range route.Activities {
+					gotActivities = append(gotActivities, activity)
+				}
+			}
+			assert.ElementsMatch(t, tt.wantInst.Activities, gotActivities)
+		})
+	}
+}
+
+func TestSolution_applyMigrateZip(t *testing.T) {
+	type args struct {
+		r0  int
+		r1  int
+		zip int
+	}
+	tests := []struct {
+		name    string
+		sol     Solution
+		args    args
+		wantErr bool
+		want    Solution
+	}{
+		{"negative r0", Solution{Routes: []Route{}}, args{-1, 0, 0}, true, Solution{}},
+		{"negative r1", Solution{Routes: []Route{}}, args{0, -1, 0}, true, Solution{}},
+		{"r0 too large", Solution{Routes: []Route{}}, args{1, 0, 0}, true, Solution{}},
+		{"r0 too large", Solution{Routes: []Route{}}, args{0, 1, 0}, true, Solution{}},
+		{"r0==r1", Solution{Routes: []Route{}}, args{0, 0, 0}, true, Solution{}},
+		{"singleton r0, empty r1", Solution{Routes: []Route{{Activities: []Pos{{0, 0, 0}}}, {Activities: []Pos{}}}}, args{0, 1, 0}, true,
+			Solution{Routes: []Route{{Activities: []Pos{}}, {Activities: []Pos{{0, 0, 0}}}}}},
+		{"r0 2 same zip, empty r1", Solution{Routes: []Route{{Activities: []Pos{{0, 0, 0}, {1, 1, 0}}}, {Activities: []Pos{}}}}, args{0, 1, 0}, true,
+			Solution{Routes: []Route{{Activities: []Pos{}}, {Activities: []Pos{{0, 0, 0}, {1, 1, 0}}}}}},
+		{"r0 2 diff zip, empty r1", Solution{Routes: []Route{{Activities: []Pos{{0, 0, 0}, {1, 1, 1}}}, {Activities: []Pos{}}}}, args{0, 1, 0}, true,
+			Solution{Routes: []Route{{Activities: []Pos{}}, {Activities: []Pos{{0, 0, 0}}}}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.sol.applyMigrateZip(tt.args.r0, tt.args.r1, tt.args.zip)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, tt.sol)
+			}
+		})
+	}
 }
