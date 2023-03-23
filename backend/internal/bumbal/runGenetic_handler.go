@@ -2,7 +2,6 @@ package bumbal
 
 import (
 	"bzone/backend/cmd/genetic"
-	"bzone/backend/internal/models"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -12,21 +11,6 @@ import (
 type ZonesInfo struct {
 	NZones       int `json:"number_of_zones,omitempty"`
 	NGenerations int `json:"number_of_generations,omitempty"`
-}
-
-// filterResp
-//
-//	@Description: filters the response from Bumbal so that only activities with address and depot address are used
-//	@param respModel
-//	@return []models.ActivityModelBumbal
-func filterResp(respModel []models.ActivityModelBumbal) []models.ActivityModelBumbal {
-	var filteredResp []models.ActivityModelBumbal
-	for _, activity := range respModel {
-		if activity.AddressApplied != nil && activity.DepotAddress != nil {
-			filteredResp = append(filteredResp, activity)
-		}
-	}
-	return filteredResp
 }
 
 // RunGenetic

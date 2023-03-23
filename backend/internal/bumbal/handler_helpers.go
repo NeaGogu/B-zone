@@ -46,6 +46,21 @@ func requestBumbalActivity(w http.ResponseWriter, r *http.Request, reqBody []byt
 	return resp, err
 }
 
+// filterResp
+//
+//	@Description: filters the response from Bumbal so that only activities with address and depot address are used
+//	@param respModel
+//	@return []models.ActivityModelBumbal
+func filterResp(respModel []models.ActivityModelBumbal) []models.ActivityModelBumbal {
+	var filteredResp []models.ActivityModelBumbal
+	for _, activity := range respModel {
+		if activity.AddressApplied != nil && activity.DepotAddress != nil {
+			filteredResp = append(filteredResp, activity)
+		}
+	}
+	return filteredResp
+}
+
 // getClustersInfo
 //
 //	@Description: get the data from the request's body
