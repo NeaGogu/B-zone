@@ -41,7 +41,8 @@ func GenerateMDVRPInstance(activities []models.ActivityModelBumbal, nRoutes int)
 		if err != nil {
 			panic(err)
 		}
-		actZip, err = strconv.Atoi(*activity.AddressApplied.Zipcode)
+		zipStr := *activity.AddressApplied.Zipcode
+		actZip, err = strconv.Atoi(zipStr[:4])
 		if err != nil {
 			panic(err)
 		}
@@ -59,7 +60,8 @@ func GenerateMDVRPInstance(activities []models.ActivityModelBumbal, nRoutes int)
 		if err != nil {
 			panic(err)
 		}
-		depotZip, err = strconv.Atoi(*activity.DepotAddress.Zipcode)
+		zipStr = *activity.DepotAddress.Zipcode
+		depotZip, err = strconv.Atoi(zipStr[:4])
 		if err != nil {
 			panic(err)
 		}
