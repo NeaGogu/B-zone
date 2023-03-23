@@ -60,15 +60,16 @@ export default function Home() {
     * @param {string} name - The name to give the saved zone configuration.
     * @return {void}
     */
-    function handleSaveClick() {
+    async function handleSaveClick() {
         if (zipCodes.length ===0){
             alert('nothing to save')
             return null;
         }
         const name = window.prompt('Enter a name for the save:');
         if (name) {
+            
             addSavedZone(name);
-            setSaveName(name);
+            
         }
     }
 
@@ -94,10 +95,9 @@ export default function Home() {
             "plot_zones" : zipCodes.plot_zones
 
         })
-        console.log(bodyValues)
-
+       
         //send request to api to add zone
-        fetch("http://localhost:4000/plot/save",{
+        await fetch("http://localhost:4000/plot/save",{
             method: 'POST', 
             headers: {
                 'Accept': 'application/json',
@@ -113,8 +113,11 @@ export default function Home() {
         })
  
         const saved = await getSavedZones();
+        //console.log('pre')
+        //console.log(saved)
         setSavedZones(saved)
-    
+       // console.log('post')
+        //console.log(saved)
     }
 
     // function to get saved zones, to be better described
