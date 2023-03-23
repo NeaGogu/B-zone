@@ -512,14 +512,14 @@ func TestSolution_calcCost(t *testing.T) {
 
 func TestSolution_mutate_repeat(t *testing.T) {
 	type testcase struct {
-		inst         MDVRPInstance
+		inst         MDMTSPInstance
 		name         string
 		sol          Solution
 		maxMutations int
 		mutationRate float64
-		wantInst     MDVRPInstance
+		wantInst     MDMTSPInstance
 	}
-	inst := MDVRPInstance{
+	inst := MDMTSPInstance{
 		Activities: []Pos{
 			{3, 5, 42},
 			{6, 5, 42},
@@ -551,7 +551,7 @@ func TestSolution_mutate_repeat(t *testing.T) {
 				t.Errorf("mutate() gotRoutes = %d, wantNRoutes %d", len(tt.sol.Routes), tt.wantInst.NRoutes)
 				return
 			}
-			if nAct := tt.sol.activityCount(); len(tt.wantInst.Activities) != nAct {
+			if nAct := tt.sol.activityCount(t); len(tt.wantInst.Activities) != nAct {
 				t.Errorf("mutate() len(activities) = %d, len(inst.activities) %d", nAct, len(tt.wantInst.Activities))
 				return
 			}
@@ -620,10 +620,18 @@ func TestSolution_removePoints(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.sol.removePoints(tt.points)
+			tt.sol.removeActivities(tt.points)
 			if !reflect.DeepEqual(tt.sol, tt.want) {
-				t.Errorf("removePoints() got = %v, want %v", tt.sol, tt.want)
+				t.Errorf("removeActivities() got = %v, want %v", tt.sol, tt.want)
 			}
 		})
 	}
+}
+
+func (sol *Solution) activityCount(t testing.TB) int {
+	t.Helper()
+	return fp.Reduce(sol.Routes,
+		func(route Route, count int) int {
+			return count + len(route.Activities)
+		}, 0)
 }

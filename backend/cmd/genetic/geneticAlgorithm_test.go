@@ -16,9 +16,9 @@ func Test_crossover_repeat(t *testing.T) {
 	type testcase struct {
 		name     string
 		args     args
-		wantInst MDVRPInstance
+		wantInst MDMTSPInstance
 	}
-	inst := MDVRPInstance{
+	inst := MDMTSPInstance{
 		Activities: []Pos{
 			{3, 5, 42},
 			{6, 5, 42},
@@ -50,7 +50,7 @@ func Test_crossover_repeat(t *testing.T) {
 				t.Errorf("crossover() gotRoutes = %d, wantNRoutes %d", len(got.Routes), tt.wantInst.NRoutes)
 				return
 			}
-			if nAct := got.activityCount(); len(tt.wantInst.Activities) != nAct {
+			if nAct := got.activityCount(t); len(tt.wantInst.Activities) != nAct {
 				t.Errorf("crossover() len(activities) = %d, len(inst.activities) %d", nAct, len(tt.wantInst.Activities))
 				return
 			}
@@ -79,18 +79,18 @@ func Test_crossover_repeat(t *testing.T) {
 	}
 }
 
-func Test_generateMDVRPInstance(t *testing.T) {
+func Test_generateMTSPInstance(t *testing.T) {
 	tests := []struct {
 		name       string
 		activities []model.ActivityModelBumbal
 		nRoutes    int
-		want       MDVRPInstance
+		want       MDMTSPInstance
 	}{
 		{
 			name:       "no activities",
 			activities: []model.ActivityModelBumbal{},
 			nRoutes:    42,
-			want: MDVRPInstance{
+			want: MDMTSPInstance{
 				Activities: []Pos{},
 				Depots:     []Pos{},
 				NRoutes:    42,
@@ -102,7 +102,7 @@ func Test_generateMDVRPInstance(t *testing.T) {
 				*makeActivity(t, "1", "2", "3", "4", "5", "6"),
 			},
 			nRoutes: 42,
-			want: MDVRPInstance{
+			want: MDMTSPInstance{
 				Activities: []Pos{{1, 2, 3}},
 				Depots:     []Pos{{4, 5, 6}},
 				NRoutes:    42,
@@ -115,7 +115,7 @@ func Test_generateMDVRPInstance(t *testing.T) {
 				*makeActivity(t, "10", "20", "30", "4", "5", "6"),
 			},
 			nRoutes: 42,
-			want: MDVRPInstance{
+			want: MDMTSPInstance{
 				Activities: []Pos{{1, 2, 3}, {10, 20, 30}},
 				Depots:     []Pos{{4, 5, 6}},
 				NRoutes:    42,
@@ -128,7 +128,7 @@ func Test_generateMDVRPInstance(t *testing.T) {
 				*makeActivity(t, "10", "20", "30", "40", "50", "60"),
 			},
 			nRoutes: 42,
-			want: MDVRPInstance{
+			want: MDMTSPInstance{
 				Activities: []Pos{{1, 2, 3}, {10, 20, 30}},
 				Depots:     []Pos{{4, 5, 6}, {40, 50, 60}},
 				NRoutes:    42,
@@ -137,7 +137,7 @@ func Test_generateMDVRPInstance(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GenerateMDVRPInstance(tt.activities, tt.nRoutes)
+			got := GenerateMDMTSPInstance(tt.activities, tt.nRoutes)
 			assert.Equal(t, tt.want, got)
 		})
 	}

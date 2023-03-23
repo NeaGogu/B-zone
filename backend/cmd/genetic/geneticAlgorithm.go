@@ -8,23 +8,52 @@ import (
 	"sync"
 )
 
-type MDVRPInstance struct {
+// MDMTSPInstance is an instance of the Multi-Depot Multiple Traveling Salesman Problem (MDMTSP).
+// Activities is the set of locations that need to be visited.
+// Depots is the set of depots that can be the starting point of the tours.
+// NRoutes is the number of salesmen there are and, thus, the number of routes that they need to travel.
+type MDMTSPInstance struct {
 	Activities []Pos
 	Depots     []Pos
 	NRoutes    int
 }
 
+// GenAlgHyperParams are the hyperparameters for the genetic algorithm.
+// nOffspring is the number of offspring made each generation.
+// nParents is the number of parents to be selected each generation.
+// nGenerations is the number of generations to run the genetic algorithm for.
+// tournamentSize is the number of solutions that take part in the parent selection tournaments.
+// Greater tournamentSize = more selection pressure.
+// maxMutations is the maximum number of mutations that could possibly happen and
+// mutationRate is the chance that a mutation happens. As a result of these two parameters, the actual number of
+// mutations that are applied to a solution follows a binomial distribution with n=maxMutations and p=mutationRate.
+// crossoverRate the chance that 2 parents are selected and selected with crossover;
+// otherwise only a single parent is selected
+type GenAlgHyperParams struct {
+	nOffspring     int
+	nParents       int
+	nGenerations   int
+	tournamentSize int
+	maxMutations   int
+	mutationRate   float64
+	crossoverRate  float64
+}
+
 // RunGeneticAlgorithm converts the activities ([]models.ActivityModelBumbal) into the input for GeneticAlgorithm,
 // runs GeneticAlgorithm with some default parameters, and, finally, converts the output into a []models.ZoneModel.
 func RunGeneticAlgorithm(activities []models.ActivityModelBumbal, nZones, nGenerations int) []models.ZoneModel {
-	inst := GenerateMDVRPInstance(activities, nZones)
-	sol := GeneticAlgorithm(inst, 100, 100, nGenerations, 5, 100, 0.05, 0.5)
+	inst := GenerateMDMTSPInstance(activities, nZones)
+	params := GenAlgHyperParams{
+		nOffspring: 100, nParents: 100, nGenerations: nGenerations, tournamentSize: 5,
+		maxMutations: 100, mutationRate: 0.05, crossoverRate: 0.5,
+	}
+	sol := GeneticAlgorithm(inst, params)
 	return Solution2ZoneModels(sol)
 }
 
-// GenerateMDVRPInstance converts a slice of models.ActivityModelBumbal to a MDVRPInstance
-func GenerateMDVRPInstance(activities []models.ActivityModelBumbal, nRoutes int) MDVRPInstance {
-	inst := MDVRPInstance{NRoutes: nRoutes}
+// GenerateMDMTSPInstance converts a slice of models.ActivityModelBumbal to a MDMTSPInstance
+func GenerateMDMTSPInstance(activities []models.ActivityModelBumbal, nRoutes int) MDMTSPInstance {
+	inst := MDMTSPInstance{NRoutes: nRoutes}
 	inst.Activities = make([]Pos, len(activities))
 	inst.Depots = make([]Pos, len(activities))
 
@@ -33,6 +62,7 @@ func GenerateMDVRPInstance(activities []models.ActivityModelBumbal, nRoutes int)
 		var actLat, actLon, depotLat, depotLon float64
 		var actZip, depotZip int
 
+		// convert activity.AddressApplied string values to float64 and int
 		actLat, err = strconv.ParseFloat(*activity.AddressApplied.Latitude, 64)
 		if err != nil {
 			panic(err)
@@ -45,12 +75,14 @@ func GenerateMDVRPInstance(activities []models.ActivityModelBumbal, nRoutes int)
 		if err != nil {
 			panic(err)
 		}
+		// add an activity with the just converted values
 		inst.Activities[i] = Pos{
 			Latitude:  actLat,
 			Longitude: actLon,
 			Zipcode:   actZip,
 		}
 
+		// convert activity.DepotAddress string values to float64 and int
 		depotLat, err = strconv.ParseFloat(*activity.DepotAddress.Latitude, 64)
 		if err != nil {
 			panic(err)
@@ -63,6 +95,7 @@ func GenerateMDVRPInstance(activities []models.ActivityModelBumbal, nRoutes int)
 		if err != nil {
 			panic(err)
 		}
+		// add a depot with the just converted values
 		inst.Depots[i] = Pos{
 			Latitude:  depotLat,
 			Longitude: depotLon,
@@ -70,37 +103,44 @@ func GenerateMDVRPInstance(activities []models.ActivityModelBumbal, nRoutes int)
 		}
 	}
 
+	// remove duplicate depots
 	inst.Depots = fp.Unique(inst.Depots)
-
 	return inst
 }
 
+// Solution2ZoneModels converts a Solution to a slice of models.ZoneModel
 func Solution2ZoneModels(solution Solution) []models.ZoneModel {
 	zones := make([]models.ZoneModel, len(solution.Routes))
 	for i, route := range solution.Routes {
+		// get a slice of all unique zipcodes in this route
 		zips := fp.Unique(fp.Map(route.Activities, func(pos Pos) int { return pos.Zipcode }))
-		zones[i] = models.ZoneModel{ZoneRanges: fp.Map(zips, func(zip int) models.ZoneRangeModel {
-			return models.ZoneRangeModel{ZipcodeFrom: zip, ZipcodeTo: zip}
-		})}
+		zones[i] = models.ZoneModel{
+			// converts every zipcode to a ZoneRangeModel of only a single zipcode
+			ZoneRanges: fp.Map(zips, func(zip int) models.ZoneRangeModel {
+				return models.ZoneRangeModel{ZipcodeFrom: zip, ZipcodeTo: zip}
+			}),
+		}
 	}
 	return zones
 }
 
-// GeneticAlgorithm runs a genetic algorithm with the specified hyperparameters and returns the best solution found
-func GeneticAlgorithm(inst MDVRPInstance, nOffspring, nParents, nGenerations, tournamentSize, maxMutations int,
-	mutationRate, crossoverRate float64) Solution {
+// GeneticAlgorithm runs a genetic algorithm with the specified hyperparameters and returns the best solution found.
+func GeneticAlgorithm(inst MDMTSPInstance, params GenAlgHyperParams) Solution {
 	var err error
 	bestSol := randomSolution(inst)
 	bestSol.calcCost()
-	population := randomPopulation(inst, nOffspring)
-	for gen := 0; gen < nGenerations; gen++ {
+	population := randomPopulation(inst, params.nOffspring)
+	for gen := 0; gen < params.nGenerations; gen++ {
 		population.calcCosts()
+		// save the best solution of the previous generation
 		bestSol, err = population.getBest()
 		if err != nil {
 			panic(err)
 		}
-		parents := selectParents(population, nParents, tournamentSize)
-		population = makeOffspring(inst, parents, nOffspring, maxMutations, mutationRate, crossoverRate)
+		parents := selectParents(population, params.nParents, params.tournamentSize)
+		population = makeOffspring(inst, parents, params.nOffspring,
+			params.maxMutations, params.mutationRate, params.crossoverRate)
+		// elitism
 		population[0] = bestSol
 	}
 	population.calcCosts()
@@ -111,12 +151,13 @@ func GeneticAlgorithm(inst MDVRPInstance, nOffspring, nParents, nGenerations, to
 	return bestSol
 }
 
-// selectParents selects nParents with replacement from population using tournament selection with tournament size tournamentSize
+// selectParents selects nParents with replacement from population using tournament selection with tournamentSize
 func selectParents(population Population, nParents, tournamentSize int) Population {
 	var wg sync.WaitGroup
 	wg.Add(nParents)
 	parents := make(Population, nParents)
 	for i := 0; i < nParents; i++ {
+		// concurrently select parents using tournament selection
 		go func(j int) {
 			defer wg.Done()
 			var err error
@@ -126,16 +167,24 @@ func selectParents(population Population, nParents, tournamentSize int) Populati
 			}
 		}(i)
 	}
+	// block until all parents have been selected
 	wg.Wait()
 	return parents
 }
 
-func makeOffspring(inst MDVRPInstance, parents Population, nOffspring, maxMutations int, mutationRate, crossoverRate float64) Population {
+// makeOffspring makes nOffspring from the parents. With a rate of
+// crossoverRate, 2 parents are randomly selected and are combined using
+// crossover, otherwise it is just the parent. The resulting offspring is
+// mutated with at most maxMutations, where each mutation has a mutationRate
+// chance of happening.
+func makeOffspring(inst MDMTSPInstance, parents Population, nOffspring, maxMutations int,
+	mutationRate, crossoverRate float64) Population {
 	var wg sync.WaitGroup
 	wg.Add(nOffspring)
 	n := len(parents)
 	offspring := make(Population, nOffspring)
 	for i := 0; i < nOffspring; i++ {
+		// concurrently make all offspring
 		go func(j int) {
 			defer wg.Done()
 			parent1 := parents[rand.Intn(n)].copy()
@@ -148,25 +197,30 @@ func makeOffspring(inst MDVRPInstance, parents Population, nOffspring, maxMutati
 			offspring[j].mutate(inst, maxMutations, mutationRate)
 		}(i)
 	}
+	// block until all offspring have been made
 	wg.Wait()
 	return offspring
 }
 
+// crossover combines parent1 and parent2 and returns the combined Solution.
+// crossover works by repeatedly picking a nRoutes-1 route from a parent and
+// putting that whole route in the child Solution. The last route is greedily
+// made with the remaining points.
 func crossover(parent1 Solution, parent2 Solution) Solution {
 	nRoutes := len(parent1.Routes)
 	child := Solution{Routes: make([]Route, nRoutes)}
-	// put nRoutes-1 complete routes from the parents in the child
+	// pick nRoutes-1 routes repeatedly from a random parents and add it to the child
 	for i := 0; i < nRoutes-1; i++ {
-		selectParent1 := rand.Float64()
-		if selectParent1 < 0.5 {
+		if rand.Float64() < 0.5 {
 			passOnRoute(&parent1, &parent2, &child, i)
 		} else {
 			passOnRoute(&parent2, &parent1, &child, i)
 		}
 	}
 
-	// combine all remaining points greedily
-	remaining := make([]Pos, 0)
+	// combine all remaining position into a single slice
+	remainingPositions := make([]Pos, 0)
+	// the depot of the longest route that still remained will be the depot of the greedy route
 	longest := 0
 	var longI int
 	for i, route := range parent1.Routes {
@@ -175,17 +229,19 @@ func crossover(parent1 Solution, parent2 Solution) Solution {
 			longI = i
 		}
 		for _, activity := range route.Activities {
-			remaining = append(remaining, activity)
+			remainingPositions = append(remainingPositions, activity)
 		}
 	}
 	depot := parent1.Routes[longI].Depot
-	route := greedyRoute(depot, remaining)
+	// combine all remaining positions greedily into a single route
+	route := greedyRoute(depot, remainingPositions)
 	child.Routes[nRoutes-1] = route
 
 	return child.copy()
 }
 
-// passOnRoute removes a random route from parent1, adds that route to the child at index, and removes all points in that route from parent2
+// passOnRoute removes a random route from parent1, adds that route to the child at index,
+// and removes all points in that route from parent2
 func passOnRoute(parent1, parent2, child *Solution, index int) {
 	var route Route
 	var err error
@@ -194,5 +250,5 @@ func passOnRoute(parent1, parent2, child *Solution, index int) {
 		panic(err)
 	}
 	child.Routes[index] = route
-	parent2.removePoints(route.Activities)
+	parent2.removeActivities(route.Activities)
 }

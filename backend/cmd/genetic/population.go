@@ -10,7 +10,7 @@ import (
 type Population []Solution
 
 // randomPopulation initializes and returns a Population with nIndividuals random Solution
-func randomPopulation(inst MDVRPInstance, nIndividuals int) Population {
+func randomPopulation(inst MDMTSPInstance, nIndividuals int) Population {
 	return fp.Map(make([]Solution, nIndividuals),
 		func(t Solution) Solution { return randomSolution(inst) })
 }
@@ -25,12 +25,13 @@ func (population *Population) calcCosts() {
 			sol.calcCost()
 		}(&(*population)[i])
 	}
+	// block until all costs have been calculated
 	wg.Wait()
 }
 
 // getBest returns the best Solution in the Population.
-// if len(population)==0, returns err!=nil
-func (population *Population) getBest() (Solution, error) {
+// if len(population)==0, returns an error; otherwise err==nil
+func (population *Population) getBest() (s Solution, err error) {
 	if len(*population) == 0 {
 		return Solution{}, errors.New("population must not be empty")
 	}
@@ -45,10 +46,11 @@ func (population *Population) getBest() (Solution, error) {
 	return sol.copy(), nil
 }
 
-// tournamentSelection performs tournament selection on the Population.
+// tournamentSelection performs tournament selection with replacement on the Population.
 // tournamentSize is the tournament size. Greater tournament size results in more selection pressure.
-// if len(population)==0 || tournamentSize<=0, returns err!=nil
-func (population *Population) tournamentSelection(tournamentSize int) (Solution, error) {
+// This means that solutions with a lower cost have a greater chance of getting selected.
+// if len(population)==0 || tournamentSize<=0, returns an error; otherwise err==nil
+func (population *Population) tournamentSelection(tournamentSize int) (s Solution, err error) {
 	if len(*population) == 0 {
 		return Solution{}, errors.New("population must not be empty")
 	} else if tournamentSize <= 0 {
