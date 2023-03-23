@@ -31,12 +31,9 @@ export default function Home() {
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
 
-    //key to update sider
-    const [siderkey, setSiderKey] = useState(1);
-
     // For radio.
     const [value, setValue] = useState(1);
-    const [zipCodes, setZipCodes ] = useState([]);
+    const [zipCodes, setZipCodes] = useState([]);
     const onChange = (e) => {
         setValue(e.target.value);
     };
@@ -52,31 +49,25 @@ export default function Home() {
         setIntensity(e)
     }
 
-    // Contains the name of the zone configuration that the user wants to save.
-    const [saveName, setSaveName] = useState('');
-
     /** 
-    * When the user clicks the save button, they are asked to give a name to the zone configuration.
-    * @param {string} name - The name to give the saved zone configuration.
+    * When the user clicks the save button, they are asked to give a name to the zone configuration if there is a zone to be saved.
     * @return {void}
     */
     async function handleSaveClick() {
-        if (zipCodes.length ===0){
+        if (zipCodes.length === 0) {
             alert('nothing to save')
             return null;
         }
         const name = window.prompt('Enter a name for the save:');
         if (name) {
-            
             addSavedZone(name);
-            
         }
     }
 
-    // This makes sure the initial zone configuration is always shown.
+    // keep track of the saved zones and update when needed
     const [savedZones, setSavedZones] = useState([]);
-    //localStorage.setItem('saved-initial', 'Initial Zone');
 
+    // for now not usefull
     const handleDeleteZone = (key) => {
         localStorage.removeItem(key);
         const newSavedZones = savedZones.filter((item) => item.key !== key);
@@ -89,72 +80,75 @@ export default function Home() {
     * @return {void}
     */
     async function addSavedZone(name) {
+        // user token
         const userToken = localStorage.getItem('token')
+        // body of http request
         const bodyValues = JSON.stringify({
             "plot_name": name,
-            "plot_zones" : zipCodes.plot_zones
+            "plot_zones": zipCodes.plot_zones
 
         })
-       
-        //send request to api to add zone
-        await fetch("http://localhost:4000/plot/save",{
-            method: 'POST', 
+
+        //send request to api to add zone and wait until it is completed
+        await fetch("http://localhost:4000/plot/save", {
+            method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${userToken}`
             },
-            body : bodyValues
+            body: bodyValues
 
-        }).then((response) => {
-            if(!response.ok){
+        }).then(async (response) => {
+            if (!response.ok) {
                 console.log('error in response to set zone')
+                alert('errorSaving zones')
+                return null;
+            } else {
+                // if response is ok then update the zones
+                const saved = await getSavedZones();
+                setSavedZones(saved)
             }
         })
- 
-        const saved = await getSavedZones();
-        //console.log('pre')
-        //console.log(saved)
-        setSavedZones(saved)
-       // console.log('post')
-        //console.log(saved)
     }
 
-    // function to get saved zones, to be better described
+    /** 
+    * Function which gets the saved zones from the Mongo database
+    * @return {void}
+    */
     async function getSavedZones() {
+        // array to hold saved zones
         let saved = []
-        await fetch("http://localhost:4000/user/plots",{
+
+        await fetch("http://localhost:4000/user/plots", {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
-        }).then((response) =>{
-            if (!response.ok){
+        }).then((response) => {
+            if (!response.ok) {
                 alert('error retrieving zones')
             }
             return response.json();
-        }) . then((data) => {
+        }).then((data) => {
             saved = data
         })
+
         return saved
     }
 
     // initially runs when rendering home page
     useEffect(() => {
-        const fetchData = async () =>{
-            
+        const fetchData = async () => {
+            // variable used for saved plots in database
             let saved = await getSavedZones()
+            // set the plots in the sider to be the saved plots
             setSavedZones(saved)
-            console.log(savedZones)
-            setSiderKey(siderkey+1);
-            console.log('inhome')
-
         }
-        fetchData()
 
-        // eslint-disable-next-line
+        fetchData()
     }, []);
 
 
@@ -180,12 +174,12 @@ export default function Home() {
         >
             <Layout style={{ height: '100vh' }}>
                 <Header className="header" >
-                    <HeaderComponent handleSaveClick={handleSaveClick} savedZones={savedZones} saveName={saveName} />
+                    <HeaderComponent handleSaveClick={handleSaveClick} savedZones={savedZones} />
                     <Menu theme="dark" mode="horizontal" />
                 </Header>
 
                 <Layout >
-                    <Sider key={siderkey}
+                    <Sider
                         width={"225"}
                         style={{
                             background: colorBgContainer,
@@ -203,7 +197,6 @@ export default function Home() {
                             values={value}
                             setValue={setValue.bind(this)}
                             setIntensity={setIntensity.bind(this)}
-                            intensity={intensity}
                             setZoneId={setZoneId}
                         />
                     </Sider>
@@ -223,11 +216,11 @@ export default function Home() {
                                         <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
                                     </div>
                                     <div style={{ paddingLeft: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes}/>
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
                                     </div>
                                 </div>
                             ) : (
-                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes}/>
+                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
                             )}
                         </Content>
                     </Layout>

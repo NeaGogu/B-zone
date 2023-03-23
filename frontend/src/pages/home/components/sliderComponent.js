@@ -1,5 +1,5 @@
 // External dependencies
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
@@ -69,16 +69,16 @@ const ZoneSubMenu = ({ onSubmit, setZoneId }) => {
 };
 
 function SiderComponent(props) {
-    const { values, intensity, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId } = props;
+    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId } = props;
 
-    
+
     const toggleMap = () => {
         if (showComparison && !showMap) {
             setShowComparison(false);
             setShowMap(true);
         }
     };
-    
+
     const toggleComparison = () => {
         if (!showComparison && showMap) {
             setShowComparison(true);
@@ -88,14 +88,11 @@ function SiderComponent(props) {
 
     // for intensity change
     const onChangeNumber = (e) => {
-        console.log('comp')
-        console.log(intensity)
         setIntensity(e)
     }
 
     // for radio change
     const onChange = (e) => {
-        console.log('comp')
         setValue(e.target.value);
     };
 
@@ -133,7 +130,7 @@ function SiderComponent(props) {
             </SubMenu>
 
             <SubMenu key="sub4" title="Zones">
-                <ZoneSubMenu setZoneId={setZoneId}  />
+                <ZoneSubMenu setZoneId={setZoneId} />
             </SubMenu>
 
             <SubMenu key="sub2" title="Saved Zones">
@@ -145,7 +142,6 @@ function SiderComponent(props) {
                                 <Button
                                     style={{ float: 'right' }}
                                     onClick={() => {
-                                        //localStorage.removeItem(zone.key);
                                         onDeleteZone(zone.key);
                                     }}
                                 >
@@ -154,7 +150,7 @@ function SiderComponent(props) {
                             )}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                            <Button style={{ flex: 1, marginRight: '3px' }} onClick={()=>{
+                            <Button style={{ flex: 1, marginRight: '3px' }} onClick={() => {
                                 toggleMap()
                                 setZoneId(zone.user_plot_id)
                             }}>
