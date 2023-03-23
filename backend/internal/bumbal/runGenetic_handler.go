@@ -6,21 +6,21 @@ import (
 	"net/http"
 )
 
-// ClustersInfo struct used for retrieving the data from the body of the request
-type ClustersInfo struct {
-	NrClusters          int `json:"number_of_clusters,omitempty"`
-	NrCandidateClusters int `json:"number_of_candidate_clusters,omitempty"`
+// ZonesInfo struct used for retrieving the data from the body of the request
+type ZonesInfo struct {
+	NZones       int `json:"number_of_zones,omitempty"`
+	NGenerations int `json:"number_of_generations,omitempty"`
 }
 
-// RunKMeans
+// RunGenetic
 //
 //	 @Description: the main handler, does the request to Bumbal and calls the K-Means algorithm based
 //					on the input
 //	 @param w
 //	 @param r
-func RunKMeans(w http.ResponseWriter, r *http.Request) {
+func RunGenetic(w http.ResponseWriter, r *http.Request) {
 	// Make the request to Bumbal
-	reqBody := []byte(`{"options":{"include_address_applied":true,"include_depot_address":false}}`)
+	reqBody := []byte(`{"options":{"include_address_applied":true,"include_depot_address":true}}`)
 	resp, err := requestBumbalActivity(w, r, reqBody)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -43,14 +43,14 @@ func RunKMeans(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// get the data from the request's body
-		clustersInfo, err := getClustersInfo(r)
+		zonesInfo, err := getZonesInfo(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// use the collected data as input for the K-means algorithm
-		computedZones, err := kMeans.KMeans(*respModel.Items, clustersInfo.NrClusters, clustersInfo.NrCandidateClusters)
+		// use the collected data as input for the Genetic algorithm
+		computedZones, err := kMeans.KMeans(*respModel.Items, zonesInfo.NZones, zonesInfo.NGenerations)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
