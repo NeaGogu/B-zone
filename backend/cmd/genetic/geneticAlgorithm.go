@@ -2,11 +2,11 @@ package genetic
 
 import (
 	"bzone/backend/internal/models"
-	"fmt"
 	fp "github.com/rjNemo/underscore"
 	"math/rand"
 	"strconv"
 	"sync"
+	"time"
 )
 
 // MDMTSPInstance is an instance of the Multi-Depot Multiple Traveling Salesman Problem (MDMTSP).
@@ -42,13 +42,15 @@ type GenAlgHyperParams struct {
 
 // RunGeneticAlgorithm converts the activities ([]models.ActivityModelBumbal) into the input for GeneticAlgorithm,
 // runs GeneticAlgorithm with some default parameters, and, finally, converts the output into a []models.ZoneModel.
-func RunGeneticAlgorithm(activities []models.ActivityModelBumbal, nZones, nGenerations int) []models.ZoneModel {
+// Once timeout has elapsed, the algorithm is aborted and the best solution so far is returned.
+func RunGeneticAlgorithm(activities []models.ActivityModelBumbal, nZones, nGenerations int,
+	timeout time.Duration) []models.ZoneModel {
 	inst := GenerateMDMTSPInstance(activities, nZones)
 	params := GenAlgHyperParams{
 		NOffspring: 100, NParents: 100, NGenerations: nGenerations, TournamentSize: 5,
 		MaxMutations: 100, MutationRate: 0.05, CrossoverRate: 0.5,
 	}
-	sol := GeneticAlgorithm(inst, params)
+	sol := GeneticAlgorithm(inst, params, timeout)
 	return Solution2ZoneModels(sol)
 }
 
@@ -131,13 +133,19 @@ func Solution2ZoneModels(solution Solution) []models.ZoneModel {
 }
 
 // GeneticAlgorithm runs a genetic algorithm with the specified hyperparameters and returns the best solution found.
-func GeneticAlgorithm(inst MDMTSPInstance, params GenAlgHyperParams) Solution {
+// Once timeout has elapsed, the algorithm is aborted and the best solution so far is returned.
+func GeneticAlgorithm(inst MDMTSPInstance, params GenAlgHyperParams, timeout time.Duration) Solution {
+	t0 := time.Now()
 	var err error
 	bestSol := randomSolution(inst)
 	bestSol.calcCost()
 	population := randomPopulation(inst, params.NOffspring)
 	for gen := 0; gen < params.NGenerations; gen++ {
-		fmt.Println("gen:", gen, "\tcost:", bestSol.Cost)
+		elapsedTime := time.Since(t0)
+		if timeout < elapsedTime {
+			break
+		}
+
 		population.calcCosts()
 		// save the best solution of the previous generation
 		bestSol, err = population.getBest()
