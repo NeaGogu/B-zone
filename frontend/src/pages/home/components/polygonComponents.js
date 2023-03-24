@@ -273,7 +273,7 @@ const PolygonVis = (props) => {
     const { zoneId, setZipCodes } = props
 
     //keeps track if this is first rendering
-    const renderRef = useRef()
+    const calc = useRef('')
 
     // Map context.
     const context = useLeafletContext()
@@ -288,15 +288,19 @@ const PolygonVis = (props) => {
             context.layerContainer.removeLayer(layer)
         })
         // set it that first render has been done
-        renderRef.current = 1;
+        
 
         // Async function in order to wait for response from API.
         const fetchData = async () => {
             // variable which holds the coordinates to be displayed
             var coordinatesList = []
+            calc.current = zoneId;
 
             // check if zone is to be calculated
-            if (zoneId === 'calculate') {
+            if (zoneId.startsWith('calculate') ) {
+                console.log(calc.current)
+                console.log(zoneId)
+                calc.current = zoneId
                 const calculation = await calculateZone()
                 convertToStructure(calculation[0])
                 setZipCodes(convertToStructure(calculation[0]));

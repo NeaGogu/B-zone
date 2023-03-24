@@ -161,7 +161,6 @@ export default function Home() {
     //     console.log('home')
     //     console.log(zoneId)
     // }, [zoneId]);
-
     return (
         <ConfigProvider
             // Theme of the web-app.
@@ -216,19 +215,18 @@ export default function Home() {
                                 minHeight: 500,
                             }}
                         >
-                            {showComparison ? (
+                            
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <div style={{ paddingRight: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
+                                    <div style={showComparison? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" } }>
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />;
                                     </div>
-                                    <div style={{ paddingLeft: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} />
+                                    <div style={ showComparison? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" } }>
+                                        {
+                                            showComparison ? <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} /> : <></>
+                                        }
                                     </div>
                                 </div>
-                            ) : (
-                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
-                                
-                            )}
+                         
                         </Content>
                     </Layout>
                 </Layout>

@@ -1,5 +1,5 @@
 // External dependencies
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
@@ -17,6 +17,7 @@ const { SubMenu } = Menu;
 const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap }) => {
     const [averageFuelCost, setAverageFuelCost] = useState("");
     const [averageFuelUsage, setAverageFuelUsage] = useState("");
+    const calculate = useRef(0)
 
     const handleSubmit = (e) => {
         //e.preventDefault();
@@ -25,7 +26,8 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap }) => {
         if (isValid) {
             toggleMap()
             // toggles the map to be one map
-            setZoneId('calculate')    
+            calculate.current += 1;
+            setZoneId('calculate' + calculate.current.toString() )    
         }
     };
 
