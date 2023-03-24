@@ -14,7 +14,7 @@ import '../index.css';
 const { SubMenu } = Menu;
 
 //Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
-const ZoneSubMenu = ({ onSubmit, setZoneId }) => {
+const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap }) => {
     const [averageFuelCost, setAverageFuelCost] = useState("");
     const [averageFuelUsage, setAverageFuelUsage] = useState("");
 
@@ -23,7 +23,9 @@ const ZoneSubMenu = ({ onSubmit, setZoneId }) => {
         //const isValid = onSubmit(averageFuelCost, averageFuelUsage);
         const isValid = true;
         if (isValid) {
-            setZoneId('calculate')
+            toggleMap()
+            // toggles the map to be one map
+            setZoneId('calculate')    
         }
     };
 
@@ -69,7 +71,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId }) => {
 };
 
 function SiderComponent(props) {
-    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId } = props;
+    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId, setCurrentView } = props;
 
 
     const toggleMap = () => {
@@ -130,7 +132,7 @@ function SiderComponent(props) {
             </SubMenu>
 
             <SubMenu key="sub4" title="Zones">
-                <ZoneSubMenu setZoneId={setZoneId} />
+                <ZoneSubMenu setZoneId={setZoneId} toggleMap={toggleMap} />
             </SubMenu>
 
             <SubMenu key="sub2" title="Saved Zones">
@@ -156,7 +158,10 @@ function SiderComponent(props) {
                             }}>
                                 View
                             </Button>
-                            <Button style={{ flex: 1, marginLeft: '3px' }} onClick={toggleComparison}>
+                            <Button style={{ flex: 1, marginLeft: '3px' }} onClick={() =>{
+                                setCurrentView(zone.user_plot_id)
+                                toggleComparison()
+                            }}>
                                 Compare
                             </Button>
                         </div>

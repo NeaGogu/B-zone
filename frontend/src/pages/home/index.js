@@ -67,6 +67,10 @@ export default function Home() {
     // keep track of the saved zones and update when needed
     const [savedZones, setSavedZones] = useState([]);
 
+    //
+     // for zone sync
+     const [currentView, setCurrentView] = useState('initial')
+
     // for now not usefull
     const handleDeleteZone = (key) => {
         localStorage.removeItem(key);
@@ -198,6 +202,8 @@ export default function Home() {
                             setValue={setValue.bind(this)}
                             setIntensity={setIntensity.bind(this)}
                             setZoneId={setZoneId}
+                            setCurrentView={setCurrentView}
+
                         />
                     </Sider>
 
@@ -216,11 +222,12 @@ export default function Home() {
                                         <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
                                     </div>
                                     <div style={{ paddingLeft: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} />
                                     </div>
                                 </div>
                             ) : (
                                 <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
+                                
                             )}
                         </Content>
                     </Layout>
