@@ -61,6 +61,7 @@ func RunGenetic(w http.ResponseWriter, r *http.Request) {
 		// set up the response
 		var output Output
 		output.Result = computedZones
+
 		// encode the response
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(output)
