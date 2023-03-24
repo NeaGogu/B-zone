@@ -9,6 +9,7 @@ import (
 
 const (
 	activitiesUrl = "activity"
+	waitingTime   = 600 // in seconds
 )
 
 // Output struct used for the body of the response
@@ -43,6 +44,21 @@ func requestBumbalActivity(w http.ResponseWriter, r *http.Request, reqBody []byt
 	// make the request
 	resp, err := http.DefaultClient.Do(req)
 	return resp, err
+}
+
+// filterResp
+//
+//	@Description: filters the response from Bumbal so that only activities with address and depot address are used
+//	@param respModel
+//	@return []models.ActivityModelBumbal
+func filterResp(respModel []models.ActivityModelBumbal) []models.ActivityModelBumbal {
+	var filteredResp []models.ActivityModelBumbal
+	for _, activity := range respModel {
+		if activity.AddressApplied != nil && activity.DepotAddress != nil {
+			filteredResp = append(filteredResp, activity)
+		}
+	}
+	return filteredResp
 }
 
 // getClustersInfo

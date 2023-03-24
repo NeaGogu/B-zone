@@ -20,7 +20,7 @@ type ClustersInfo struct {
 //	 @param r
 func RunKMeans(w http.ResponseWriter, r *http.Request) {
 	// Make the request to Bumbal
-	reqBody := []byte(`{"options":{"include_address_applied":true,"include_depot_address":false}}`)
+	reqBody := []byte(`{"options":{"include_address_applied":true,"include_depot_address":true}}`)
 	resp, err := requestBumbalActivity(w, r, reqBody)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -49,8 +49,11 @@ func RunKMeans(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// filter the response so that only activities that have both address applied and depot address are used
+		filteredResp := filterResp(*respModel.Items)
+
 		// use the collected data as input for the K-means algorithm
-		computedZones, err := kMeans.KMeans(*respModel.Items, clustersInfo.NrClusters, clustersInfo.NrCandidateClusters)
+		computedZones, err := kMeans.KMeans(filteredResp, clustersInfo.NrClusters, clustersInfo.NrCandidateClusters)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
