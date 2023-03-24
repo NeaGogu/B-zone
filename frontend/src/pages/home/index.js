@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
-import { Layout, Menu, theme, ConfigProvider } from 'antd';
+import { Layout, Menu, theme, ConfigProvider, Spin } from 'antd';
 
 // Components
 import Map from './components/mapComponent';
@@ -30,6 +30,11 @@ export default function Home() {
 
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
+
+    //for computed zone on map 1
+    const [computed, setComputed] = useState(false)
+    const [computed2, setComputed2] = useState(false)
+
 
     // For radio.
     const [value, setValue] = useState(1);
@@ -217,13 +222,20 @@ export default function Home() {
                         >
                             
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <div style={showComparison? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" } }>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />;
-                                    </div>
+                                    
+                                        <div style={showComparison? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" } }>
+                                            <Spin spinning={!computed} delay={500}>
+                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} />;
+                                            </Spin>
+                                        </div>
+                                    
+                                    
                                     <div style={ showComparison? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" } }>
-                                        {
-                                            showComparison ? <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} /> : <></>
-                                        }
+                                        <Spin spinning={!computed2} delay={500}>
+                                            {
+                                                showComparison ? <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} setComputed={setComputed2} /> : <></>
+                                            }
+                                        </Spin>
                                     </div>
                                 </div>
                          

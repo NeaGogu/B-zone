@@ -270,7 +270,7 @@ async function querryDatabase(plotID) {
 // Main function to visualize the polygons on the map.
 const PolygonVis = (props) => {
     //selections
-    const { zoneId, setZipCodes } = props
+    const { zoneId, setZipCodes, setComputed } = props
 
     //keeps track if this is first rendering
     const calc = useRef('')
@@ -292,6 +292,7 @@ const PolygonVis = (props) => {
 
         // Async function in order to wait for response from API.
         const fetchData = async () => {
+            setComputed(false)
             // variable which holds the coordinates to be displayed
             var coordinatesList = []
             calc.current = zoneId;
@@ -333,9 +334,10 @@ const PolygonVis = (props) => {
                     }
                 }
             }
+            setComputed(true)
         };
         fetchData()
-    }, [context.layerContainer, setZipCodes, zoneId])
+    }, [context.layerContainer, setZipCodes, zoneId, setComputed])
 
 
     return null
