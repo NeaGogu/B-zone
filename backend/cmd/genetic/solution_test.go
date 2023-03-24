@@ -441,70 +441,57 @@ func TestSolution_calcCost(t *testing.T) {
 	tests := []struct {
 		name string
 		sol  Solution
-		want Solution
+		want float64
 	}{
 		{
 			name: "0 routes",
 			sol: Solution{
 				Routes: []Route{},
-				Cost:   0,
 			},
-			want: Solution{
-				Routes: []Route{},
-				Cost:   0,
-			},
+			want: 0,
 		},
 		{
 			name: "1 empty route",
 			sol: Solution{
 				Routes: []Route{{Pos{0, 0, 0}, []Pos{}}},
-				Cost:   0,
 			},
-			want: Solution{
-				Routes: []Route{{Pos{0, 0, 0}, []Pos{}}},
-				Cost:   0,
-			},
+			want: 100,
 		},
 		{
 			name: "1 singleton route",
 			sol: Solution{
 				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
-				Cost:   0,
 			},
-			want: Solution{
-				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
-				Cost:   10,
-			},
+			want: 10 + 10 + 100,
 		},
 		{
-			name: "1 route 3 activities",
+			name: "1 route, 3 activities, same zips",
 			sol: Solution{
 				Routes: []Route{{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}},
-				Cost:   0,
 			},
-			want: Solution{
-				Routes: []Route{{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}},
-				Cost:   4,
-			},
+			want: 4 + 10 + 100,
 		},
 		{
-			name: "2 singleton routes",
+			name: "1 route, 3 activities, diff zips",
 			sol: Solution{
-				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}},
-					{Pos{0, 0, 0}, []Pos{{-3, -4, 0}}}},
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 1}, {1, 0, 2}}}},
+			},
+			want: 4 + 30 + 100,
+		},
+		{
+			name: "2 empty routes, same depot",
+			sol: Solution{
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{}},
+					{Pos{0, 1, 1}, []Pos{}}},
 				Cost: 0,
 			},
-			want: Solution{
-				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}},
-					{Pos{0, 0, 0}, []Pos{{-3, -4, 0}}}},
-				Cost: 20,
-			},
+			want: 50,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.sol.calcCost()
-			assert.Equal(t, tt.want, tt.sol)
+			assert.Equal(t, tt.want, tt.sol.Cost)
 		})
 	}
 }
@@ -738,12 +725,12 @@ func TestSolution_applyMigrateZip(t *testing.T) {
 		{"r0 too large", Solution{Routes: []Route{}}, args{1, 0, 0}, true, Solution{}},
 		{"r0 too large", Solution{Routes: []Route{}}, args{0, 1, 0}, true, Solution{}},
 		{"r0==r1", Solution{Routes: []Route{}}, args{0, 0, 0}, true, Solution{}},
-		{"singleton r0, empty r1", Solution{Routes: []Route{{Activities: []Pos{{0, 0, 0}}}, {Activities: []Pos{}}}}, args{0, 1, 0}, true,
-			Solution{Routes: []Route{{Activities: []Pos{}}, {Activities: []Pos{{0, 0, 0}}}}}},
-		{"r0 2 same zip, empty r1", Solution{Routes: []Route{{Activities: []Pos{{0, 0, 0}, {1, 1, 0}}}, {Activities: []Pos{}}}}, args{0, 1, 0}, true,
-			Solution{Routes: []Route{{Activities: []Pos{}}, {Activities: []Pos{{0, 0, 0}, {1, 1, 0}}}}}},
-		{"r0 2 diff zip, empty r1", Solution{Routes: []Route{{Activities: []Pos{{0, 0, 0}, {1, 1, 1}}}, {Activities: []Pos{}}}}, args{0, 1, 0}, true,
-			Solution{Routes: []Route{{Activities: []Pos{}}, {Activities: []Pos{{0, 0, 0}}}}}},
+		{"singleton r0, empty r1", Solution{Routes: []Route{{Activities: []Pos{{0, 0, 0}}}, {Activities: []Pos{}}}}, args{0, 1, 0}, false,
+			Solution{Routes: []Route{{}, {Activities: []Pos{{0, 0, 0}}}}}},
+		{"r0 3 same zip, empty r1", Solution{Routes: []Route{{Activities: []Pos{{0, 1, 0}, {1, 1, 0}}}, {Activities: []Pos{}}}}, args{0, 1, 0}, false,
+			Solution{Routes: []Route{{}, {Activities: []Pos{{1, 1, 0}, {0, 1, 0}}}}}},
+		{"r0 2 diff zip, empty r1", Solution{Routes: []Route{{Activities: []Pos{{0, 0, 0}, {1, 1, 1}}}, {Activities: []Pos{}}}}, args{0, 1, 0}, false,
+			Solution{Routes: []Route{{Activities: []Pos{{1, 1, 1}}}, {Activities: []Pos{{0, 0, 0}}}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -2,6 +2,7 @@ package genetic
 
 import (
 	"bzone/backend/internal/models"
+	"fmt"
 	fp "github.com/rjNemo/underscore"
 	"math/rand"
 	"strconv"
@@ -30,13 +31,13 @@ type MDMTSPInstance struct {
 // crossoverRate the chance that 2 parents are selected and selected with crossover;
 // otherwise only a single parent is selected
 type GenAlgHyperParams struct {
-	nOffspring     int
-	nParents       int
-	nGenerations   int
-	tournamentSize int
-	maxMutations   int
-	mutationRate   float64
-	crossoverRate  float64
+	NOffspring     int
+	NParents       int
+	NGenerations   int
+	TournamentSize int
+	MaxMutations   int
+	MutationRate   float64
+	CrossoverRate  float64
 }
 
 // RunGeneticAlgorithm converts the activities ([]models.ActivityModelBumbal) into the input for GeneticAlgorithm,
@@ -44,8 +45,8 @@ type GenAlgHyperParams struct {
 func RunGeneticAlgorithm(activities []models.ActivityModelBumbal, nZones, nGenerations int) []models.ZoneModel {
 	inst := GenerateMDMTSPInstance(activities, nZones)
 	params := GenAlgHyperParams{
-		nOffspring: 100, nParents: 100, nGenerations: nGenerations, tournamentSize: 5,
-		maxMutations: 100, mutationRate: 0.05, crossoverRate: 0.5,
+		NOffspring: 100, NParents: 100, NGenerations: nGenerations, TournamentSize: 5,
+		MaxMutations: 100, MutationRate: 0.05, CrossoverRate: 0.5,
 	}
 	sol := GeneticAlgorithm(inst, params)
 	return Solution2ZoneModels(sol)
@@ -56,6 +57,9 @@ func GenerateMDMTSPInstance(activities []models.ActivityModelBumbal, nRoutes int
 	inst := MDMTSPInstance{NRoutes: nRoutes}
 	inst.Activities = make([]Pos, len(activities))
 	inst.Depots = make([]Pos, len(activities))
+	if len(activities) == 0 {
+		return inst
+	}
 
 	for i, activity := range activities {
 		var err error
@@ -129,17 +133,18 @@ func GeneticAlgorithm(inst MDMTSPInstance, params GenAlgHyperParams) Solution {
 	var err error
 	bestSol := randomSolution(inst)
 	bestSol.calcCost()
-	population := randomPopulation(inst, params.nOffspring)
-	for gen := 0; gen < params.nGenerations; gen++ {
+	population := randomPopulation(inst, params.NOffspring)
+	for gen := 0; gen < params.NGenerations; gen++ {
+		fmt.Println("gen:", gen, "\tcost:", bestSol.Cost)
 		population.calcCosts()
 		// save the best solution of the previous generation
 		bestSol, err = population.getBest()
 		if err != nil {
 			panic(err)
 		}
-		parents := selectParents(population, params.nParents, params.tournamentSize)
-		population = makeOffspring(inst, parents, params.nOffspring,
-			params.maxMutations, params.mutationRate, params.crossoverRate)
+		parents := selectParents(population, params.NParents, params.TournamentSize)
+		population = makeOffspring(inst, parents, params.NOffspring,
+			params.MaxMutations, params.MutationRate, params.CrossoverRate)
 		// elitism
 		population[0] = bestSol
 	}

@@ -56,11 +56,13 @@ func (sol *Solution) calcCost() {
 		}
 	}
 
-	sol.Cost += sol.routeLengthVariance() + 1.0
+	sol.Cost += sol.routeLengthVariance()
 
 	sol.Cost += float64(sol.zipsPerRouteSum()) * 10.0
 
-	sol.Cost += 100.0 / float64(sol.nDepots())
+	if sol.nDepots() > 0 {
+		sol.Cost += 100.0 / float64(sol.nDepots())
+	}
 }
 
 // nDepots counts the number of depots used in the Solution.
@@ -97,8 +99,8 @@ func (sol *Solution) mutate(inst MDMTSPInstance, maxMutations int, mutationRate 
 		if rand.Float64() > mutationRate {
 			continue
 		}
-		// TODO: does removing solSwap and migrate improve the solution quality
 		// TODO: use a better way to select a random branch
+		// not including solswap and migrate improves solution quality, but each generation takes longer
 		switch rand.Intn(7) {
 		case 0:
 			sol.randSolSwap()

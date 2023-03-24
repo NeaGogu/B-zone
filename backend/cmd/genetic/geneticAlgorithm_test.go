@@ -1,9 +1,8 @@
 package genetic
 
 import (
-	model "bzone/backend/internal/models"
+	"bzone/backend/internal/models"
 	"fmt"
-	fp "github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -45,36 +44,16 @@ func Test_crossover_repeat(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := crossover(tt.args.parent1, tt.args.parent2)
-
-			if tt.wantInst.NRoutes != len(got.Routes) {
-				t.Errorf("crossover() gotRoutes = %d, wantNRoutes %d", len(got.Routes), tt.wantInst.NRoutes)
+			if !assert.Equal(t, tt.wantInst.NRoutes, len(got.Routes)) {
 				return
 			}
-			if nAct := activityCount(t, &got); len(tt.wantInst.Activities) != nAct {
-				t.Errorf("crossover() len(activities) = %d, len(inst.activities) %d", nAct, len(tt.wantInst.Activities))
-				return
-			}
+			var gotActivities []Pos
 			for _, route := range got.Routes {
 				for _, activity := range route.Activities {
-					if !fp.Contains(tt.wantInst.Activities, activity) {
-						t.Errorf("crossover() got = %v, wantActivities %v", got, tt.wantInst.Activities)
-						return
-					}
+					gotActivities = append(gotActivities, activity)
 				}
 			}
-			for _, activity := range tt.wantInst.Activities {
-				has := false
-				for _, route := range got.Routes {
-					if fp.Contains(route.Activities, activity) {
-						has = true
-						break
-					}
-				}
-				if !has {
-					t.Errorf("crossover() got = %v, wantActivities %v", got, tt.wantInst.Activities)
-					return
-				}
-			}
+			assert.ElementsMatch(t, tt.wantInst.Activities, gotActivities)
 		})
 	}
 }
@@ -82,13 +61,13 @@ func Test_crossover_repeat(t *testing.T) {
 func Test_generateMTSPInstance(t *testing.T) {
 	tests := []struct {
 		name       string
-		activities []model.ActivityModelBumbal
+		activities []models.ActivityModelBumbal
 		nRoutes    int
 		want       MDMTSPInstance
 	}{
 		{
 			name:       "no activities",
-			activities: []model.ActivityModelBumbal{},
+			activities: []models.ActivityModelBumbal{},
 			nRoutes:    42,
 			want: MDMTSPInstance{
 				Activities: []Pos{},
@@ -98,7 +77,7 @@ func Test_generateMTSPInstance(t *testing.T) {
 		},
 		{
 			name: "one activity",
-			activities: []model.ActivityModelBumbal{
+			activities: []models.ActivityModelBumbal{
 				*makeActivity(t, "1", "2", "3", "4", "5", "6"),
 			},
 			nRoutes: 42,
@@ -110,7 +89,7 @@ func Test_generateMTSPInstance(t *testing.T) {
 		},
 		{
 			name: "multiple activities, one depot",
-			activities: []model.ActivityModelBumbal{
+			activities: []models.ActivityModelBumbal{
 				*makeActivity(t, "1", "2", "3", "4", "5", "6"),
 				*makeActivity(t, "10", "20", "30", "4", "5", "6"),
 			},
@@ -123,7 +102,7 @@ func Test_generateMTSPInstance(t *testing.T) {
 		},
 		{
 			name: "multiple activities, multiple depots",
-			activities: []model.ActivityModelBumbal{
+			activities: []models.ActivityModelBumbal{
 				*makeActivity(t, "1", "2", "3", "4", "5", "6"),
 				*makeActivity(t, "10", "20", "30", "40", "50", "60"),
 			},
@@ -143,17 +122,17 @@ func Test_generateMTSPInstance(t *testing.T) {
 	}
 }
 
-func makeActivity(t testing.TB, actLat string, actLon string, actZip string, depotLat string, depotLon string, depotZip string) *model.ActivityModelBumbal {
+func makeActivity(t testing.TB, actLat string, actLon string, actZip string, depotLat string, depotLon string, depotZip string) *models.ActivityModelBumbal {
 	t.Helper()
 
-	activity := model.NewActivityModel()
-	address := model.NewAddressAppliedModel()
+	activity := models.NewActivityModel()
+	address := models.NewAddressAppliedModel()
 	address.SetLatitude(actLat)
 	address.SetLongitude(actLon)
 	address.SetZipcode(actZip)
 	activity.SetAddressApplied(*address)
 
-	depotAddress := model.NewAddressModel()
+	depotAddress := models.NewAddressModel()
 	depotAddress.SetLatitude(depotLat)
 	depotAddress.SetLongitude(depotLon)
 	depotAddress.SetZipcode(depotZip)
@@ -162,10 +141,31 @@ func makeActivity(t testing.TB, actLat string, actLon string, actZip string, dep
 	return activity
 }
 
-func activityCount(t testing.TB, sol *Solution) int {
-	t.Helper()
-	return fp.Reduce(sol.Routes,
-		func(route Route, count int) int {
-			return count + len(route.Activities)
-		}, 0)
+func TestSolution2ZoneModels(t *testing.T) {
+	tests := []struct {
+		name string
+		sol  Solution
+		want []models.ZoneModel
+	}{
+		{"no zones", Solution{Routes: []Route{}},
+			[]models.ZoneModel{}},
+		{"1 zone, 0 zips", Solution{Routes: []Route{{Activities: []Pos{}}}},
+			[]models.ZoneModel{{ZoneRanges: []models.ZoneRangeModel{}}}},
+		{"1 zone, 1 zip", Solution{Routes: []Route{{Activities: []Pos{{Zipcode: 1}}}}},
+			[]models.ZoneModel{{ZoneRanges: []models.ZoneRangeModel{{ZipcodeFrom: 1, ZipcodeTo: 1}}}}},
+		{"1 zone, 2 zips", Solution{Routes: []Route{{Activities: []Pos{{Zipcode: 1}, {Zipcode: 2}}}}},
+			[]models.ZoneModel{{ZoneRanges: []models.ZoneRangeModel{{ZipcodeFrom: 1, ZipcodeTo: 1}, {ZipcodeFrom: 2, ZipcodeTo: 2}}}}},
+		{"2 zones, 0 zips", Solution{Routes: []Route{{Activities: []Pos{}}, {Activities: []Pos{}}}},
+			[]models.ZoneModel{{ZoneRanges: []models.ZoneRangeModel{}}, {ZoneRanges: []models.ZoneRangeModel{}}}},
+		{"2 zones, 2 same zips", Solution{Routes: []Route{{Activities: []Pos{{Zipcode: 1}}}, {Activities: []Pos{{Zipcode: 1}}}}},
+			[]models.ZoneModel{{ZoneRanges: []models.ZoneRangeModel{{ZipcodeFrom: 1, ZipcodeTo: 1}}}, {ZoneRanges: []models.ZoneRangeModel{{ZipcodeFrom: 1, ZipcodeTo: 1}}}}},
+		{"2 zones, 2 diff zips", Solution{Routes: []Route{{Activities: []Pos{{Zipcode: 1}}}, {Activities: []Pos{{Zipcode: 2}}}}},
+			[]models.ZoneModel{{ZoneRanges: []models.ZoneRangeModel{{ZipcodeFrom: 1, ZipcodeTo: 1}}}, {ZoneRanges: []models.ZoneRangeModel{{ZipcodeFrom: 2, ZipcodeTo: 2}}}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Solution2ZoneModels(tt.sol)
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }

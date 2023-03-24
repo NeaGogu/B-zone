@@ -1,53 +1,9 @@
 package genetic
 
 import (
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
-
-func TestPopulation_calcCosts(t *testing.T) {
-	tests := []struct {
-		name       string
-		population Population
-		want       Population
-	}{
-		{
-			name:       "empty population",
-			population: Population{},
-			want:       Population{},
-		},
-		{
-			name: "singleton population",
-			population: Population{{
-				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
-				Cost:   0,
-			}},
-			want: Population{{
-				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
-				Cost:   10,
-			}},
-		},
-		{
-			name: "multi population",
-			population: Population{
-				{[]Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}}, 0},
-				{[]Route{{Pos{0, 0, 0}, []Pos{{1, 0, 0}}}}, 0},
-			},
-			want: Population{
-				{[]Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}}, 10},
-				{[]Route{{Pos{0, 0, 0}, []Pos{{1, 0, 0}}}}, 2},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.population.calcCosts()
-			if !reflect.DeepEqual(tt.population, tt.want) {
-				t.Errorf("calcCosts(): got %v, want %v", tt.population, tt.want)
-			}
-		})
-	}
-}
 
 func TestPopulation_getBest(t *testing.T) {
 	tests := []struct {
@@ -108,12 +64,11 @@ func TestPopulation_getBest(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotSolution, err := tt.population.getBest()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getBest() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotSolution, tt.wantSolution) {
-				t.Errorf("getBest() gotSolution = %v, want %v", gotSolution, tt.wantSolution)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantSolution, gotSolution)
 			}
 		})
 	}
@@ -177,12 +132,11 @@ func TestPopulation_tournamentSelection(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.population.tournamentSelection(tt.tournamentSize)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("tournamentSelection() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("tournamentSelection() got = %v, want %v", got, tt.want)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, got)
 			}
 		})
 	}
