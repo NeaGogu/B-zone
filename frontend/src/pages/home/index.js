@@ -33,6 +33,7 @@ export default function Home() {
 
     // For radio.
     const [value, setValue] = useState(1);
+    const [zipCodes, setZipCodes] = useState([]);
     const onChange = (e) => {
         setValue(e.target.value);
     };
@@ -48,29 +49,25 @@ export default function Home() {
         setIntensity(e)
     }
 
-    // Contains the name of the zone configuration that the user wants to save.
-    const [saveName, setSaveName] = useState('');
-
     /** 
-    * When the user clicks the save button, they are asked to give a name to the zone configuration.
-    * @param {string} name - The name to give the saved zone configuration.
+    * When the user clicks the save button, they are asked to give a name to the zone configuration if there is a zone to be saved.
     * @return {void}
     */
-    function handleSaveClick() {
+    async function handleSaveClick() {
+        if (zipCodes.length === 0) {
+            alert('nothing to save')
+            return null;
+        }
         const name = window.prompt('Enter a name for the save:');
         if (name) {
             addSavedZone(name);
-            setSaveName(name);
         }
     }
 
-    // This makes sure the initial zone configuration is always shown.
-    const [savedZones, setSavedZones] = useState([
-        { key: 'saved-initial', name: 'Initial Zone' },
+    // keep track of the saved zones and update when needed
+    const [savedZones, setSavedZones] = useState([]);
 
-    ]);
-    localStorage.setItem('saved-initial', 'Initial Zone');
-
+    // for now not usefull
     const handleDeleteZone = (key) => {
         localStorage.removeItem(key);
         const newSavedZones = savedZones.filter((item) => item.key !== key);
@@ -82,27 +79,84 @@ export default function Home() {
     * @param {string} name - The name given to the saved zone configuration.
     * @return {void}
     */
-    function addSavedZone(name) {
-        const key = `saved-${Date.now()}-${Math.random()}`;
-        const newZone = { key, name };
-        setSavedZones([...savedZones, newZone]);
-        localStorage.setItem(key, name);
+    async function addSavedZone(name) {
+        // user token
+        const userToken = localStorage.getItem('token')
+        // body of http request
+        const bodyValues = JSON.stringify({
+            "plot_name": name,
+            "plot_zones": zipCodes.plot_zones
+
+        })
+
+        //send request to api to add zone and wait until it is completed
+        await fetch("http://localhost:4000/plot/save", {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userToken}`
+            },
+            body: bodyValues
+
+        }).then(async (response) => {
+            if (!response.ok) {
+                console.log('error in response to set zone')
+                alert('errorSaving zones')
+                return null;
+            } else {
+                // if response is ok then update the zones
+                const saved = await getSavedZones();
+                setSavedZones(saved)
+            }
+        })
     }
 
+    /** 
+    * Function which gets the saved zones from the Mongo database
+    * @return {void}
+    */
+    async function getSavedZones() {
+        // array to hold saved zones
+        let saved = []
+
+        await fetch("http://localhost:4000/user/plots", {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+        }).then((response) => {
+            if (!response.ok) {
+                alert('error retrieving zones')
+            }
+            return response.json();
+        }).then((data) => {
+            saved = data
+        })
+
+        return saved
+    }
+
+    // initially runs when rendering home page
     useEffect(() => {
-        const savedZones = Object.keys(localStorage)
-            .filter(key => key.startsWith('saved-'))
-            .map(key => ({
-                key,
-                name: localStorage.getItem(key)
-            }));
-        setSavedZones(savedZones);
+        const fetchData = async () => {
+            // variable used for saved plots in database
+            let saved = await getSavedZones()
+            // set the plots in the sider to be the saved plots
+            setSavedZones(saved)
+        }
+
+        fetchData()
     }, []);
 
-    useEffect(() => {
-        console.log('home')
-        console.log(zoneId)
-    }, [zoneId]);
+
+    // WAS USED FOR CHECKING PROPER UPDATES
+    // useEffect(() => {
+    //     console.log('home')
+    //     console.log(zoneId)
+    // }, [zoneId]);
 
     return (
         <ConfigProvider
@@ -120,11 +174,11 @@ export default function Home() {
         >
             <Layout style={{ height: '100vh' }}>
                 <Header className="header" >
-                    <HeaderComponent handleSaveClick={handleSaveClick} savedZones={savedZones} saveName={saveName} />
+                    <HeaderComponent handleSaveClick={handleSaveClick} savedZones={savedZones} />
                     <Menu theme="dark" mode="horizontal" />
                 </Header>
 
-                <Layout>
+                <Layout >
                     <Sider
                         width={"225"}
                         style={{
@@ -143,7 +197,6 @@ export default function Home() {
                             values={value}
                             setValue={setValue.bind(this)}
                             setIntensity={setIntensity.bind(this)}
-                            intensity={intensity}
                             setZoneId={setZoneId}
                         />
                     </Sider>
@@ -160,14 +213,14 @@ export default function Home() {
                             {showComparison ? (
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                     <div style={{ paddingRight: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} />
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
                                     </div>
                                     <div style={{ paddingLeft: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId}/>
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
                                     </div>
                                 </div>
                             ) : (
-                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId}/>
+                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
                             )}
                         </Content>
                     </Layout>
