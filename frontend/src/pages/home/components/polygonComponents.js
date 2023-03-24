@@ -114,22 +114,57 @@ async function getCoordinates(zipsList) {
 }
 
 /** 
+* Gets a list of the coordinates given a list of zip codes.
+* @param {Array} plot - Zone configuration which is to be converted.
+* @return {Promise<Array>} Returns a zone configuration in the structed expected by the backend.
+*/
+function convertToStructure(plot) {
+    // variable to hold the plot
+    var plt = []
+
+    for (let i = 0; i < plot.length; i++) {
+        // variable for to the the zone ranges
+        var zone_ranges = []
+        for (let j = 0; j < plot[i].length; j++) {
+            // variable to hold one zone range
+            var curr = {
+                zipcode_from: plot[i][j].zipFrom,
+                zipcode_to: plot[i][j].zipTo
+            }
+            // add to zone ranges
+            zone_ranges.push(curr)
+        }
+        // variable to hold the zones ranges with appropriate structure
+        var zoneobj = {
+            "zone_ranges": zone_ranges
+        }
+        // add the zone range to the plot
+        plt.push(zoneobj)
+    }
+    // variable to hold the plot in the required structure
+    var pltfinal = {
+        "plot_zones": plt
+    }
+
+    return pltfinal
+}
+
+/** 
 * Fetches the calculated zone configuration from the backend, returns promise of the response from the backend.
-* @param {string} userToken - The user token retrieved from local storage.
 * @return {Promise<Array>} A promise that resolves with an array of objects representing the user's calculated zone configuration.
 */
-async function calculateZone(){
+async function calculateZone() {
     // set token
     const userToken = localStorage.getItem('token')
-    
+
     //request url
     const url = "http://localhost:4000/bumbal/algorithm/kmeans"
 
     //body
     // FOR NOW HARD CODED
     const bodyValues = JSON.stringify({
-        "number_of_clusters":2,
-        "number_of_candidate_clusters":1
+        "number_of_clusters": 2,
+        "number_of_candidate_clusters": 1
     })
 
     // array to hold zone configuration
@@ -160,16 +195,16 @@ async function calculateZone(){
         })
 
         .catch(error => console.log(error, 'error'))
-    
+
 
     // cleaning up array
-    console.log(calculatedZones)
+    //console.log(calculatedZones)
     var zoneConfig = []
 
     // go into each zone
-    for (let i =0; i < calculatedZones.length; i++) {
+    for (let i = 0; i < calculatedZones.length; i++) {
         var zoneRanges = calculatedZones[i].zone_ranges
-        var currZoneRange =[]
+        var currZoneRange = []
         // go into each range
         for (let j = 0; j < zoneRanges.length; j++) {
             //convert to format used in other GetCoordinates
@@ -180,28 +215,74 @@ async function calculateZone(){
             currZoneRange.push(curr)
         }
         zoneConfig.push(currZoneRange)
-    }    
+    }
 
+    return [zoneConfig, calculatedZones]
+
+
+
+}
+
+/** 
+* Fetches saved plot from the backend, returns promise of the response from the backend.
+* @param {string} plotID - Id of plot to be looked up.
+* @return {Promise<Array>} A promise that resolves with an array of objects representing the zone configuration of the plot.
+*/
+async function querryDatabase(plotID) {
+    const userToken = localStorage.getItem('token')
+    var zones = []
+    await fetch("http://localhost:4000/plot/" + plotID, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`
+        }
+    }).then((response) => {
+        if (!response.ok) {
+            console.log("Response from our backend is not ok ???")
+        }
+        return response.json()
+    }).then((data) => {
+        zones = data.plot_zones
+    })
+
+    var zoneConfig = []
+
+    // go into each zone
+    for (let i = 0; i < zones.length; i++) {
+        var zoneRanges = zones[i].zone_ranges
+        var currZoneRange = []
+        // go into each range
+        for (let j = 0; j < zoneRanges.length; j++) {
+            //convert to format used in other GetCoordinates
+            var curr = {
+                zipFrom: zoneRanges[j].zipcode_from,
+                zipTo: zoneRanges[j].zipcode_to
+            }
+            currZoneRange.push(curr)
+        }
+        zoneConfig.push(currZoneRange)
+    }
     return zoneConfig
-    
-
-
 }
 
 // Main function to visualize the polygons on the map.
 const PolygonVis = (props) => {
     //selections
-    const { zoneId } = props
+    const { zoneId, setZipCodes } = props
 
     //keeps track if this is first rendering
     const renderRef = useRef()
 
     // Map context.
     const context = useLeafletContext()
+    // const zipCodesRef = useRef(zipCodes);
 
-    // this use effect is called when instantiating the polygons, making them to be the ones from bumbal's api
+    // Runs when a polygon is to be generated
     // CHANGE IT TO BE BASED ON LAST VIEWED
     useEffect(() => {
+        //console.log('hellobro')
         // maybe not needed
         context.layerContainer.eachLayer(function (layer) {
             context.layerContainer.removeLayer(layer)
@@ -211,20 +292,31 @@ const PolygonVis = (props) => {
 
         // Async function in order to wait for response from API.
         const fetchData = async () => {
-            let coordinatesList = []
+            // variable which holds the coordinates to be displayed
+            var coordinatesList = []
 
-            // Delete old heat layer if it exists.
-            context.layerContainer.eachLayer(function (layer) {
-                console.log(layer)
-            })
+            // check if zone is to be calculated
+            if (zoneId === 'calculate') {
+                const calculation = await calculateZone()
+                convertToStructure(calculation[0])
+                setZipCodes(convertToStructure(calculation[0]));
+                coordinatesList = await getCoordinates(calculation[0])
+            }
+            // check if this is the initial run which displays the zone in bumbal
+            else if (zoneId === 'initial') {
+                let initialZones = await getInitialZones();
+                zipCodes = await getZipCodes(initialZones);
+                // console.log(zipCodes)
+                coordinatesList = await getCoordinates(zipCodes)
+            }
+            // otherwise get zone from our database
+            else {
+                let querryZone = await querryDatabase(zoneId);
+                coordinatesList = await getCoordinates(querryZone)
+            }
 
-            // Get initial zones from Bumbal.
-            let initialZones = await getInitialZones();
-            zipCodes = await getZipCodes(initialZones);
-            // console.log(zipCodes)
-            coordinatesList = await getCoordinates(zipCodes)
-
-            // Iterates through zones.
+            // process which draws the zone
+            //Iterates through zones.
             for (let i = 0; i < coordinatesList.length; i++) {
                 // Tterates through zone ranges inside of zones.
                 let color = randomColor({ luminosity: 'dark' });
@@ -239,65 +331,9 @@ const PolygonVis = (props) => {
             }
         };
         fetchData()
-    }, [context.layerContainer])
+    }, [context.layerContainer, setZipCodes, zoneId])
 
-    // updating the polygon based on selection
-    useEffect(() => {
-        // prevention from initial render being rendered twice
-        if (renderRef.current === 1) {
-            // increase the rendering in order for it to render on next update
-            renderRef.current += 1;
-        } else {
-            // remove old polygon layers
-            context.layerContainer.eachLayer(function (layer) {
-                context.layerContainer.removeLayer(layer)
-            })
-            
-            // Async function in order to wait for response from API.
-            const fetchData = async () => {
-                var coordinatesList = []
-    
-                // Delete old heat layer if it exists.
-                context.layerContainer.eachLayer(function (layer) {
-                    console.log(layer)
-                })
-                
-                // check if bumbal zone is wanted or zone by id?
-                // FOR NOW CALCULATE IS ID OF CALCULATED ZONE
-                
 
-                if (zoneId === 'calculate') {
-                    zipCodes = await calculateZone()
-                    coordinatesList = await getCoordinates(zipCodes)
-                } 
-                else if (zoneId === 'initial') {
-                     // Get initial zones from Bumbal.
-                    let initialZones = await getInitialZones();
-                    zipCodes = await getZipCodes(initialZones);
-                    // console.log(zipCodes)
-                    coordinatesList = await getCoordinates(zipCodes)
-
-                }
-                console.log('inside useeef')
-                console.log(zipCodes)
-    
-                // Iterates through zones.
-                for (let i = 0; i < coordinatesList.length; i++) {
-                    // Tterates through zone ranges inside of zones.
-                    let color = randomColor({ luminosity: 'dark' });
-                    for (let j = 0; j < coordinatesList[i].length; j++) {
-                        // Iteratres through coordinates in zone ranges.
-                        for (let k = 0; k < coordinatesList[i][j].length; k++) {
-                            let polygon = L.polygon(coordinatesList[i][j][k].zone_coordinates)
-                            polygon.setStyle({ color: color })
-                            context.layerContainer.addLayer(polygon)
-                        }
-                    }
-                }
-            };
-            fetchData()
-        }        
-    }, [context.layerContainer, zoneId])
     return null
 }
 
