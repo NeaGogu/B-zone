@@ -9,8 +9,9 @@ import (
 
 // ZonesInfo struct used for retrieving the data from the body of the request
 type ZonesInfo struct {
-	NZones       int `json:"number_of_zones,omitempty"`
-	NGenerations int `json:"number_of_generations,omitempty"`
+	NZones       int           `json:"number_of_zones,omitempty"`
+	NGenerations int           `json:"number_of_generations,omitempty"`
+	MaxDuration  time.Duration `json:"maximum_runtime,omitempty"`
 }
 
 // RunGenetic
@@ -54,30 +55,20 @@ func RunGenetic(w http.ResponseWriter, r *http.Request) {
 		filteredResp := filterResp(*respModel.Items)
 
 		// use the collected data as input for the Genetic algorithm
-		computedZones := genetic.RunGeneticAlgorithm(filteredResp, zonesInfo.NZones, zonesInfo.NGenerations)
+		computedZones := genetic.RunGeneticAlgorithm(filteredResp, zonesInfo.NZones, zonesInfo.NGenerations,
+			zonesInfo.MaxDuration*time.Minute)
 
 		// set up the response
 		var output Output
 		output.Result = computedZones
-
-		// wait for at most 10 minutes for the algorithm to finish
-		for i := 0; i < waitingTime; i++ {
-			if output.Result != nil {
-				// encode the response
-				w.Header().Set("Content-Type", "application/json")
-				err = json.NewEncoder(w).Encode(output)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-
-				return
-			}
-			// wait one second for each iteration step
-			time.Sleep(time.Second)
+		// encode the response
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(output)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
 		return
-
 	} else {
 		http.Error(w, resp.Status, resp.StatusCode)
 		return
