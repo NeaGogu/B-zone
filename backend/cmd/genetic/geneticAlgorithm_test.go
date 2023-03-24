@@ -78,38 +78,38 @@ func Test_generateMTSPInstance(t *testing.T) {
 		{
 			name: "one activity",
 			activities: []models.ActivityModelBumbal{
-				*makeActivity(t, "1", "2", "3", "4", "5", "6"),
+				*makeActivity(t, "1", "2", "3456AR", "4", "5", "6789HS"),
 			},
 			nRoutes: 42,
 			want: MDMTSPInstance{
-				Activities: []Pos{{1, 2, 3}},
-				Depots:     []Pos{{4, 5, 6}},
+				Activities: []Pos{{1, 2, 3456}},
+				Depots:     []Pos{{4, 5, 6789}},
 				NRoutes:    42,
 			},
 		},
 		{
 			name: "multiple activities, one depot",
 			activities: []models.ActivityModelBumbal{
-				*makeActivity(t, "1", "2", "3", "4", "5", "6"),
-				*makeActivity(t, "10", "20", "30", "4", "5", "6"),
+				*makeActivity(t, "1", "2", "3456AB", "4", "5", "6789XZ"),
+				*makeActivity(t, "10", "20", "3042PO", "4", "5", "6789XZ"),
 			},
 			nRoutes: 42,
 			want: MDMTSPInstance{
-				Activities: []Pos{{1, 2, 3}, {10, 20, 30}},
-				Depots:     []Pos{{4, 5, 6}},
+				Activities: []Pos{{1, 2, 3456}, {10, 20, 3042}},
+				Depots:     []Pos{{4, 5, 6789}},
 				NRoutes:    42,
 			},
 		},
 		{
 			name: "multiple activities, multiple depots",
 			activities: []models.ActivityModelBumbal{
-				*makeActivity(t, "1", "2", "3", "4", "5", "6"),
-				*makeActivity(t, "10", "20", "30", "40", "50", "60"),
+				*makeActivity(t, "1", "2", "3456AB", "4", "5", "6789ZX"),
+				*makeActivity(t, "10", "20", "3012QW", "40", "50", "6089AS"),
 			},
 			nRoutes: 42,
 			want: MDMTSPInstance{
-				Activities: []Pos{{1, 2, 3}, {10, 20, 30}},
-				Depots:     []Pos{{4, 5, 6}, {40, 50, 60}},
+				Activities: []Pos{{1, 2, 3456}, {10, 20, 3012}},
+				Depots:     []Pos{{4, 5, 6789}, {40, 50, 6089}},
 				NRoutes:    42,
 			},
 		},
