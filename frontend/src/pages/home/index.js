@@ -207,7 +207,7 @@ export default function Home() {
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
-                        <Content className="map" id="map" style={{ minHeight: 500 }}>
+                        <Content className="map" id="map" style={{ minHeight: '60vh' }}>
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
                                     <Spin spinning={!computed} delay={500}>

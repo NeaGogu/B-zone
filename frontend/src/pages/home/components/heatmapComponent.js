@@ -20,13 +20,9 @@ async function getActivities() {
     },
     body: JSON.stringify({
       "options": {
-        "include_address": true
-      },
-      "offset": 0,
-      "sorting_column": "id",
-      "sorting_direction": "asc",
-      "as_list": true,
-      "count_only": false
+        "include_address": true,
+        "include_depot_address": true
+      }
     })
   };
 
@@ -51,8 +47,15 @@ async function findAddressesPoints() {
 
   const data = await response.json();
   console.log(data)
-
-  let newData = data.items.map((i) => {
+  var data2 = []
+  for (let i = 0; i < data.items.length; i++) {
+    
+    if (data.items[i].depot_address !== null) {
+      data2.push(data.items[i])
+    }
+  }
+console.log(data2)
+  let newData = data2.map((i) => {
     return [i.address.latitude, i.address.longitude, i.duration]; // Lat Lng intensity.
   })
   console.log(newData)
