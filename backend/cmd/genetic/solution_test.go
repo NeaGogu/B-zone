@@ -455,37 +455,39 @@ func TestSolution_calcCost(t *testing.T) {
 			sol: Solution{
 				Routes: []Route{{Pos{0, 0, 0}, []Pos{}}},
 			},
-			want: 100,
+			want: 0,
 		},
 		{
 			name: "1 singleton route",
 			sol: Solution{
 				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}}},
 			},
-			want: 10 + 10 + 100,
+			want: 11,
 		},
 		{
 			name: "1 route, 3 activities, same zips",
 			sol: Solution{
 				Routes: []Route{{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}},
 			},
-			want: 4 + 10 + 100,
+			want: 4 + 0.4,
 		},
 		{
-			name: "1 route, 3 activities, diff zips",
-			sol: Solution{
-				Routes: []Route{{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 1}, {1, 0, 2}}}},
-			},
-			want: 4 + 30 + 100,
-		},
-		{
-			name: "2 empty routes, same depot",
+			name: "2 empty routes, diff depot",
 			sol: Solution{
 				Routes: []Route{{Pos{0, 0, 0}, []Pos{}},
 					{Pos{0, 1, 1}, []Pos{}}},
 				Cost: 0,
 			},
-			want: 50,
+			want: 0,
+		},
+		{
+			name: "2 singleton routes, diff depot",
+			sol: Solution{
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}},
+					{Pos{0, 0, 1}, []Pos{{3, 4, 0}}}},
+				Cost: 0,
+			},
+			want: 20 + 1,
 		},
 	}
 	for _, tt := range tests {

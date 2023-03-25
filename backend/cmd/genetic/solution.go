@@ -3,7 +3,6 @@ package genetic
 import (
 	"fmt"
 	fp "github.com/rjNemo/underscore"
-	"math"
 	"math/rand"
 )
 
@@ -39,31 +38,25 @@ func randomSolution(inst MDMTSPInstance) Solution {
 	return sol
 }
 
-// calcCost calculates the Cost of the Solution. The Cost is based on the total distance of all Routes,
-// the variance of the number of activities in each route, the sum of the number of zipcodes in every route,
-// and the number of depots used. A lower cost means the Solution is better.
+// calcCost calculates the cost of the solution based on several factors. The main factor is the total distance
+// of all routes. The function also takes into account the variance of the number of activities in each route,
+// which is a measure of how evenly the activities are distributed among the routes.
+// Finally, the function penalizes the use of multiple depots by adding a term inversely proportional to the number of
+// depots used. A lower cost means the solution is better.
 func (sol *Solution) calcCost() {
 	sol.Cost = 0
-	for _, r := range sol.Routes {
-		if len(r.Activities) == 0 {
-			continue
-		}
-		for i, pos := range r.Activities[1:] {
-			sol.Cost += dist(pos, r.Activities[i])
-		}
-		if len(r.Activities) > 0 {
-			sol.Cost += dist(r.Activities[0], r.Depot)
-			sol.Cost += dist(r.Activities[len(r.Activities)-1], r.Depot)
-		}
+	// Calculate the total distance of all routes
+	for _, route := range sol.Routes {
+		sol.Cost += route.length()
 	}
 
+	// Add penalty for not utilizing as many depots as possible
+	if nDepots := sol.nDepots(); nDepots > 0 {
+		sol.Cost += sol.Cost / (10.0 * float64(nDepots))
+	}
+
+	// Add penalty if the activities are not distributes evenly among routes
 	sol.Cost += sol.routeLengthVariance()
-
-	sol.Cost += float64(sol.zipsPerRouteSum()) * 10.0
-
-	if sol.nDepots() > 0 {
-		sol.Cost += 100.0 / float64(sol.nDepots())
-	}
 }
 
 // nDepots counts the number of unique depots used in the Solution.
@@ -91,7 +84,8 @@ func (sol *Solution) routeLengthVariance() float64 {
 	}, 0)
 	mean := float64(sum) / float64(len(sol.Routes))
 	sos := fp.Reduce(sol.Routes, func(route Route, acc float64) float64 {
-		return acc + math.Pow(float64(len(route.Activities))-mean, 2)
+		diff := float64(len(route.Activities)) - mean
+		return acc + diff*diff
 	}, 0)
 	variance := sos / float64(len(sol.Routes)-1)
 	return variance

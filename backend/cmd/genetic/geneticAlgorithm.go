@@ -147,7 +147,7 @@ func GeneticAlgorithm(inst MDMTSPInstance, params GenAlgHyperParams, timeout tim
 	bestSol := randomSolution(inst)
 	bestSol.calcCost()
 	population := randomPopulation(inst, params.NOffspring)
-	for gen := 0; gen < params.NGenerations; gen++ {
+	for generation := 0; generation < params.NGenerations; generation++ {
 		elapsedTime := time.Since(t0)
 		if timeout < elapsedTime {
 			break

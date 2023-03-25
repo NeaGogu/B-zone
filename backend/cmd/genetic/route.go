@@ -106,17 +106,19 @@ func (route *Route) applyGreedy(i int) error {
 
 	// Find the best place to insert the activity
 	j := 0
-	// TODO: cache the last calculated distance as that distance is needed again in the next iteration
-	minCost := dist(route.Depot, act) + dist(act, route.Activities[0]) - dist(route.Depot, route.Activities[0])
+	newDist := dist(act, route.Activities[0])
+	prevDist := dist(route.Depot, act)
+	minCost := prevDist + newDist - dist(route.Depot, route.Activities[0])
 	for k, pos := range route.Activities[1:] {
-		cost := dist(route.Activities[k], act) + dist(act, pos) - dist(route.Activities[k], pos)
+		prevDist = newDist
+		newDist = dist(act, pos)
+		cost := prevDist + newDist - dist(route.Activities[k], pos)
 		if cost < minCost {
 			minCost = cost
 			j = k + 1
 		}
 	}
-	if dist(route.Depot, act)+dist(act, route.Activities[len(route.Activities)-1])-
-		dist(route.Depot, route.Activities[len(route.Activities)-1]) < minCost {
+	if dist(route.Depot, act)+newDist-dist(route.Depot, route.Activities[len(route.Activities)-1]) < minCost {
 		j = len(route.Activities)
 	}
 	// Insert the activity in the best place
@@ -145,6 +147,20 @@ func (route *Route) applyChangeDepot(inst MDMTSPInstance, d int) error {
 	}
 	route.Depot = inst.Depots[d]
 	return nil
+}
+
+// length calculates the total length of this route.
+func (route *Route) length() float64 {
+	if len(route.Activities) == 0 {
+		return 0
+	}
+	length := 0.0
+	for i, pos := range route.Activities[1:] {
+		length += dist(pos, route.Activities[i])
+	}
+	length += dist(route.Activities[0], route.Depot)
+	length += dist(route.Activities[len(route.Activities)-1], route.Depot)
+	return length
 }
 
 // copy deep copies route and returns the copied Route.

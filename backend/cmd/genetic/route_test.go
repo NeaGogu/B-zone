@@ -241,3 +241,20 @@ func TestRoute_copy(t *testing.T) {
 		})
 	}
 }
+
+func TestRoute_length(t *testing.T) {
+	tests := []struct {
+		name  string
+		route Route
+		want  float64
+	}{
+		{"empty route", Route{}, 0},
+		{"singleton route", Route{Pos{0, 0, 0}, []Pos{{3, 4, 2}}}, 10},
+		{"2 activities", Route{Pos{0, 0, 0}, []Pos{{3, 4, 2}, {-3, -4, 2}}}, 20},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.route.length())
+		})
+	}
+}
