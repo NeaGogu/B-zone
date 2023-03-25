@@ -22,7 +22,6 @@ async function getActivities() {
       "options": {
         "include_address": true
       },
-      "limit": 10,
       "offset": 0,
       "sorting_column": "id",
       "sorting_direction": "asc",
