@@ -1,7 +1,6 @@
 package genetic
 
 import (
-	"errors"
 	"fmt"
 	fp "github.com/rjNemo/underscore"
 	"math"
@@ -15,20 +14,22 @@ type Solution struct {
 	Cost   float64
 }
 
-// randomSolution initializes and returns a random Solution
+// randomSolution initializes and returns a random Solution for the given MDMTSPInstance.
+// It first chooses a random depot for each route in the solution, then randomly assigns activities
+// from the instance to each route.
 func randomSolution(inst MDMTSPInstance) Solution {
 	var sol Solution
 	sol.Routes = make([]Route, inst.NRoutes)
-	// choose a random depot for every route
+	// Choose a random depot for every route
 	for i := 0; i < inst.NRoutes; i++ {
 		sol.Routes[i].Depot = inst.Depots[rand.Intn(len(inst.Depots))]
 	}
-	// append the activities to a random route
+	// Append the activities to a random route
 	for _, activity := range inst.Activities {
 		i := rand.Intn(inst.NRoutes)
 		sol.Routes[i].Activities = append(sol.Routes[i].Activities, activity)
 	}
-	// shuffle the activities of every route to randomize their order
+	// Shuffle the activities of every route to randomize their order
 	for i := 0; i < len(sol.Routes); i++ {
 		rand.Shuffle(len(sol.Routes[i].Activities), func(a, b int) {
 			sol.Routes[i].Activities[a], sol.Routes[i].Activities[b] =
@@ -65,13 +66,15 @@ func (sol *Solution) calcCost() {
 	}
 }
 
-// nDepots counts the number of depots used in the Solution.
+// nDepots counts the number of unique depots used in the Solution.
 func (sol *Solution) nDepots() int {
 	return len(fp.Unique(fp.Map(sol.Routes, func(route Route) Pos { return route.Depot })))
 }
 
-// zipsPerRouteSum counts the number of zipcodes in each route and then sums all those.
+// zipsPerRouteSum counts the number of unique zipcodes visited by each route separately and
+// returns the sum of those counts.
 func (sol *Solution) zipsPerRouteSum() int {
+	// Count the number of unique zipcodes visited by each route
 	zipsPerRoute := fp.Map(sol.Routes, func(route Route) int {
 		return len(fp.Unique(fp.Map(route.Activities, func(pos Pos) int { return pos.Zipcode })))
 	})
@@ -94,6 +97,13 @@ func (sol *Solution) routeLengthVariance() float64 {
 	return variance
 }
 
+// mutate applies a random number of mutations to the current solution with a given mutation rate.
+// The function randomly selects one of the five mutation
+// operators to apply: swap two points in a route, 2-opt within a route, greedily move a point within a route,
+// change the depot of a route, or move all activities with the same zipcode from one route to another.
+// The number of mutations applied is at most maxMutations and mutationRate is the probability that a mutation will
+// occur. The actual number of mutations that are applied follows a binomial distribution with n=maxMutations and
+// p=mutationRate.
 func (sol *Solution) mutate(inst MDMTSPInstance, maxMutations int, mutationRate float64) {
 	for mut := 0; mut < maxMutations; mut++ {
 		if rand.Float64() > mutationRate {
@@ -231,19 +241,15 @@ func (sol *Solution) randChangeDepot(inst MDMTSPInstance) {
 // or j<0 or j>=len(sol.routes[r1].activities); otherwise returns nil.
 func (sol *Solution) applySwap(r0, i, r1, j int) error {
 	if r0 < 0 || r0 >= len(sol.Routes) || r1 < 0 || r1 >= len(sol.Routes) {
-		return errors.New(
-			fmt.Sprintf("index out of bounds: either r0=%d, r1=%d not in range [0,len(sol.routes)) = [0,%d)",
-				r0, r1, len(sol.Routes)))
+		return fmt.Errorf("invalid route indices r0=%d, r1=%d; valid range is [0,%d)", r0, r1, len(sol.Routes))
 	}
 	if i < 0 || i >= len(sol.Routes[r0].Activities) {
-		return errors.New(
-			fmt.Sprintf("index out of bounds: i=%d not in range [0,len(sol.routes[r0].activities)) = [0,%d)",
-				i, len(sol.Routes[r0].Activities)))
+		return fmt.Errorf("invalid activity index i=%d for route r0=%d; valid range is [0,%d)",
+			i, r0, len(sol.Routes[r0].Activities))
 	}
 	if j < 0 || j >= len(sol.Routes[r1].Activities) {
-		return errors.New(
-			fmt.Sprintf("index out of bounds: j=%d not in range [0,len(sol.routes[r1].activities)) = [0,%d)",
-				j, len(sol.Routes[r1].Activities)))
+		return fmt.Errorf("invalid activity index j=%d for route r1=%d; valid range is [0,%d)",
+			j, r1, len(sol.Routes[r1].Activities))
 	}
 
 	sol.Routes[r0].Activities[i], sol.Routes[r1].Activities[j] = sol.Routes[r1].Activities[j], sol.Routes[r0].Activities[i]
@@ -257,12 +263,10 @@ func (sol *Solution) applySwap(r0, i, r1, j int) error {
 // or r0==r1; otherwise returns nil.
 func (sol *Solution) applyMigrate(r0, i, r1, j int) error {
 	if r0 < 0 || r0 >= len(sol.Routes) || r1 < 0 || r1 >= len(sol.Routes) {
-		return errors.New(
-			fmt.Sprintf("index out of bounds: either r0=%d, r1=%d not in range [0,len(sol.routes)) = [0,%d)",
-				r0, r1, len(sol.Routes)))
+		return fmt.Errorf("invalid route indices r0=%d, r1=%d; valid range is [0,%d)", r0, r1, len(sol.Routes))
 	}
 	if r0 == r1 {
-		return errors.New(fmt.Sprintf("r0 should not equal r1: r0=%d, r1=%d", r0, r1))
+		return fmt.Errorf("r0 should not equal r1: r0=%d, r1=%d", r0, r1)
 	}
 
 	var act Pos
@@ -283,21 +287,19 @@ func (sol *Solution) applyMigrate(r0, i, r1, j int) error {
 // or r0==r1; otherwise returns nil.
 func (sol *Solution) applyMigrateZip(r0, r1, zip int) error {
 	if r0 < 0 || r0 >= len(sol.Routes) || r1 < 0 || r1 >= len(sol.Routes) {
-		return errors.New(
-			fmt.Sprintf("index out of bounds: either r0=%d, r1=%d not in range [0,len(sol.routes)) = [0,%d)",
-				r0, r1, len(sol.Routes)))
+		return fmt.Errorf("invalid route indices r0=%d, r1=%d; valid range is [0,%d)", r0, r1, len(sol.Routes))
 	}
 	if r0 == r1 {
-		return errors.New(fmt.Sprintf("r0 should not equal r1: r0=%d, r1=%d", r0, r1))
+		return fmt.Errorf("r0 should not equal r1: r0=%d, r1=%d", r0, r1)
 	}
 
-	// insert activities with zipcode zip in Route r1
+	// Insert activities with zipcode zip in Route r1
 	for _, activity := range sol.Routes[r0].Activities {
 		if activity.Zipcode == zip {
 			sol.Routes[r1].applyInsertGreedy(activity)
 		}
 	}
-	// remove activities with zipcode zip from Route r0
+	// Remove activities with zipcode zip from Route r0
 	sol.Routes[r0].Activities = fp.Filter(sol.Routes[r0].Activities, func(pos Pos) bool { return pos.Zipcode != zip })
 	return nil
 }
@@ -307,7 +309,7 @@ func (sol *Solution) removeActivities(activities []Pos) {
 	for _, activity := range activities {
 		for r, route := range sol.Routes {
 			if i := indexOf(route.Activities, activity); i >= 0 {
-				sol.Routes[r].Activities = append(route.Activities[:i], route.Activities[i+1:]...)
+				sol.Routes[r].Activities, _, _ = remove(route.Activities, i)
 				break
 			}
 		}

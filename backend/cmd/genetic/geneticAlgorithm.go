@@ -10,6 +10,8 @@ import (
 )
 
 // MDMTSPInstance is an instance of the Multi-Depot Multiple Traveling Salesman Problem (MDMTSP).
+// The problem consists of finding a set of tours for NRoutes salesmen to visit all of the locations in Activities,
+// starting and ending at one of the depots in Depots.
 // Activities is the set of locations that need to be visited.
 // Depots is the set of depots that can be the starting point of the tours.
 // NRoutes is the number of salesmen there are and, thus, the number of routes that they need to travel.
@@ -19,17 +21,18 @@ type MDMTSPInstance struct {
 	NRoutes    int
 }
 
-// GenAlgHyperParams are the hyperparameters for the genetic algorithm.
-// nOffspring is the number of offspring made each generation.
-// nParents is the number of parents to be selected each generation.
-// nGenerations is the number of generations to run the genetic algorithm for.
-// tournamentSize is the number of solutions that take part in the parent selection tournaments.
-// Greater tournamentSize = more selection pressure.
-// maxMutations is the maximum number of mutations that could possibly happen and
-// mutationRate is the chance that a mutation happens. As a result of these two parameters, the actual number of
-// mutations that are applied to a solution follows a binomial distribution with n=maxMutations and p=mutationRate.
-// crossoverRate the chance that 2 parents are selected and selected with crossover;
-// otherwise only a single parent is selected
+// GenAlgHyperParams contains the hyperparameters for the genetic algorithm.
+// NOffspring is the number of offspring generated in each generation.
+// NParents is the number of parents selected each generation.
+// NGenerations is the number of generations to run the genetic algorithm for.
+// TournamentSize is the number of solutions that take part in the parent selection tournaments.
+// A greater TournamentSize results in more selection pressure.
+// MaxMutations is the maximum number of mutations that could potentially occur in a single solution.
+// MutationRate is the probability that a mutation will occur during reproduction.
+// The actual number of mutations that are applied to a solution follows a binomial distribution with n=MaxMutations
+// and p=MutationRate.
+// CrossoverRate is the probability that two parents will be selected for crossover;
+// otherwise, only a single parent is selected.
 type GenAlgHyperParams struct {
 	NOffspring     int
 	NParents       int
@@ -40,9 +43,10 @@ type GenAlgHyperParams struct {
 	CrossoverRate  float64
 }
 
-// RunGeneticAlgorithm converts the activities ([]models.ActivityModelBumbal) into the input for GeneticAlgorithm,
-// runs GeneticAlgorithm with some default parameters, and, finally, converts the output into a []models.ZoneModel.
-// Once timeout has elapsed, the algorithm is aborted and the best solution so far is returned.
+// RunGeneticAlgorithm converts the list of activities ([]models.ActivityModelBumbal) into an MDMTSPInstance,
+// then solved the MDMTSPInstance by running the genetic algorithm with default parameters and a specified timeout.
+// Finally, it converts the output into a list of zones ([]models.ZoneModel).
+// If the timeout elapses, the algorithm is aborted and the best solution found so far is returned.
 func RunGeneticAlgorithm(activities []models.ActivityModelBumbal, nZones, nGenerations int,
 	timeout time.Duration) []models.ZoneModel {
 	inst := GenerateMDMTSPInstance(activities, nZones)
@@ -133,7 +137,10 @@ func Solution2ZoneModels(solution Solution) []models.ZoneModel {
 }
 
 // GeneticAlgorithm runs a genetic algorithm with the specified hyperparameters and returns the best solution found.
-// Once timeout has elapsed, the algorithm is aborted and the best solution so far is returned.
+// The algorithm iteratively evolves a population of solutions by selecting the best solutions from the current
+// generation and creating new offspring through crossover and mutations. Elitism is also applied, to ensure that the
+// best solution from the previous generation is always included in the next generation. Once the specified timeout
+// duration has elapsed, the algorithm is aborted and the best solution found so far is returned.
 func GeneticAlgorithm(inst MDMTSPInstance, params GenAlgHyperParams, timeout time.Duration) Solution {
 	t0 := time.Now()
 	var err error
@@ -166,13 +173,15 @@ func GeneticAlgorithm(inst MDMTSPInstance, params GenAlgHyperParams, timeout tim
 	return bestSol
 }
 
-// selectParents selects nParents with replacement from population using tournament selection with tournamentSize
+// selectParents selects nParents parents from population using tournament selection with tournamentSize.
+// It selects all parents concurrently and waits for all parents to be selected before returning them.
 func selectParents(population Population, nParents, tournamentSize int) Population {
 	var wg sync.WaitGroup
 	wg.Add(nParents)
+	// Create a population of parents
 	parents := make(Population, nParents)
+	// Concurrently select parents using tournament selection
 	for i := 0; i < nParents; i++ {
-		// concurrently select parents using tournament selection
 		go func(j int) {
 			defer wg.Done()
 			var err error
@@ -182,49 +191,59 @@ func selectParents(population Population, nParents, tournamentSize int) Populati
 			}
 		}(i)
 	}
-	// block until all parents have been selected
+	// Wait for all parents to be selected before returning them
 	wg.Wait()
 	return parents
 }
 
-// makeOffspring makes nOffspring from the parents. With a rate of
-// crossoverRate, 2 parents are randomly selected and are combined using
-// crossover, otherwise it is just the parent. The resulting offspring is
-// mutated with at most maxMutations, where each mutation has a mutationRate
-// chance of happening.
+// makeOffspring creates nOffspring from the parents. For each offspring, with a probability
+// of crossoverRate, two parents are randomly selected and combined using crossover. Otherwise,
+// the offspring is a copy of a single parent. The resulting offspring is then mutated with at
+// most maxMutations, where each mutation has a mutationRate chance of happening.
 func makeOffspring(inst MDMTSPInstance, parents Population, nOffspring, maxMutations int,
 	mutationRate, crossoverRate float64) Population {
 	var wg sync.WaitGroup
 	wg.Add(nOffspring)
-	n := len(parents)
+
+	// Create a population of offspring
 	offspring := make(Population, nOffspring)
+	nParents := len(parents)
+
+	// Concurrently create each offspring
 	for i := 0; i < nOffspring; i++ {
-		// concurrently make all offspring
 		go func(j int) {
 			defer wg.Done()
-			parent1 := parents[rand.Intn(n)].copy()
+
+			// Select a single parent
+			parent1 := parents[rand.Intn(nParents)].copy()
+
+			// With a probability of crossoverRate, select a second parent and combine them
 			if rand.Float64() < crossoverRate {
-				parent2 := parents[rand.Intn(n)].copy()
+				parent2 := parents[rand.Intn(nParents)].copy()
 				offspring[j] = crossover(parent1, parent2)
 			} else {
 				offspring[j] = parent1
 			}
+
+			// Mutate the offspring with at most maxMutations and mutationRate chance of happening
 			offspring[j].mutate(inst, maxMutations, mutationRate)
 		}(i)
 	}
-	// block until all offspring have been made
+
+	// Wait for all offspring to be created before returning the population
 	wg.Wait()
 	return offspring
 }
 
-// crossover combines parent1 and parent2 and returns the combined Solution.
-// crossover works by repeatedly picking a nRoutes-1 route from a parent and
-// putting that whole route in the child Solution. The last route is greedily
-// made with the remaining points.
+// crossover combines parent1 and parent2 to create a child Solution.
+// The function first selects nRoutes-1 routes randomly from either parent.
+// A route is selected by randomly choosing one parent, and then adding the route to the
+// child. The last route is created greedily using all remaining positions.
+// The depot of the longest route that remained is chosen as the depot for the greedy route.
 func crossover(parent1 Solution, parent2 Solution) Solution {
 	nRoutes := len(parent1.Routes)
 	child := Solution{Routes: make([]Route, nRoutes)}
-	// pick nRoutes-1 routes repeatedly from a random parents and add it to the child
+	// pick nRoutes-1 routes repeatedly from a random parent and add it to the child
 	for i := 0; i < nRoutes-1; i++ {
 		if rand.Float64() < 0.5 {
 			passOnRoute(&parent1, &parent2, &child, i)
@@ -233,7 +252,7 @@ func crossover(parent1 Solution, parent2 Solution) Solution {
 		}
 	}
 
-	// combine all remaining position into a single slice
+	// combine all remaining positions into a single slice
 	remainingPositions := make([]Pos, 0)
 	// the depot of the longest route that still remained will be the depot of the greedy route
 	longest := 0
@@ -255,8 +274,8 @@ func crossover(parent1 Solution, parent2 Solution) Solution {
 	return child.copy()
 }
 
-// passOnRoute removes a random route from parent1, adds that route to the child at index,
-// and removes all points in that route from parent2
+// passOnRoute removes a random route from parent1 and adds that route to the child at the specified index.
+// It then removes all points in that route from parent2 to prevent duplicate routes in the child.
 func passOnRoute(parent1, parent2, child *Solution, index int) {
 	var route Route
 	var err error

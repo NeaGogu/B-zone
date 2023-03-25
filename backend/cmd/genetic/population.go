@@ -19,13 +19,14 @@ func randomPopulation(inst MDMTSPInstance, nIndividuals int) Population {
 func (population *Population) calcCosts() {
 	var wg sync.WaitGroup
 	wg.Add(len(*population))
+	// Concurrently calculate the costs of all solutions in the population
 	for i := 0; i < len(*population); i++ {
 		go func(sol *Solution) {
 			defer wg.Done()
 			sol.calcCost()
 		}(&(*population)[i])
 	}
-	// block until all costs have been calculated
+	// Wait for all to be calculated before continuing
 	wg.Wait()
 }
 
@@ -47,9 +48,10 @@ func (population *Population) getBest() (s Solution, err error) {
 }
 
 // tournamentSelection performs tournament selection with replacement on the Population.
-// tournamentSize is the tournament size. Greater tournament size results in more selection pressure.
-// This means that solutions with a lower cost have a greater chance of getting selected.
-// if len(population)==0 || tournamentSize<=0, returns an error; otherwise err==nil
+// tournamentSize is the tournament size. Greater tournament size results in more selection pressure,
+// meaning that solutions with lower cost have a greater chance of being selected.
+// If len(population)==0 or tournamentSize<=0, an error is returned;
+// otherwise, err==nil and the selected solution is returned.
 func (population *Population) tournamentSelection(tournamentSize int) (s Solution, err error) {
 	if len(*population) == 0 {
 		return Solution{}, errors.New("population must not be empty")

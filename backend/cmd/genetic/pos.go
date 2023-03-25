@@ -2,7 +2,7 @@ package genetic
 
 import "math"
 
-// Pos is the position of an activity
+// Pos represents the position of an activity, with latitude and longitude coordinates and its Zipcode.
 type Pos struct {
 	Latitude  float64
 	Longitude float64
@@ -11,7 +11,9 @@ type Pos struct {
 
 // dist calculates the Euclidean distance between Pos p0 and p1 based on Latitude and Longitude.
 func dist(p0, p1 Pos) float64 {
-	return math.Sqrt(math.Pow(p1.Longitude-p0.Longitude, 2) + math.Pow(p1.Latitude-p0.Latitude, 2))
+	dx := p0.Latitude - p1.Latitude
+	dy := p0.Longitude - p1.Longitude
+	return math.Sqrt(dx*dx + dy*dy)
 }
 
 // copy copies the Latitude, Longitude, and Zipcode of a Pos and returns the copied Pos.
