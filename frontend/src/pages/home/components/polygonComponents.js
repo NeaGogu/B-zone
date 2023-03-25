@@ -1,5 +1,5 @@
 // External dependencies
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
 import randomColor from "randomcolor";
@@ -270,14 +270,10 @@ async function querryDatabase(plotID) {
 // Main function to visualize the polygons on the map.
 const PolygonVis = (props) => {
     //selections
-    const { zoneId, setZipCodes } = props
-
-    //keeps track if this is first rendering
-    const renderRef = useRef()
+    const { zoneId, setZipCodes, setComputed } = props
 
     // Map context.
     const context = useLeafletContext()
-    // const zipCodesRef = useRef(zipCodes);
 
     // Runs when a polygon is to be generated
     // CHANGE IT TO BE BASED ON LAST VIEWED
@@ -288,15 +284,17 @@ const PolygonVis = (props) => {
             context.layerContainer.removeLayer(layer)
         })
         // set it that first render has been done
-        renderRef.current = 1;
+        
 
         // Async function in order to wait for response from API.
         const fetchData = async () => {
+            // set the render state to be false
+            setComputed(false)
             // variable which holds the coordinates to be displayed
             var coordinatesList = []
 
             // check if zone is to be calculated
-            if (zoneId === 'calculate') {
+            if (zoneId.startsWith('calculate') ) {
                 const calculation = await calculateZone()
                 convertToStructure(calculation[0])
                 setZipCodes(convertToStructure(calculation[0]));
@@ -306,7 +304,6 @@ const PolygonVis = (props) => {
             else if (zoneId === 'initial') {
                 let initialZones = await getInitialZones();
                 zipCodes = await getZipCodes(initialZones);
-                // console.log(zipCodes)
                 coordinatesList = await getCoordinates(zipCodes)
             }
             // otherwise get zone from our database
@@ -329,9 +326,11 @@ const PolygonVis = (props) => {
                     }
                 }
             }
+            // set render state to be true
+            setComputed(true)
         };
         fetchData()
-    }, [context.layerContainer, setZipCodes, zoneId])
+    }, [context.layerContainer, setZipCodes, zoneId, setComputed])
 
 
     return null

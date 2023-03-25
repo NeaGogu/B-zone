@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
-import { Layout, Menu, theme, ConfigProvider } from 'antd';
+import { Layout, Menu, theme, ConfigProvider, Spin } from 'antd';
 
 // Components
 import Map from './components/mapComponent';
@@ -30,6 +30,12 @@ export default function Home() {
 
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
+
+    // for holding render state of map 1
+    const [computed, setComputed] = useState(false)
+    // for holding render state of map 2
+    const [computed2, setComputed2] = useState(false)
+
 
     // For radio.
     const [value, setValue] = useState(1);
@@ -66,6 +72,10 @@ export default function Home() {
 
     // keep track of the saved zones and update when needed
     const [savedZones, setSavedZones] = useState([]);
+
+    //
+    // for zone sync
+    const [currentView, setCurrentView] = useState('initial')
 
     // for now not usefull
     const handleDeleteZone = (key) => {
@@ -151,13 +161,6 @@ export default function Home() {
         fetchData()
     }, []);
 
-
-    // WAS USED FOR CHECKING PROPER UPDATES
-    // useEffect(() => {
-    //     console.log('home')
-    //     console.log(zoneId)
-    // }, [zoneId]);
-
     return (
         <ConfigProvider
             // Theme of the web-app.
@@ -177,14 +180,8 @@ export default function Home() {
                     <HeaderComponent handleSaveClick={handleSaveClick} savedZones={savedZones} />
                     <Menu theme="dark" mode="horizontal" />
                 </Header>
-
                 <Layout >
-                    <Sider
-                        width={"225"}
-                        style={{
-                            background: colorBgContainer,
-                        }}
-                    >
+                    <Sider width={"225"} style={{ background: colorBgContainer }}>
                         <SiderComponent
                             savedZones={savedZones}
                             addSavedZone={addSavedZone}
@@ -198,30 +195,28 @@ export default function Home() {
                             setValue={setValue.bind(this)}
                             setIntensity={setIntensity.bind(this)}
                             setZoneId={setZoneId}
+                            setCurrentView={setCurrentView}
                         />
                     </Sider>
-
-                    <Layout style={{
-                        padding: 30
-                    }}
-                    >
-                        <Content className="map" id="map"
-                            style={{
-                                minHeight: 500,
-                            }}
-                        >
-                            {showComparison ? (
-                                <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    <div style={{ paddingRight: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
-                                    </div>
-                                    <div style={{ paddingLeft: "5px", width: "50%" }}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
-                                    </div>
+                    <Layout style={{ padding: 30 }}>
+                        <Content className="map" id="map" style={{ minHeight: 500 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
+                                <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
+                                    <Spin spinning={!computed} delay={500}>
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} />;
+                                    </Spin>
                                 </div>
-                            ) : (
-                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} />
-                            )}
+                                <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
+                                        {
+                                            showComparison ? 
+                                            <Spin spinning={!computed2} delay={500}> 
+                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} setComputed={setComputed2} /> 
+                                            </Spin>
+                                            : <></>
+                                        }
+                                    
+                                </div>
+                            </div>
                         </Content>
                     </Layout>
                 </Layout>
