@@ -99,28 +99,24 @@ func (sol *Solution) mutate(inst MDMTSPInstance, maxMutations int, mutationRate 
 		if rand.Float64() > mutationRate {
 			continue
 		}
-		// TODO: use a better way to select a random branch
-		// not including solswap and migrate improves solution quality, but each generation takes longer
-		switch rand.Intn(7) {
+		switch rand.Intn(5) {
 		case 0:
-			sol.randSolSwap()
-		case 1:
-			sol.randMigrate()
-		case 2:
 			sol.randRouteSwap()
-		case 3:
+		case 1:
 			sol.rand2Opt()
-		case 4:
+		case 2:
 			sol.randRouteGreedy()
-		case 5:
+		case 3:
 			sol.randChangeDepot(inst)
-		case 6:
+		case 4:
 			sol.randMigrateZip()
 		}
 	}
 }
 
 // randSolSwap swaps 2 random activities from 2 random routes.
+// During performance testing it was found that when this function was used in mutate()
+// it negatively affected the solution quality with the current implementation.
 func (sol *Solution) randSolSwap() {
 	r0 := rand.Intn(len(sol.Routes))
 	for len(sol.Routes[r0].Activities) == 0 {
@@ -139,6 +135,8 @@ func (sol *Solution) randSolSwap() {
 }
 
 // randMigrate moves a random activity from a random route to a different random route.
+// During performance testing it was found that when this function was used in mutate()
+// it negatively affected the solution quality with the current implementation.
 func (sol *Solution) randMigrate() {
 	r0 := rand.Intn(len(sol.Routes))
 	for len(sol.Routes[r0].Activities) == 0 {
