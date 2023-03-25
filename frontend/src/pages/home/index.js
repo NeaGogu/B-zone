@@ -35,6 +35,8 @@ export default function Home() {
     const [computed, setComputed] = useState(false)
     // for holding render state of map 2
     const [computed2, setComputed2] = useState(false)
+    // for keeping track of selected algorithm, by default kmeans
+    const [algorithm, setAlgorithm] = useState(1);
 
 
     // For radio.
@@ -161,6 +163,10 @@ export default function Home() {
         fetchData()
     }, []);
 
+    useEffect(() => {
+        console.log(algorithm)
+    }, [algorithm]);
+
     return (
         <ConfigProvider
             // Theme of the web-app.
@@ -196,14 +202,16 @@ export default function Home() {
                             setIntensity={setIntensity.bind(this)}
                             setZoneId={setZoneId}
                             setCurrentView={setCurrentView}
+                            algorithm={algorithm}
+                            setAlgorithm={setAlgorithm}
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
-                        <Content className="map" id="map" style={{ minHeight: 500 }}>
+                        <Content className="map" id="map" style={{ minHeight: '60vh' }}>
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
                                     <Spin spinning={!computed} delay={500}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} />;
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm}/>;
                                     </Spin>
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
