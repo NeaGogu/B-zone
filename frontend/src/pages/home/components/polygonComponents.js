@@ -1,5 +1,5 @@
 // External dependencies
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
 import randomColor from "randomcolor";
@@ -272,12 +272,8 @@ const PolygonVis = (props) => {
     //selections
     const { zoneId, setZipCodes, setComputed } = props
 
-    //keeps track if this is first rendering
-    const calc = useRef('')
-
     // Map context.
     const context = useLeafletContext()
-    // const zipCodesRef = useRef(zipCodes);
 
     // Runs when a polygon is to be generated
     // CHANGE IT TO BE BASED ON LAST VIEWED
@@ -292,16 +288,13 @@ const PolygonVis = (props) => {
 
         // Async function in order to wait for response from API.
         const fetchData = async () => {
+            // set the render state to be false
             setComputed(false)
             // variable which holds the coordinates to be displayed
             var coordinatesList = []
-            calc.current = zoneId;
 
             // check if zone is to be calculated
             if (zoneId.startsWith('calculate') ) {
-                console.log(calc.current)
-                console.log(zoneId)
-                calc.current = zoneId
                 const calculation = await calculateZone()
                 convertToStructure(calculation[0])
                 setZipCodes(convertToStructure(calculation[0]));
@@ -311,7 +304,6 @@ const PolygonVis = (props) => {
             else if (zoneId === 'initial') {
                 let initialZones = await getInitialZones();
                 zipCodes = await getZipCodes(initialZones);
-                // console.log(zipCodes)
                 coordinatesList = await getCoordinates(zipCodes)
             }
             // otherwise get zone from our database
@@ -334,6 +326,7 @@ const PolygonVis = (props) => {
                     }
                 }
             }
+            // set render state to be true
             setComputed(true)
         };
         fetchData()

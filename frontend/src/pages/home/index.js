@@ -31,8 +31,9 @@ export default function Home() {
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
 
-    //for computed zone on map 1
+    // for holding render state of map 1
     const [computed, setComputed] = useState(false)
+    // for holding render state of map 2
     const [computed2, setComputed2] = useState(false)
 
 
@@ -73,8 +74,8 @@ export default function Home() {
     const [savedZones, setSavedZones] = useState([]);
 
     //
-     // for zone sync
-     const [currentView, setCurrentView] = useState('initial')
+    // for zone sync
+    const [currentView, setCurrentView] = useState('initial')
 
     // for now not usefull
     const handleDeleteZone = (key) => {
@@ -160,12 +161,6 @@ export default function Home() {
         fetchData()
     }, []);
 
-
-    // WAS USED FOR CHECKING PROPER UPDATES
-    // useEffect(() => {
-    //     console.log('home')
-    //     console.log(zoneId)
-    // }, [zoneId]);
     return (
         <ConfigProvider
             // Theme of the web-app.
@@ -185,14 +180,8 @@ export default function Home() {
                     <HeaderComponent handleSaveClick={handleSaveClick} savedZones={savedZones} />
                     <Menu theme="dark" mode="horizontal" />
                 </Header>
-
                 <Layout >
-                    <Sider
-                        width={"225"}
-                        style={{
-                            background: colorBgContainer,
-                        }}
-                    >
+                    <Sider width={"225"} style={{ background: colorBgContainer }}>
                         <SiderComponent
                             savedZones={savedZones}
                             addSavedZone={addSavedZone}
@@ -207,38 +196,27 @@ export default function Home() {
                             setIntensity={setIntensity.bind(this)}
                             setZoneId={setZoneId}
                             setCurrentView={setCurrentView}
-
                         />
                     </Sider>
-
-                    <Layout style={{
-                        padding: 30
-                    }}
-                    >
-                        <Content className="map" id="map"
-                            style={{
-                                minHeight: 500,
-                            }}
-                        >
-                            
-                                <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                    
-                                        <div style={showComparison? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" } }>
-                                            <Spin spinning={!computed} delay={500}>
-                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} />;
-                                            </Spin>
-                                        </div>
-                                    
-                                    
-                                    <div style={ showComparison? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" } }>
-                                        <Spin spinning={!computed2} delay={500}>
-                                            {
-                                                showComparison ? <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} setComputed={setComputed2} /> : <></>
-                                            }
-                                        </Spin>
-                                    </div>
+                    <Layout style={{ padding: 30 }}>
+                        <Content className="map" id="map" style={{ minHeight: 500 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
+                                <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
+                                    <Spin spinning={!computed} delay={500}>
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} />;
+                                    </Spin>
                                 </div>
-                         
+                                <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
+                                        {
+                                            showComparison ? 
+                                            <Spin spinning={!computed2} delay={500}> 
+                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} setComputed={setComputed2} /> 
+                                            </Spin>
+                                            : <></>
+                                        }
+                                    
+                                </div>
+                            </div>
                         </Content>
                     </Layout>
                 </Layout>
