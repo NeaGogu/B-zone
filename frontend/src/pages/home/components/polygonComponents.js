@@ -153,48 +153,83 @@ function convertToStructure(plot) {
 * Fetches the calculated zone configuration from the backend, returns promise of the response from the backend.
 * @return {Promise<Array>} A promise that resolves with an array of objects representing the user's calculated zone configuration.
 */
-async function calculateZone() {
+async function calculateZone(algorithm) {
     // set token
     const userToken = localStorage.getItem('token')
-
-    //request url
-    const url = "http://localhost:4000/bumbal/algorithm/kmeans"
-
-    //body
-    // FOR NOW HARD CODED
-    const bodyValues = JSON.stringify({
-        "number_of_clusters": 2,
-        "number_of_candidate_clusters": 1
-    })
 
     // array to hold zone configuration
     let calculatedZones = []
 
-    calculatedZones = await fetch(url, {
-        method: 'PUT',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${userToken}`
-        },
-        body: bodyValues
-    })
-        // Testing if response recorded was ok.
-        .then((response) => {
-            if (!response.ok) {
-                console.log("Response was not ok ???")
-                alert("Unable to retrieve this zone configuration!")
-            }
-            return response.json();
+    // calculated based on algorithm
+    if (algorithm === 1) {
+        //request url
+        const url = "http://localhost:4000/bumbal/algorithm/kmeans"
+        //body
+        // FOR NOW HARD CODED
+        const bodyValues = JSON.stringify({
+            "number_of_clusters": 2,
+            "number_of_candidate_clusters": 1
         })
 
-        // Dealing with received list of zones.
-        .then(async (data) => {
-            console.log(data.result)
-            return data.result
-        })
 
-        .catch(error => console.log(error, 'error'))
+        calculatedZones = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userToken}`
+            },
+            body: bodyValues
+        })
+            // Testing if response recorded was ok.
+            .then((response) => {
+                if (!response.ok) {
+                    console.log("Response was not ok ???")
+                    alert("Unable to retrieve this zone configuration!")
+                }
+                return response.json();
+            })
+            // Dealing with received list of zones.
+            .then(async (data) => {
+                //console.log(data.result)
+                return data.result
+            })
+            .catch(error => console.log(error, 'error'))
+    } else {
+        //request url
+        const url = "http://localhost:4000/bumbal/algorithm/genetic"
+        //body
+        // for now hard coded
+        const bodyValues = JSON.stringify({
+            "number_of_zones": 5,
+            "number_of_generations": 10000,
+            "maximum_runtime" : 10
+        })
+        calculatedZones = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userToken}`
+            },
+            body: bodyValues
+        })
+            // Testing if response recorded was ok.
+            .then((response) => {
+                if (!response.ok) {
+                    console.log("Response was not ok ???")
+                    alert("Unable to retrieve this zone configuration!")
+                }
+                return response.json();
+            })
+            // Dealing with received list of zones.
+            .then(async (data) => {
+                //console.log(data.result)
+                return data.result
+            })
+            .catch(error => console.log(error, 'error'))
+
+    }
 
 
     // cleaning up array
@@ -270,7 +305,7 @@ async function querryDatabase(plotID) {
 // Main function to visualize the polygons on the map.
 const PolygonVis = (props) => {
     //selections
-    const { zoneId, setZipCodes, setComputed } = props
+    const { zoneId, setZipCodes, setComputed, algorithm } = props
 
     // Map context.
     const context = useLeafletContext()
@@ -284,7 +319,7 @@ const PolygonVis = (props) => {
             context.layerContainer.removeLayer(layer)
         })
         // set it that first render has been done
-        
+
 
         // Async function in order to wait for response from API.
         const fetchData = async () => {
@@ -294,11 +329,18 @@ const PolygonVis = (props) => {
             var coordinatesList = []
 
             // check if zone is to be calculated
-            if (zoneId.startsWith('calculate') ) {
-                const calculation = await calculateZone()
+            if (zoneId.startsWith('calculate')) {
+                var calculation;
+                if (algorithm === 1) {
+                    calculation = await calculateZone(algorithm)
+                } else {
+                    calculation = await calculateZone(algorithm)
+                }
+                
                 convertToStructure(calculation[0])
                 setZipCodes(convertToStructure(calculation[0]));
                 coordinatesList = await getCoordinates(calculation[0])
+
             }
             // check if this is the initial run which displays the zone in bumbal
             else if (zoneId === 'initial') {
