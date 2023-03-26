@@ -153,7 +153,7 @@ function convertToStructure(plot) {
 * Fetches the calculated zone configuration from the backend, returns promise of the response from the backend.
 * @return {Promise<Array>} A promise that resolves with an array of objects representing the user's calculated zone configuration.
 */
-async function calculateZone(algorithm) {
+async function calculateZone(algorithm, nrofzones) {
     // set token
     const userToken = localStorage.getItem('token')
 
@@ -167,7 +167,7 @@ async function calculateZone(algorithm) {
         //body
         // FOR NOW HARD CODED
         const bodyValues = JSON.stringify({
-            "number_of_clusters": 2,
+            "number_of_clusters":parseInt(nrofzones),
             "number_of_candidate_clusters": 1
         })
 
@@ -201,7 +201,7 @@ async function calculateZone(algorithm) {
         //body
         // for now hard coded
         const bodyValues = JSON.stringify({
-            "number_of_zones": 5,
+            "number_of_zones": parseInt(nrofzones),
             "number_of_generations": 10000,
             "maximum_runtime" : 10
         })
@@ -305,7 +305,7 @@ async function querryDatabase(plotID) {
 // Main function to visualize the polygons on the map.
 const PolygonVis = (props) => {
     //selections
-    const { zoneId, setZipCodes, setComputed, algorithm } = props
+    const { zoneId, setZipCodes, setComputed, algorithm, nrofzones } = props
 
     // Map context.
     const context = useLeafletContext()
@@ -332,9 +332,10 @@ const PolygonVis = (props) => {
             if (zoneId.startsWith('calculate')) {
                 var calculation;
                 if (algorithm === 1) {
-                    calculation = await calculateZone(algorithm)
+                    console.log(nrofzones)
+                    calculation = await calculateZone(algorithm, nrofzones)
                 } else {
-                    calculation = await calculateZone(algorithm)
+                    calculation = await calculateZone(algorithm, nrofzones)
                 }
                 
                 convertToStructure(calculation[0])

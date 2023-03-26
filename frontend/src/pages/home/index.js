@@ -37,6 +37,8 @@ export default function Home() {
     const [computed2, setComputed2] = useState(false)
     // for keeping track of selected algorithm, by default kmeans
     const [algorithm, setAlgorithm] = useState(1);
+    // for keeping track of selected algorithm, by default kmeans
+    const [nrofzones, setNrofZones] = useState(1);
 
 
     // For radio.
@@ -164,8 +166,8 @@ export default function Home() {
     }, []);
 
     useEffect(() => {
-        console.log(algorithm)
-    }, [algorithm]);
+        console.log(nrofzones, 'home')
+    }, [nrofzones]);
 
     return (
         <ConfigProvider
@@ -204,6 +206,7 @@ export default function Home() {
                             setCurrentView={setCurrentView}
                             algorithm={algorithm}
                             setAlgorithm={setAlgorithm}
+                            setNrofZones={setNrofZones}
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
@@ -211,7 +214,7 @@ export default function Home() {
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
                                     <Spin spinning={!computed} delay={500}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm}/>;
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones}/>;
                                     </Spin>
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>

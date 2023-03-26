@@ -14,7 +14,7 @@ import '../index.css';
 const { SubMenu } = Menu;
 
 //Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
-const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm }) => {
+const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, setNrofZones }) => {
     const [averageFuelCost, setAverageFuelCost] = useState("");
     const [averageFuelUsage, setAverageFuelUsage] = useState("");
   
@@ -64,16 +64,28 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm }
                 </div>
             </Form.Item>
             <div style={{ width: '100%', textAlign: 'center' }}>
-                <Radio.Group onChange={onChangeAlgo} value={algorithm} style={{ padding: 0 }}>
+                <Radio.Group onChange={onChangeAlgo} value={algorithm} style={{ paddingBottom: '10px' }}>
                     <Radio value={1}> KMeans </Radio>
                     <Tooltip title="May take up to 10 minutes for result.">
                         <Radio value={2}> Genetic </Radio>
                     </Tooltip>  
                 </Radio.Group>
             </div>
+            <Form.Item>
+                <div style={{ padding: "0 5px" }}>
+                    Nunber of Zones
+                    <Input
+                        placeholder="input desired number of zones"
+                        type="number"
+                        step="1"
+                        
+                        onChange={(e) => setNrofZones(e.target.value)}
+                    />
+                </div>
+            </Form.Item>
                 
             
-            <div style={{ textAlign: "center", padding: 10 }}>
+            <div style={{ textAlign: "center", padding: 5 }}>
                 <Button
                     style={{ width: "95%"}}
                     type="primary"
@@ -88,7 +100,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm }
 };
 
 function SiderComponent(props) {
-    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm, setAlgorithm } = props;
+    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm, setAlgorithm, setNrofZones } = props;
 
 
     const toggleMap = () => {
@@ -149,7 +161,7 @@ function SiderComponent(props) {
             </SubMenu>
 
             <SubMenu key="sub4" title="Zones">
-                <ZoneSubMenu setZoneId={setZoneId} toggleMap={toggleMap} algorithm={algorithm} setAlgorithm={setAlgorithm} />
+                <ZoneSubMenu setZoneId={setZoneId} toggleMap={toggleMap} algorithm={algorithm} setAlgorithm={setAlgorithm} setNrofZones={setNrofZones} />
             </SubMenu>
 
             <SubMenu key="sub2" title="Saved Zones" style={{'max-height': '30vh', 'overflow': 'auto'}}>
