@@ -9,7 +9,6 @@ import (
 
 const (
 	activitiesUrl = "activity"
-	waitingTime   = 600 // in seconds
 )
 
 // Output struct used for the body of the response
