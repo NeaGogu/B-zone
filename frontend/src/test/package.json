@@ -1,0 +1,19 @@
+{
+  "name": "b-zone-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "mocha index.js"
+  },
+  "dependencies": {
+    "chai": "^4.3.7",
+    "puppeteer": "^19.7.5"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
