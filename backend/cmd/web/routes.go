@@ -95,10 +95,6 @@ func (app *application) routes() http.Handler {
 		r.Route("/zone/", func(r chi.Router) {
 			r.Post("/ranges", app.getZoneRanges)
 		})
-		//testing bzone plot getter
-		r.Route("/bzone", func(r chi.Router) {
-			r.Get("/plot", app.getBZonePlot)
-		})
 
 	})
 
@@ -122,10 +118,6 @@ func (app *application) routes() http.Handler {
 			r.Get("/{plotId}", app.GetPlotById)
 			r.Put("/sync", app.SyncBumbalZones)
 			r.Post("/save", app.SavePlot)
-		})
-
-		r.Route("/bzone", func(r chi.Router) {
-			r.Get("/plot", app.getBZonePlot)
 		})
 
 		r.Route("/bumbal", func(r chi.Router) {
