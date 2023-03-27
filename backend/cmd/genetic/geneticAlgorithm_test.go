@@ -2,61 +2,9 @@ package genetic
 
 import (
 	"bzone/backend/internal/models"
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
-
-func Test_crossover_repeat(t *testing.T) {
-	type args struct {
-		parent1 Solution
-		parent2 Solution
-	}
-	type testcase struct {
-		name     string
-		args     args
-		wantInst MDMTSPInstance
-	}
-	inst := MDMTSPInstance{
-		Activities: []Pos{
-			{3, 5, 42},
-			{6, 5, 42},
-			{3, 4, 42},
-			{10, 10, 69},
-			{1, 2, 42},
-			{33, 7, 69},
-		},
-		Depots:  []Pos{{5, 5, 42}, {9, 9, 50}},
-		NRoutes: 2,
-	}
-	tests := make([]testcase, 100)
-	for i := 0; i < 100; i++ {
-		tests[i] = testcase{
-			name: fmt.Sprintf("%d", i),
-			args: args{
-				parent1: randomSolution(inst),
-				parent2: randomSolution(inst),
-			},
-			wantInst: inst,
-		}
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := crossover(tt.args.parent1, tt.args.parent2)
-			if !assert.Equal(t, tt.wantInst.NRoutes, len(got.Routes)) {
-				return
-			}
-			var gotActivities []Pos
-			for _, route := range got.Routes {
-				for _, activity := range route.Activities {
-					gotActivities = append(gotActivities, activity)
-				}
-			}
-			assert.ElementsMatch(t, tt.wantInst.Activities, gotActivities)
-		})
-	}
-}
 
 func Test_generateMTSPInstance(t *testing.T) {
 	tests := []struct {

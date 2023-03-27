@@ -17,7 +17,7 @@ func Test_greedyRoute(t *testing.T) {
 	}{
 		{"no points", args{Pos{0, 0, 0}, []Pos{}},
 			Route{Pos{0, 0, 0}, []Pos{}}},
-		{"1 points", args{Pos{0, 0, 0}, []Pos{{1, 1, 0}}},
+		{"1 point", args{Pos{0, 0, 0}, []Pos{{1, 1, 0}}},
 			Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}}}},
 		{"2 equal points", args{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {1, 1, 0}}},
 			Route{Pos{0, 0, 0}, []Pos{{1, 1, 0}, {1, 1, 0}}}},

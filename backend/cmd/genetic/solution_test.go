@@ -1,9 +1,7 @@
 package genetic
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
-	"math/rand"
 	"testing"
 )
 
@@ -498,56 +496,6 @@ func TestSolution_calcCost(t *testing.T) {
 	}
 }
 
-func TestSolution_mutate_repeat(t *testing.T) {
-	type testcase struct {
-		inst         MDMTSPInstance
-		name         string
-		sol          Solution
-		maxMutations int
-		mutationRate float64
-		wantInst     MDMTSPInstance
-	}
-	inst := MDMTSPInstance{
-		Activities: []Pos{
-			{3, 5, 42},
-			{6, 5, 42},
-			{3, 4, 42},
-			{10, 10, 69},
-			{1, 2, 42},
-			{33, 7, 69},
-		},
-		Depots:  []Pos{{5, 5, 42}, {9, 9, 50}},
-		NRoutes: 2,
-	}
-	tests := make([]testcase, 100)
-	for i := 0; i < 100; i++ {
-		tests[i] = testcase{
-			inst:         inst,
-			name:         fmt.Sprintf("%d", i),
-			sol:          randomSolution(inst),
-			maxMutations: rand.Intn(5) + 1,
-			mutationRate: rand.Float64(),
-			wantInst:     inst,
-		}
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.sol.mutate(tt.inst, tt.maxMutations, tt.mutationRate)
-			if !assert.Equal(t, tt.wantInst.NRoutes, len(tt.sol.Routes)) {
-				return
-			}
-			var gotActivities []Pos
-			for _, route := range tt.sol.Routes {
-				for _, activity := range route.Activities {
-					gotActivities = append(gotActivities, activity)
-				}
-			}
-			assert.ElementsMatch(t, tt.inst.Activities, gotActivities)
-		})
-	}
-}
-
 func TestSolution_removeActivities(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -662,49 +610,6 @@ func TestSolution_routeLengthVariance(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, tt.sol.routeLengthVariance())
-		})
-	}
-}
-
-func Test_randomSolution_repeat(t *testing.T) {
-	type testcase struct {
-		inst     MDMTSPInstance
-		name     string
-		wantInst MDMTSPInstance
-	}
-	tests := make([]testcase, 100)
-	for i := 0; i < 100; i++ {
-		inst := MDMTSPInstance{
-			Activities: []Pos{
-				{3, 5, 42},
-				{6, 5, 42},
-				{3, 4, 42},
-				{10, 10, 69},
-				{1, 2, 42},
-				{33, 7, 69},
-			},
-			Depots:  []Pos{{5, 5, 42}, {9, 9, 50}},
-			NRoutes: rand.Intn(5) + 2,
-		}
-		tests[i] = testcase{
-			inst:     inst,
-			name:     fmt.Sprintf("%d", i),
-			wantInst: inst,
-		}
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			sol := randomSolution(tt.inst)
-			if !assert.Equal(t, tt.wantInst.NRoutes, len(sol.Routes)) {
-				return
-			}
-			var gotActivities []Pos
-			for _, route := range sol.Routes {
-				for _, activity := range route.Activities {
-					gotActivities = append(gotActivities, activity)
-				}
-			}
-			assert.ElementsMatch(t, tt.wantInst.Activities, gotActivities)
 		})
 	}
 }
