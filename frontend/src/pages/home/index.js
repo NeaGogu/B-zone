@@ -78,10 +78,10 @@ export default function Home() {
     const [currentView, setCurrentView] = useState('initial')
 
     // for now not usefull
-    const handleDeleteZone = (key) => {
-        localStorage.removeItem(key);
-        const newSavedZones = savedZones.filter((item) => item.key !== key);
-        setSavedZones(newSavedZones);
+    const handleDeleteZone = (id) => {
+        
+        
+        
     };
 
     /** 
@@ -196,6 +196,7 @@ export default function Home() {
                             setIntensity={setIntensity.bind(this)}
                             setZoneId={setZoneId}
                             setCurrentView={setCurrentView}
+                            currentView={currentView}
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
