@@ -135,7 +135,7 @@ Here is an overview of the backend endpoints, together with instructions on how 
 	]
 }
 ```
-
+- `[DELETE] /plot/<PLOT_ID>` -> delete a plot by ID
 
 # Project structure and organization
 
