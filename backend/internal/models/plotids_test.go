@@ -11,7 +11,6 @@ func TestBzoneDBModel_GetPlotById(t *testing.T) {
 	// Create mongo test instance
 	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 	defer mt.Close()
-	var mockBZoneModel = BzoneDBModel{DB: mt.DB}
 
 	// Create your subtest run instance
 	mt.Run("ValidPlotId", func(mt *mtest.T) {
@@ -19,16 +18,19 @@ func TestBzoneDBModel_GetPlotById(t *testing.T) {
 		// Mock Plot data
 		findOne := mtest.CreateCursorResponse(
 			1,
-			"Bzone.plots",
+			"Bzone.users",
 			mtest.FirstBatch,
-			test.MockPlotData())
+			test.MockUsersData())
 
-		killCursors := mtest.CreateCursorResponse(0, "Bzone.plots", mtest.NextBatch)
+		killCursors := mtest.CreateCursorResponse(0, "Bzone.users", mtest.NextBatch)
 
 		//Create Mock Responses
 		//The given bson.D will be returned from the mongo to the driver
+
 		mt.AddMockResponses(findOne, killCursors)
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
 		testUser, _ := mockBZoneModel.GetPlotIDs(1)
+
 		//Set up the User data that we expect to get
 		UserPlots := []PlotIDNamePair{
 			{
