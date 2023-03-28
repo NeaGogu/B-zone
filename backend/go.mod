@@ -41,3 +41,7 @@ require (
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/text v0.8.0 // indirect
 )
+
+require (
+	github.com/pzsz/voronoi v0.0.0-20130609164533-4314be88c79f
+)
