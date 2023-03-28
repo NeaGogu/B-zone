@@ -22,7 +22,7 @@ func (z *BzoneDBModel) GetPlot(plotId string) (*PlotModel, error) {
 	//Store plot in the PlotModel
 	var bZonePlot PlotModel
 
-	//query the databae with the set plot id
+	//query the database with the set plot id
 	err := plotsCollection.FindOne(context.TODO(), queryFilter).Decode(&bZonePlot)
 	if err != nil {
 		return nil, err
