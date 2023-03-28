@@ -5,9 +5,12 @@ name: Go
 
 on:
   push:
+    paths:
+    - 'backend/**'
     branches: [ "dev" ]
   pull_request:
     branches: [ "dev" ]
+
 
 jobs:
 
@@ -15,14 +18,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
-        go-version: 1.19
+        go-version: 1.20.1
 
     - name: Build
-      run: go build -v ./...
+      run: go build -v 
+      working-directory: backend/cmd/web
 
-    - name: Test
-      run: go test -v ./...
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.20.1
+        
+    - name: Test K-Means Algorithm
+      run: go test -v 
+      working-directory: backend/cmd/k-means
+
+    - name: Test B-Zone API Handlers
+      run: go test -v 
+      working-directory: backend/cmd/web
+      

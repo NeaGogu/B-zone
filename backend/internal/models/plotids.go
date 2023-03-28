@@ -83,6 +83,34 @@ func (b *BzoneDBModel) SavePlot(userId int, plot *PlotModel) error {
 	return nil
 }
 
+// Delete a plot from the plots collection given its id
+// returns the number of deleted plots and an error
+//
+// NOTE: this method also removes the plot id from the user's list of plot ids
+func (b *BzoneDBModel) DeletePlotById(plotId string, userId int) (int, error) {
+
+	// get the plots collection
+	plotColl := b.DB.Collection(PlotCollection)
+
+	// target the plot with the given plot id
+	queryFilter := bson.M{"plot_id": bson.M{"$eq": plotId}}
+
+	res, err := plotColl.DeleteOne(context.TODO(), queryFilter)
+	if err != nil {
+		return 0, err
+	}
+
+	// also remove the plot id from the users's list of plot ids
+	_, err = b.deletePlotFromUser(userId, plotId)
+	if err != nil {
+		return 0, err
+	}
+
+	// return the numver of deleted plots, which should be 1
+	return int(res.DeletedCount), nil
+
+}
+
 // DeletePlots deletes the plots that are assigned to the user based on their origin
 // the origin can be "bumbal", "algo" or "user"
 // returns the number of deleted plots and an error
