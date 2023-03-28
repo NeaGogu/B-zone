@@ -12,19 +12,6 @@ import (
 	voronoi "github.com/pzsz/voronoi"
 )
 
-func generateVoronoiDiagram(width, height, numSites int) *voronoi.Diagram {
-	sites := make([]voronoi.Vertex, numSites)
-	for i := 0; i < numSites; i++ {
-		x := rand.Intn(width)
-		y := rand.Intn(height)
-		sites[i] = voronoi.Vertex{X: float64(x), Y: float64(y)}
-	}
-
-	bbox := voronoi.NewBBox(0, float64(width), 0, float64(height))
-	diagram := voronoi.ComputeDiagram(sites, bbox, true)
-	return diagram
-}
-
 func createVoronoiImage(width, height, numSites int) image.Image {
 	diagram := generateVoronoiDiagram(width, height, numSites)
 
@@ -99,4 +86,23 @@ func ClusterToVertexList(clusters kMeans.Clusters) []voronoi.Vertex {
 		sites = append(sites, voronoi.Vertex{X: cluster.center.latitude, Y: cluster.center.longitude})
 	}
 	return sites
+}
+
+func generateVoronoiDiagram(width, height, numSites int) *voronoi.Diagram {
+	sites := make([]voronoi.Vertex, numSites)
+	for i := 0; i < numSites; i++ {
+		x := rand.Intn(width)
+		y := rand.Intn(height)
+		sites[i] = voronoi.Vertex{X: float64(x), Y: float64(y)}
+	}
+
+	bbox := voronoi.NewBBox(0, float64(width), 0, float64(height))
+	diagram := voronoi.ComputeDiagram(sites, bbox, true)
+	return diagram
+}
+
+func GenerateVoronoiDiagram(vertices []voronoi.Vertex) *voronoi.Diagram {
+	bbox := voronoi.NewBBox(3.23, 7.3, 6.5, 5.92)
+	voronoiDiagram := voronoi.ComputeDiagram(vertices, bbox, true)
+	return voronoiDiagram
 }
