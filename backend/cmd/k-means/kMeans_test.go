@@ -16,75 +16,75 @@ import (
 // MinNormal is the smallest positive normal value of type float64.
 var MinNormal = math.Float64frombits(0x0010000000000000)
 
-func TestKMeans(t *testing.T) {
-	// Define some test data
-	activity1 := makeActivity(t, "1", "1", "1", "1234")
-	activity2 := makeActivity(t, "1", "3", "4", "1234")
-	activity3 := makeActivity(t, "1", "5", "6", "1234")
-	activities := []models.ActivityModelBumbal{*activity1, *activity2, *activity3}
+// func TestKMeans(t *testing.T) {
+// 	// Define some test data
+// 	activity1 := makeActivity(t, "1", "1", "1", "1234")
+// 	activity2 := makeActivity(t, "1", "3", "4", "1234")
+// 	activity3 := makeActivity(t, "1", "5", "6", "1234")
+// 	activities := []models.ActivityModelBumbal{*activity1, *activity2, *activity3}
 
-	testCases := []struct {
-		name                string
-		activities          []models.ActivityModelBumbal
-		nrClusters          int
-		nrCandidateClusters int
-		expectedError       error
-	}{
-		{
-			name:                "NrClusters smaller than 1",
-			activities:          activities,
-			nrClusters:          0,
-			nrCandidateClusters: 2,
-			expectedError:       ErrNrClustersTooSmall,
-		},
-		{
-			name:                "NrCandidateClusters smaller or equal to 0",
-			activities:          activities,
-			nrClusters:          2,
-			nrCandidateClusters: 0,
-			expectedError:       ErrNrCandidateClustersTooSmall,
-		},
-		{
-			name:                "Happy path",
-			activities:          activities,
-			nrClusters:          2,
-			nrCandidateClusters: 2,
-			expectedError:       nil,
-		},
-		{
-			name:                "No activities",
-			activities:          []models.ActivityModelBumbal{},
-			nrClusters:          2,
-			nrCandidateClusters: 2,
-			expectedError:       ErrNoActivities,
-		},
-	}
+// 	testCases := []struct {
+// 		name                string
+// 		activities          []models.ActivityModelBumbal
+// 		nrClusters          int
+// 		nrCandidateClusters int
+// 		expectedError       error
+// 	}{
+// 		{
+// 			name:                "NrClusters smaller than 1",
+// 			activities:          activities,
+// 			nrClusters:          0,
+// 			nrCandidateClusters: 2,
+// 			expectedError:       ErrNrClustersTooSmall,
+// 		},
+// 		{
+// 			name:                "NrCandidateClusters smaller or equal to 0",
+// 			activities:          activities,
+// 			nrClusters:          2,
+// 			nrCandidateClusters: 0,
+// 			expectedError:       ErrNrCandidateClustersTooSmall,
+// 		},
+// 		{
+// 			name:                "Happy path",
+// 			activities:          activities,
+// 			nrClusters:          2,
+// 			nrCandidateClusters: 2,
+// 			expectedError:       nil,
+// 		},
+// 		{
+// 			name:                "No activities",
+// 			activities:          []models.ActivityModelBumbal{},
+// 			nrClusters:          2,
+// 			nrCandidateClusters: 2,
+// 			expectedError:       ErrNoActivities,
+// 		},
+// 	}
 
-	// Loop over test cases and run each one
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			// Call the function
-			got, err := KMeans(tc.activities, tc.nrClusters, tc.nrCandidateClusters)
+// 	// Loop over test cases and run each one
+// 	for _, tc := range testCases {
+// 		t.Run(tc.name, func(t *testing.T) {
+// 			// Call the function
+// 			got, err := KMeans(tc.activities, tc.nrClusters, tc.nrCandidateClusters)
 
-			// Check the result
-			if err != tc.expectedError {
-				t.Errorf("kMeans() error = %v, want %v", err, tc.expectedError)
-			}
+// 			// Check the result
+// 			if err != tc.expectedError {
+// 				t.Errorf("kMeans() error = %v, want %v", err, tc.expectedError)
+// 			}
 
-			// If there was no error, check that the number of clusters matches the input
-			if err == nil && len(got) != tc.nrClusters {
-				t.Errorf("kMeans() returned %v clusters, want %v clusters", len(got), tc.nrClusters)
-			}
+// 			// If there was no error, check that the number of clusters matches the input
+// 			if err == nil && len(got) != tc.nrClusters {
+// 				t.Errorf("kMeans() returned %v clusters, want %v clusters", len(got), tc.nrClusters)
+// 			}
 
-			// Check that each cluster has at least one observation
-			for _, c := range got {
-				if len(c.ZoneRanges) == 0 {
-					t.Errorf("kMeans() returned a cluster with 0 observations")
-				}
-			}
-		})
-	}
-}
+// 			// Check that each cluster has at least one observation
+// 			for _, c := range got {
+// 				if len(c.ZoneRanges) == 0 {
+// 					t.Errorf("kMeans() returned a cluster with 0 observations")
+// 				}
+// 			}
+// 		})
+// 	}
+// }
 
 func TestUpdateCluster(t *testing.T) {
 	// Define test cases

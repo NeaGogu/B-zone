@@ -29,7 +29,7 @@ type observation struct {
 }
 
 // Type that defines a cluster
-type cluster struct {
+type Cluster struct {
 	center       coordinates
 	observations observations
 }
@@ -38,7 +38,7 @@ type cluster struct {
 type observations []observation
 
 // Type that defines multiple clusters
-type clusters []cluster
+type Clusters []cluster
 
 // Type that defines multiple activity models
 type activities []model.ActivityModelBumbal
@@ -76,7 +76,7 @@ var zeroClusters = clusters{
 	zeroCluster,
 }
 
-func KMeans(activities activities, nrClusters int, nrCandidateClusters int) ([]model.ZoneModel, error) {
+func KMeans(activities activities, nrClusters int, nrCandidateClusters int) (clusters, error) {
 	if len(activities) <= 0 {
 		return nil, ErrNoActivities
 	}
@@ -139,19 +139,19 @@ func KMeans(activities activities, nrClusters int, nrCandidateClusters int) ([]m
 
 	}
 
-	//convert clusters to sets of zipcodes
-	zipcodeList, err := clusterToZipcodeSet(clusters, activities)
-	if err != nil {
-		return nil, fmt.Errorf("got an error in clusterToZipCodeSet: %v", err)
-	}
+	// //convert clusters to sets of zipcodes
+	// zipcodeList, err := clusterToZipcodeSet(clusters, activities)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("got an error in clusterToZipCodeSet: %v", err)
+	// }
 
-	//convert clusters to a list of zone models
-	clusterSet, err := zipcodeSetToZoneModel(zipcodeList)
-	if err != nil {
-		return nil, fmt.Errorf("got an error in zipcodeSetToZoneModel: %v", err)
-	}
+	// //convert clusters to a list of zone models
+	// clusterSet, err := zipcodeSetToZoneModel(zipcodeList)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("got an error in zipcodeSetToZoneModel: %v", err)
+	// }
 
-	return clusterSet, err
+	return clusters, err
 }
 
 // updateCluster updates all centers of the given clusters.

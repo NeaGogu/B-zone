@@ -7,6 +7,8 @@ import (
 	"math/rand"
 	"os"
 
+	kMeans "bzone/backend/cmd/k-means"
+
 	voronoi "github.com/pzsz/voronoi"
 )
 
@@ -75,6 +77,7 @@ func abs(x int) int {
 }
 
 func main() {
+
 	width := 800
 	height := 600
 	numSites := 100
@@ -87,4 +90,13 @@ func main() {
 	defer file.Close()
 
 	png.Encode(file, img)
+}
+
+func ClusterToVertexList(clusters kMeans.Clusters) []voronoi.Vertex {
+	var sites []voronoi.Vertex
+
+	for _, cluster := range clusters {
+		sites = append(sites, voronoi.Vertex{X: cluster.center.latitude, Y: cluster.center.longitude})
+	}
+	return sites
 }
