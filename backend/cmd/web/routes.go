@@ -127,6 +127,7 @@ func (app *application) routes() http.Handler {
 
 		r.Route("/bumbal", func(r chi.Router) {
 			r.Put("/algorithm/kmeans", bumbal.RunKMeans)
+			r.Put("/algorithm/genetic", bumbal.RunGenetic)
 		})
 
 	})
