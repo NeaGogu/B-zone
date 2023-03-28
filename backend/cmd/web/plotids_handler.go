@@ -63,6 +63,10 @@ func (app *application) getUserPlotIDs(w http.ResponseWriter, r *http.Request) {
 			// send the user id to the model which will return the user's plot IDs
 			reqPlotIDs, err := app.bzoneDbModel.GetPlotIDs(userId)
 			if err != nil {
+				if errors.Is(err, models.ErrDocumentNotFound) {
+					app.notFound(w)
+					return
+				}
 				app.serverError(w, err)
 			}
 
