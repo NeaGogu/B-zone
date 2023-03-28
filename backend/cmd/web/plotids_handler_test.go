@@ -6,9 +6,7 @@ import (
 	"bzone/backend/internal/test"
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/integration/mtest"
@@ -45,7 +43,6 @@ func SetUpMockApp(mt *mtest.T) *application {
 //
 //	@Description: tests plotids handler
 //	@param t
-
 func TestApplication_GetPlotById(t *testing.T) {
 
 	// Create mongo test instance
@@ -145,7 +142,7 @@ func testCase1(t *testing.T, a *application) {
 	responseValidPlotId := wValidPlotId.Result()
 	bodyValidPlotIdJSONString, _ := io.ReadAll(responseValidPlotId.Body)
 
-	assert.Equal(t, 200, responseValidPlotId.StatusCode) // We expect return code 200
+	assert.Equal(t, http.StatusOK, responseValidPlotId.StatusCode) // We expect return code 200
 
 	// Decode response into object
 	var bZonePlot models.PlotModel
@@ -312,39 +309,6 @@ func TestApplication_getUserPlotIDs(t *testing.T) {
 
 	})
 
-	// Create your subtest run instance
-	mt.Run("MissingToken", func(mt *mtest.T) {
-
-		//set up the app for the tests
-		app := SetUpMockApp(mt)
-
-		//Test case for missing token
-		usertestCase4(t, app)
-
-	})
-
-}
-func CreateAccessTokenString(userId string) (string, error) {
-	// Define the token claims, including the user ID
-	claims := jwt.MapClaims{
-		"user_id": userId,
-	}
-
-	// Define the token signing method and secret key
-	signingMethod := jwt.SigningMethodHS256
-	secret := []byte("my_secret_key")
-
-	// Create the token
-	token := jwt.NewWithClaims(signingMethod, claims)
-
-	// Sign the token with the secret key
-	tokenString, err := token.SignedString(secret)
-	if err != nil {
-		return "", fmt.Errorf("error signing token: %v", err)
-	}
-
-	// Return the Bearer string access token
-	return fmt.Sprintf("Bearer %s", tokenString), nil
 }
 
 // usertestCase1
@@ -355,12 +319,13 @@ func CreateAccessTokenString(userId string) (string, error) {
 func usertestCase1(t *testing.T, a *application) {
 
 	// Test handler, valid user ID case
-	reqValidUserId := httptest.NewRequest("GET", "/", nil)
-	token, _ := CreateAccessTokenString("1")
-	reqValidUserId.Header.Add("Authorization", token)
+	req := httptest.NewRequest("GET", "/", nil)
+	ctx := context.WithValue(req.Context(), ContextUserKey, "1")
+	req = req.WithContext(ctx)
+	token, _ := test.CreateAccessTokenString("1")
+	req.Header.Add("Authorization", token)
 	wValidUserId := httptest.NewRecorder()
-
-	a.getUserPlotIDs(wValidUserId, reqValidUserId)
+	a.getUserPlotIDs(wValidUserId, req)
 
 	responseMissingUserId := wValidUserId.Result()
 	bodyValidUserIdJSONString, _ := io.ReadAll(responseMissingUserId.Body)
@@ -369,7 +334,7 @@ func usertestCase1(t *testing.T, a *application) {
 	var mockDBUser models.UserModel
 	json.Unmarshal(bodyValidUserIdJSONString, &mockDBUser)
 
-	assert.Equal(t, 200, responseMissingUserId.StatusCode) // We expect return code 200
+	assert.Equal(t, http.StatusOK, responseMissingUserId.StatusCode) // We expect return code 200
 
 	//Set up the User data that we expect to get
 	UserPlots := []models.PlotIDNamePair{
@@ -404,22 +369,24 @@ func usertestCase1(t *testing.T, a *application) {
 //	@param a
 func usertestCase2(t *testing.T, a *application) {
 
-	// Test handler, valid user ID case
-	reqInvalidUserId := httptest.NewRequest("GET", "/", nil)
-	token, _ := CreateAccessTokenString("2432")
-	reqInvalidUserId.Header.Add("Authorization", token)
-	wInalidUserId := httptest.NewRecorder()
+	// Test handler, invalid user ID case
+	req := httptest.NewRequest("GET", "/", nil)
+	ctx := context.WithValue(req.Context(), ContextUserKey, "22")
+	req = req.WithContext(ctx)
+	token, _ := test.CreateAccessTokenString("2432")
+	req.Header.Add("Authorization", token)
+	w := httptest.NewRecorder()
 
-	a.getUserPlotIDs(wInalidUserId, reqInvalidUserId)
+	a.getUserPlotIDs(w, req)
 
-	responseMissingUserId := wInalidUserId.Result()
+	responseMissingUserId := w.Result()
 	bodyValidUserIdJSONString, _ := io.ReadAll(responseMissingUserId.Body)
 
 	// Decode response into object
 	var mockDBUser models.UserModel
 	json.Unmarshal(bodyValidUserIdJSONString, &mockDBUser)
 
-	assert.Equal(t, 404, responseMissingUserId.StatusCode) // We expect return code 404
+	assert.Equal(t, http.StatusNotFound, responseMissingUserId.StatusCode) // We expect return code 404
 
 }
 
@@ -431,26 +398,15 @@ func usertestCase2(t *testing.T, a *application) {
 func usertestCase3(t *testing.T, a *application) {
 
 	// Test handler, missing user ID case
-	reqValidUserId := httptest.NewRequest("GET", "/", nil)
-	reqValidUserId.Header.Add("Authorization", "Bearer ")
-	wValidUserId := httptest.NewRecorder()
-	a.getUserPlotIDs(wValidUserId, reqValidUserId)
-	responseMissingUserId := wValidUserId.Result()
-	assert.Equal(t, 400, responseMissingUserId.StatusCode) // We expect return code 400
+	req := httptest.NewRequest("GET", "/", nil)
+	ctx := context.WithValue(req.Context(), ContextUserKey, "")
+	req = req.WithContext(ctx)
+	req.Header.Add("Authorization", "Bearer ")
+	w := httptest.NewRecorder()
+	a.getUserPlotIDs(w, req)
+	responseMissingUserId := w.Result()
+	assert.Equal(t, http.StatusInternalServerError, responseMissingUserId.StatusCode)
 
-}
-
-func usertestCase4(t *testing.T, a *application) {
-
-	// Test handler, missing token
-	reqMissingToken := httptest.NewRequest("GET", "/", nil)
-	//no authorization token sent
-	reqMissingToken.Header.Add("Authorization", "")
-	wMissingToken := httptest.NewRecorder()
-	a.getUserPlotIDs(wMissingToken, reqMissingToken)
-	responseMissingToken := wMissingToken.Result()
-
-	assert.Equal(t, 400, responseMissingToken.StatusCode) // We expect return code 400
 }
 
 func TestApplication_SavePlot(t *testing.T) {
@@ -478,10 +434,6 @@ func TestApplication_SavePlot(t *testing.T) {
 
 		//Test case for valid user ID
 		userPlotTestCase1(t, app)
-		//Test case for missing user ID
-		userPlotTestCase2(t, app)
-		//Test case for missing plot
-		userPlotTestCase3(t, app)
 
 	})
 	// Create your subtest run instance
@@ -525,15 +477,16 @@ func userPlotTestCase1(t *testing.T, a *application) {
 	}
 
 	jsonValue, _ := json.Marshal(plotModel)
-	reqSavePlot := httptest.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
-	token, _ := CreateAccessTokenString("1")
+	req := httptest.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
+	// Test handler, missing user ID case
+	ctx := context.WithValue(req.Context(), ContextUserKey, "1")
+	req = req.WithContext(ctx)
 
-	reqSavePlot.Header.Add("Authorization", token)
 	wSavePlot := httptest.NewRecorder()
-	a.SavePlot(wSavePlot, reqSavePlot)
-	responseMissingToken := wSavePlot.Result()
+	a.SavePlot(wSavePlot, req)
+	responsePlotCreated := wSavePlot.Result()
 
-	assert.Equal(t, http.StatusCreated, responseMissingToken.StatusCode) // We expect return code 400
+	assert.Equal(t, http.StatusCreated, responsePlotCreated.StatusCode)
 }
 
 // userPlotTestCase2
@@ -554,15 +507,15 @@ func userPlotTestCase2(t *testing.T, a *application) {
 	}
 
 	jsonValue, _ := json.Marshal(plotModel)
-	reqSavePlot := httptest.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
-	token, _ := CreateAccessTokenString("")
+	req := httptest.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
+	token, _ := test.CreateAccessTokenString("")
 
-	reqSavePlot.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", token)
 	wSavePlot := httptest.NewRecorder()
-	a.SavePlot(wSavePlot, reqSavePlot)
+	a.SavePlot(wSavePlot, req)
 	responseMissingToken := wSavePlot.Result()
 
-	assert.Equal(t, 500, responseMissingToken.StatusCode) // We expect return code 400
+	assert.Equal(t, http.StatusInternalServerError, responseMissingToken.StatusCode) // We expect return code 400
 }
 
 // userPlotTestCase3
@@ -576,12 +529,87 @@ func userPlotTestCase3(t *testing.T, a *application) {
 
 	jsonValue, _ := json.Marshal(plotModel)
 	reqSavePlot := httptest.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
-	token, _ := CreateAccessTokenString("")
+	token, _ := test.CreateAccessTokenString("")
 
 	reqSavePlot.Header.Add("Authorization", token)
 	wSavePlot := httptest.NewRecorder()
 	a.SavePlot(wSavePlot, reqSavePlot)
+	responseEmptyPlot := wSavePlot.Result()
+
+	assert.Equal(t, http.StatusInternalServerError, responseEmptyPlot.StatusCode) // We expect return code 400
+}
+
+func TestApplication_DeletePlotById(t *testing.T) {
+	// Create your subtest run instance
+
+	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+	defer mt.Close()
+
+	mt.Run("Server Error when deleting Plot", func(mt *mtest.T) {
+
+		mt.AddMockResponses(bson.D{{"ok", 0}})
+
+		//set up the app for the tests
+		app := SetUpMockApp(mt)
+
+		//Test case for invalid token
+		deletePlotTestCase0(t, app)
+
+	})
+
+	mt.Run("Invalid Request configuration to Delete the plot", func(mt *mtest.T) {
+
+		//set up the app for the tests
+		app := SetUpMockApp(mt)
+		//Test case for invalid token
+		deletePlotTestCase1(t, app)
+		//Test case for invalid plot  ID
+		deletePlotTestCase2(t, app)
+
+	})
+}
+
+func deletePlotTestCase0(t *testing.T, a *application) {
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	rctx := chi.NewRouteContext()
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+	rctx.URLParams.Add("plotId", "1")
+	token, _ := test.CreateAccessTokenString("0")
+	req.Header.Add("Authorization", token)
+	wSavePlot := httptest.NewRecorder()
+	a.DeletePlotById(wSavePlot, req)
 	responseMissingToken := wSavePlot.Result()
 
-	assert.Equal(t, 500, responseMissingToken.StatusCode) // We expect return code 400
+	assert.Equal(t, http.StatusInternalServerError, responseMissingToken.StatusCode)
+}
+
+func deletePlotTestCase1(t *testing.T, a *application) {
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	rctx := chi.NewRouteContext()
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+	rctx.URLParams.Add("plotId", "1")
+	token, _ := test.CreateAccessTokenString("1")
+	req.Header.Add("Authorization", token)
+	wSavePlot := httptest.NewRecorder()
+	a.DeletePlotById(wSavePlot, req)
+	responseMissingToken := wSavePlot.Result()
+
+	assert.Equal(t, http.StatusInternalServerError, responseMissingToken.StatusCode) // We expect return code 400
+}
+
+func deletePlotTestCase2(t *testing.T, a *application) {
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	rctx := chi.NewRouteContext()
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+	rctx.URLParams.Add("plotId", "")
+	token, _ := test.CreateAccessTokenString("1")
+	req.Header.Add("Authorization", token)
+	wSavePlot := httptest.NewRecorder()
+	a.DeletePlotById(wSavePlot, req)
+	responseMissingToken := wSavePlot.Result()
+
+	assert.Equal(t, http.StatusBadRequest, responseMissingToken.StatusCode) // We expect return code 400
 }

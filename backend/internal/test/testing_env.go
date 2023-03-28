@@ -1,6 +1,10 @@
 package test
 
-import "go.mongodb.org/mongo-driver/bson"
+import (
+	"fmt"
+	"github.com/golang-jwt/jwt"
+	"go.mongodb.org/mongo-driver/bson"
+)
 
 func MockPlotData() bson.D {
 	return bson.D{
@@ -53,4 +57,26 @@ func MockUsersData() bson.D {
 
 		{"uuid", "user2432"},
 	}
+}
+func CreateAccessTokenString(userId string) (string, error) {
+	// Define the token claims, including the user ID
+	claims := jwt.MapClaims{
+		"user_id": userId,
+	}
+
+	// Define the token signing method and secret key
+	signingMethod := jwt.SigningMethodHS256
+	secret := []byte("my_secret_key")
+
+	// Create the token
+	token := jwt.NewWithClaims(signingMethod, claims)
+
+	// Sign the token with the secret key
+	tokenString, err := token.SignedString(secret)
+	if err != nil {
+		return "", fmt.Errorf("error signing token: %v", err)
+	}
+
+	// Return the Bearer string access token
+	return fmt.Sprintf("Bearer %s", tokenString), nil
 }
