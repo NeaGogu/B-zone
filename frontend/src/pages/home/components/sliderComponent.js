@@ -168,49 +168,52 @@ function SiderComponent(props) {
                 <ZoneSubMenu setZoneId={setZoneId} toggleMap={toggleMap} algorithm={algorithm} setAlgorithm={setAlgorithm} setNrofZones={setNrofZones} />
             </SubMenu>
 
-            <SubMenu key="sub2" title="Saved Zones" style={{'max-height': '30vh', 'overflow': 'auto'}}>
-                {savedZones.map((zone) => (
-                    <Menu.Item key={zone.user_plot_id} style={{ height: '80px', padding: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ paddingLeft: '10px' }}>{zone.user_plot_name}</span>
-                            {zone.user_plot_name !== '' && (
-                                <Button
-                                    style={{ float: 'right' }}
-                                    onClick={() => {
-                                        onDeleteZone(zone.user_plot_id);
-                                    }}
-                                >
-                                    <DeleteOutlined />
-                                </Button>
-                            )}
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                            <Button style={{ flex: 1, marginRight: '3px' }} onClick={() => {
-                                toggleMap()
-                                setCurrentView('')
-                                setZoneId(zone.user_plot_id)
-                             
-                               
-                            }}>
-                                View
-                            </Button>
-                            <Button style={{ flex: 1, marginLeft: '3px' }} onClick={() =>{
-                                if (currentView === zone.user_plot_id){
+            <SubMenu key="sub2" title="Saved Zones" >
+                <div style={{'max-height': '50vh', 'overflow': 'auto'}}>
+                    {savedZones.map((zone) => (
+                        <Menu.Item key={zone.user_plot_id} style={{ height: '80px', padding: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ paddingLeft: '10px' }}>{zone.user_plot_name}</span>
+                                {zone.user_plot_name !== '' && (
+                                    <Button
+                                        style={{ float: 'right' }}
+                                        onClick={() => {
+                                            onDeleteZone(zone.user_plot_id);
+                                        }}
+                                    >
+                                        <DeleteOutlined />
+                                    </Button>
+                                )}
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                <Button style={{ flex: 1, marginRight: '3px' }} onClick={() => {
                                     toggleMap()
                                     setCurrentView('')
+                                    setZoneId(zone.user_plot_id)
+                                
+                                
+                                }}>
+                                    View
+                                </Button>
+                                <Button style={{ flex: 1, marginLeft: '3px' }} onClick={() =>{
+                                    if (currentView === zone.user_plot_id){
+                                        toggleMap()
+                                        setCurrentView('')
+                    
+                                    } else {
+                    
+                                        setCurrentView(zone.user_plot_id)
+                                        toggleComparison()
+                                    }
+                                
+                                }}>
+                                    Compare
+                                </Button>
+                            </div>
+                        </Menu.Item>
+                    ))}
+                </div>
                 
-                                } else {
-                  
-                                    setCurrentView(zone.user_plot_id)
-                                    toggleComparison()
-                                }
-                               
-                            }}>
-                                Compare
-                            </Button>
-                        </div>
-                    </Menu.Item>
-                ))}
             </SubMenu>
         </Menu>
     );
