@@ -49,7 +49,7 @@ func (app *application) getUserPlotIDs(w http.ResponseWriter, r *http.Request) {
 		if key == "user_id" {
 			userID, ok := val.(string)
 
-			if ok != true {
+			if !ok {
 				app.errorLog.Println("User ID is not a string")
 			}
 
@@ -110,7 +110,6 @@ func (app *application) GetPlotById(w http.ResponseWriter, r *http.Request) {
 	// encode the output
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(plot)
-	return
 }
 
 func (app *application) SyncBumbalZones(w http.ResponseWriter, r *http.Request) {
@@ -212,6 +211,10 @@ func (app *application) SavePlot(w http.ResponseWriter, r *http.Request) {
 
 	// convert the user id from string to int as this is how it is stored in the database
 	userId, err := strconv.Atoi(uid)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
 
 	// ----------------------------
 	var receivedPlot models.PlotModel
@@ -253,4 +256,65 @@ func (app *application) SavePlot(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	return
+}
+
+func (app *application) DeletePlotById(w http.ResponseWriter, r *http.Request) {
+
+	// get the plot id from the url parameter
+	plotId := chi.URLParam(r, "plotId")
+	if plotId == "" {
+		http.Error(w, "Plot ID is required", http.StatusBadRequest)
+		return
+	}
+
+	// FIX: move this logic to a middleware
+	t := r.Header.Get("Authorization") // -> "Bearer <TOKEN>"
+
+	token := strings.TrimPrefix(t, "Bearer ")
+
+	// check if we indeed have a bearer token
+	if token == "" {
+		http.Error(w, "There is a problem with your token", http.StatusBadRequest)
+		return
+	}
+
+	// parse the token to extract its information, no need to verify the token sig
+	parsedToken, _, err := new(jwt.Parser).ParseUnverified(token, jwt.MapClaims{})
+	if err != nil {
+		app.errorLog.Println(err.Error())
+		http.Error(w, "There is a problem with your token", http.StatusBadRequest)
+		return
+	}
+
+	claims := parsedToken.Claims.(jwt.MapClaims)
+	// get the user id from the decoded claims
+	uid, ok := claims["user_id"].(string)
+	if !ok {
+		app.serverError(w, fmt.Errorf("Could not get user id from claims"))
+	}
+
+	// convert the user id from string to int as this is how it is stored in the database
+	userId, err := strconv.Atoi(uid)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// --------------------
+
+	count, err := app.bzoneDbModel.DeletePlotById(plotId, userId)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// no plot was deleted, so the plot id was not found
+	if count == 0 {
+		message := fmt.Sprintf("Plot with id %s not found", plotId)
+		http.Error(w, message, http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+
 }
