@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
-import { Menu, Form, Input, Button, Radio, InputNumber } from 'antd';
+import { Menu, Form, Input, Button, Radio, InputNumber, Tooltip } from 'antd';
 
 // Icons
 import { DeleteOutlined, } from '@ant-design/icons';
@@ -14,10 +14,15 @@ import '../index.css';
 const { SubMenu } = Menu;
 
 //Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
-const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap }) => {
+const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, setNrofZones }) => {
     const [averageFuelCost, setAverageFuelCost] = useState("");
     const [averageFuelUsage, setAverageFuelUsage] = useState("");
+  
     const calculate = useRef(0)
+
+    const onChangeAlgo = (e) => {
+        setAlgorithm(e.target.value);
+    };
 
     const handleSubmit = (e) => {
         //e.preventDefault();
@@ -58,9 +63,31 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap }) => {
                     />
                 </div>
             </Form.Item>
-            <div style={{ textAlign: "center" }}>
+            <div style={{ width: '100%', textAlign: 'center' }}>
+                <Radio.Group onChange={onChangeAlgo} value={algorithm} style={{ paddingBottom: '10px' }}>
+                    <Radio value={1}> KMeans </Radio>
+                    <Tooltip title="May take up to 10 minutes for result.">
+                        <Radio value={2}> Genetic </Radio>
+                    </Tooltip>  
+                </Radio.Group>
+            </div>
+            <Form.Item>
+                <div style={{ padding: "0 5px" }}>
+                    Nunber of Zones
+                    <Input
+                        placeholder="input desired number of zones"
+                        type="number"
+                        step="1"
+                        
+                        onChange={(e) => setNrofZones(e.target.value)}
+                    />
+                </div>
+            </Form.Item>
+                
+            
+            <div style={{ textAlign: "center", padding: 5 }}>
                 <Button
-                    style={{ width: "95%" }}
+                    style={{ width: "95%"}}
                     type="primary"
                     htmlType="submit"
                     disabled={!averageFuelCost || !averageFuelUsage}
@@ -73,8 +100,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap }) => {
 };
 
 function SiderComponent(props) {
-    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId, setCurrentView, currentView } = props;
-
+    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm, setAlgorithm, setNrofZones, currentView } = props;
 
 
     const toggleMap = () => {
@@ -139,10 +165,10 @@ function SiderComponent(props) {
             </SubMenu>
 
             <SubMenu key="sub4" title="Zones">
-                <ZoneSubMenu setZoneId={setZoneId} toggleMap={toggleMap} />
+                <ZoneSubMenu setZoneId={setZoneId} toggleMap={toggleMap} algorithm={algorithm} setAlgorithm={setAlgorithm} setNrofZones={setNrofZones} />
             </SubMenu>
 
-            <SubMenu key="sub2" title="Saved Zones">
+            <SubMenu key="sub2" title="Saved Zones" style={{'max-height': '30vh', 'overflow': 'auto'}}>
                 {savedZones.map((zone) => (
                     <Menu.Item key={zone.user_plot_id} style={{ height: '80px', padding: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

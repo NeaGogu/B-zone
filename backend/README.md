@@ -71,7 +71,17 @@ Here is an overview of the backend endpoints, together with instructions on how 
     - ![image](https://user-images.githubusercontent.com/53708808/226575577-102ed80b-5171-455d-a218-2b15a8908f58.png)
     - wow now you can finally say `SSIIIUUUUUU`
 
-
+2. Endpoint for running the `genetic algorithm`:
+    - the `url` for this `PUT` request is: http://localhost:4000/bumbal/algorithm/genetic
+    - the request should have a `json` body which looks like this: 
+    - ![image](https://user-images.githubusercontent.com/53708808/227586728-3f763ba9-748d-4b86-88ba-86563471c8e0.png)
+    - for convenience: `{"number_of_zones":5,"number_of_generations":10000,"maximum_runtime":10}`
+    - the three fields are integer numbers, set them as needed, it's not mandatory to use the ones from the examples. There is no need to have more than 10000 generations. The `maximum_runtime` field should include the maximum amount of minutes for which a user is willing to wait. In the example, the algorithm will return what it generated after 10 minutes even if it hasn't finished doing its calculations (in case of a very large input).
+    - please make sure to also include the users's `authentication token` in the request!
+    - the body of the response is in `json` format
+    - use the field named `result`, which contains a `list` of type ZoneModel
+    - the `json` structure present in the body of the response should be `similar` to the one from the `k-means` algorithm
+    - `VAAAMOOSS`
 
 - `[PUT] /plot/sync` -> call this right after logging in with bumbal; this ensures that the latest zones saved in bumbal are synced with our backend ( **OLD PLOTS WITH ORIGIN "bumbal" ARE REMOVED WHEN CALLING THIS**)
 - `[GET] /user/plots` -> get a list of (plot id, plot name) that the user has saved on our backend. The response body looks like this:
@@ -135,7 +145,7 @@ Here is an overview of the backend endpoints, together with instructions on how 
 	]
 }
 ```
-
+- `[DELETE] /plot/<PLOT_ID>` -> delete a plot by ID
 
 # Project structure and organization
 
