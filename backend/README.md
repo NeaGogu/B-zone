@@ -51,7 +51,101 @@ Normally you should not bother with anything else, you can just run the containe
 
 ![image](https://user-images.githubusercontent.com/70640237/224294005-238c103f-add2-49f2-9d5d-f7658ad4df92.png)
 
+# API Endpoint Guide for our frontend friends
+> !! All API calls should contain the JWT token as a Bearer Authorization header!!
 
+![grogu](https://user-images.githubusercontent.com/53708808/226573731-2376ac58-cb0b-40a5-bbc8-b0590f503d43.png)
+
+Here is an overview of the backend endpoints, together with instructions on how to access them:
+
+1. Endpoint for running the `k-means algorithm`:
+    - the `url` for this `PUT` request is: http://localhost:4000/bumbal/algorithm/kmeans
+    - the request should have a `json` body which looks like this: 
+    - ![image](https://user-images.githubusercontent.com/53708808/226574702-fe906675-0c77-47b5-b618-059c1d525e1f.png)
+    - for convenience: `{"number_of_clusters":2,"number_of_candidate_clusters":1}`
+    - the two fields are integer numbers, set them as needed, it's not mandatory to use the ones from the examples
+    - please make sure to also include the users's `authentication token` in the request!
+    - the body of the response is in `json` format
+    - use the field named `result`, which contains a `list` of type ZoneModel
+    - here is an example:
+    - ![image](https://user-images.githubusercontent.com/53708808/226575577-102ed80b-5171-455d-a218-2b15a8908f58.png)
+    - wow now you can finally say `SSIIIUUUUUU`
+
+2. Endpoint for running the `genetic algorithm`:
+    - the `url` for this `PUT` request is: http://localhost:4000/bumbal/algorithm/genetic
+    - the request should have a `json` body which looks like this: 
+    - ![image](https://user-images.githubusercontent.com/53708808/227586728-3f763ba9-748d-4b86-88ba-86563471c8e0.png)
+    - for convenience: `{"number_of_zones":5,"number_of_generations":10000,"maximum_runtime":10}`
+    - the three fields are integer numbers, set them as needed, it's not mandatory to use the ones from the examples. There is no need to have more than 10000 generations. The `maximum_runtime` field should include the maximum amount of minutes for which a user is willing to wait. In the example, the algorithm will return what it generated after 10 minutes even if it hasn't finished doing its calculations (in case of a very large input).
+    - please make sure to also include the users's `authentication token` in the request!
+    - the body of the response is in `json` format
+    - use the field named `result`, which contains a `list` of type ZoneModel
+    - the `json` structure present in the body of the response should be `similar` to the one from the `k-means` algorithm
+    - `VAAAMOOSS`
+
+- `[PUT] /plot/sync` -> call this right after logging in with bumbal; this ensures that the latest zones saved in bumbal are synced with our backend ( **OLD PLOTS WITH ORIGIN "bumbal" ARE REMOVED WHEN CALLING THIS**)
+- `[GET] /user/plots` -> get a list of (plot id, plot name) that the user has saved on our backend. The response body looks like this:
+```json
+[
+	{
+		"user_plot_id": "47ca8b57-f43b-49b5-b33c-0041e56b1444",
+		"user_plot_name": "Bumbal zone - 2023-03-21 21:08:16"
+	},
+	{
+		"user_plot_id": "a8d28475-6e40-4fd6-8e0a-e7ae5673a260",
+		"user_plot_name": "another plot"
+	}
+]
+```
+- `[GET] /plot/<PLOT_ID>` -> get a PlotModel object that corresponds with the ID provided in the path. The response body looks like this:
+```json
+{
+	"plot_id": "0be65878-32c6-4d30-9686-a483acb906e7",
+	"plot_name": "a new plot hi",
+	"plot_zones": [
+		{
+			"zone_id": "",
+			"zone_ranges": [
+				{
+					"zipcode_from": 1234,
+					"zipcode_to": 4312
+				},
+				{
+					"zipcode_from": 1234,
+					"zipcode_to": 4312
+				}
+			],
+			"zone_fuel_cost": 0,
+			"zone_driving_time": 0
+		}
+	],
+	"plot_created_at": "2023-03-21T20:19:04.518Z",
+	"plot_saved_at": "2023-03-21T20:19:04.518Z",
+	"origin": "bzone"
+}
+```
+- `[POST] /plot/save` -> used to save a new plot configuration. THIS DOES NOT UPDATE EXISTING PLOTS. The request body should have this structure:
+```json
+{
+	"plot_id": "blabla", <- not taken into account; can be ommited
+	"plot_name": "a new plot hi", <- requirerd!
+	"plot_zones": [     <- required!
+		{
+			"zone_ranges": [ <- required!
+				{
+					"zipcode_from": 1234, <- required!
+					"zipcode_to": 4312 <- required!
+				},
+				{
+					"zipcode_from": 1234,
+					"zipcode_to": 4312
+				}
+			]
+		}
+	]
+}
+```
+- `[DELETE] /plot/<PLOT_ID>` -> delete a plot by ID
 
 # Project structure and organization
 

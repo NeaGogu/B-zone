@@ -1,6 +1,6 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Form, Input, Card, ConfigProvider, theme } from 'antd';
-import { useNavigate } from "react-router-dom";
+//import { useNavigate } from "react-router-dom";
 import './index.css'
 
 // Used for dark mode
@@ -8,7 +8,7 @@ const { darkAlgorithm } = theme;
 
 export default function Login() {
     // A hook from React Router that allows for navigation within the app.
-    const navigate = useNavigate();
+    // const navigate = useNavigate(); -> doesnt work for some reason?
 
     // A boolean variable that keeps track of whether the user has been verified or not.
     var verified;
@@ -19,7 +19,7 @@ export default function Login() {
     * @param {string} passw The password of user to authenticate.
     * @return {undefined} 
     */
-    function signIn(user, passw) {
+    async function signIn(user, passw) {
         fetch("https://sep202302.bumbal.eu/api/v2/authenticate/sign-in", {
             method: 'POST',
             headers: {
@@ -45,11 +45,31 @@ export default function Login() {
                 if (!verified) {
                     alert('Invalid Credentials')
                 } else {
-                    localStorage.setItem('token', data.token)
-                    localStorage.setItem('email', user)
-                    localStorage.setItem('id', data.user.id)
-                    window.location.reload()
-                    navigate('/home')
+                    // syncronize plots
+                    fetch("http://localhost:4000/plot/sync",{
+                        method: 'PUT',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${data.token}`
+                        }, 
+                    }).then((response2) =>{
+                        // if sync was successfull redirect, otherwise dont.
+                        if(response2.ok){
+                            localStorage.setItem('token', data.token)
+                            localStorage.setItem('email', user)
+                            localStorage.setItem('id', data.user.id)
+                            window.location.reload()
+                            //navigate('/home')
+                        } else{
+                            alert('server error when syncing zones, please try again')
+                        }
+                    }).catch((error)=>{
+                        alert('server error when syncing zones, please try again')
+
+                    })
+                    
+                    //navigate('/home')
                 }
             })
         return undefined;
@@ -86,15 +106,15 @@ export default function Login() {
                 <Card className='form-card' >
                     <Form name='login-form' className='login-form' onFinish={onFinish}>
                         <Form.Item name='Email' rules={[{ required: true, message: 'Email is required!' }]}>
-                            <Input placeholder='Email' prefix={<UserOutlined />} />
+                            <Input data-testid="username-input" placeholder='Email' prefix={<UserOutlined />} />
                         </Form.Item>
 
                         <Form.Item name='Password' rules={[{ required: true, message: 'Password is required!' }]}>
-                            <Input.Password placeholder='Password' prefix={<LockOutlined />} />
+                            <Input.Password data-testid="password-input" placeholder='Password' prefix={<LockOutlined />} />
                         </Form.Item>
 
                         <Form.Item >
-                            <Button type='primary' className='login-button' htmlType='submit'>
+                            <Button data-testid="button" type='primary' className='login-button' htmlType='submit'>
                                 Log in
                             </Button>
                             <a href='https://support.bumbal.eu/en/register' style={{ marginLeft: 35 }}> or Register!</a>
