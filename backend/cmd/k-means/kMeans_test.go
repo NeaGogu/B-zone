@@ -71,15 +71,15 @@ var MinNormal = math.Float64frombits(0x0010000000000000)
 // 				t.Errorf("kMeans() error = %v, want %v", err, tc.expectedError)
 // 			}
 
-// 			// If there was no error, check that the number of clusters matches the input
+// 			// If there was no error, check that the number of Clusters matches the input
 // 			if err == nil && len(got) != tc.nrClusters {
-// 				t.Errorf("kMeans() returned %v clusters, want %v clusters", len(got), tc.nrClusters)
+// 				t.Errorf("kMeans() returned %v Clusters, want %v Clusters", len(got), tc.nrClusters)
 // 			}
 
-// 			// Check that each cluster has at least one observation
+// 			// Check that each Cluster has at least one observation
 // 			for _, c := range got {
 // 				if len(c.ZoneRanges) == 0 {
-// 					t.Errorf("kMeans() returned a cluster with 0 observations")
+// 					t.Errorf("kMeans() returned a Cluster with 0 observations")
 // 				}
 // 			}
 // 		})
@@ -90,13 +90,13 @@ func TestUpdateCluster(t *testing.T) {
 	// Define test cases
 	tests := []struct {
 		name     string
-		clusters clusters
-		want     clusters
+		Clusters Clusters
+		want     Clusters
 		wantErr  bool
 	}{
 		{
 			name: "Happy path",
-			clusters: clusters{
+			Clusters: Clusters{
 				createCluster(t, createCoordinate(t, 52.0, 4.0), observations{
 					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 1),
 					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 2),
@@ -107,7 +107,7 @@ func TestUpdateCluster(t *testing.T) {
 					createObservation(t, createCoordinate(t, 51.9194, 4.4818), 5),
 				}),
 			},
-			want: clusters{
+			want: Clusters{
 				createCluster(t, createCoordinate(t, 52.370216, 4.895168), observations{
 					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 1),
 					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 2),
@@ -121,21 +121,21 @@ func TestUpdateCluster(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:     "Empty clusters",
-			clusters: clusters{},
-			want:     clusters{},
+			name:     "Empty Clusters",
+			Clusters: Clusters{},
+			want:     Clusters{},
 			wantErr:  false,
 		},
 		{
 			name: "Cluster with no observations",
-			clusters: clusters{
+			Clusters: Clusters{
 				createCluster(t, createCoordinate(t, 52.0, 4.0), observations{
 					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 1),
 					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 2),
 				}),
-				createCluster(t, createCoordinate(t, 51.0, 4.3), observations{}), // empty cluster
+				createCluster(t, createCoordinate(t, 51.0, 4.3), observations{}), // empty Cluster
 			},
-			want: clusters{
+			want: Clusters{
 				createCluster(t, createCoordinate(t, 52.370216, 4.895168), observations{
 					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 1),
 					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 2),
@@ -149,7 +149,7 @@ func TestUpdateCluster(t *testing.T) {
 	// Run tests
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := updateCluster(tt.clusters)
+			got := updateCluster(tt.Clusters)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -159,12 +159,12 @@ func TestClearObservations(t *testing.T) {
 	// Define test cases
 	tests := []struct {
 		name     string
-		clusters clusters
-		want     clusters
+		Clusters Clusters
+		want     Clusters
 	}{
 		{
 			name: "Happy path",
-			clusters: clusters{
+			Clusters: Clusters{
 				createCluster(t, createCoordinate(t, 52.370216, 4.895168), observations{
 					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 1),
 					createObservation(t, createCoordinate(t, 52.370216, 4.895168), 2),
@@ -174,24 +174,24 @@ func TestClearObservations(t *testing.T) {
 					createObservation(t, createCoordinate(t, 51.9194, 4.4818), 4),
 				}),
 			},
-			want: clusters{
+			want: Clusters{
 				createCluster(t, createCoordinate(t, 52.370216, 4.895168), observations{}),
 				createCluster(t, createCoordinate(t, 51.9194, 4.4818), observations{}),
 			},
 		},
 		{
-			name:     "Empty clusters",
-			clusters: clusters{},
-			want:     clusters{},
+			name:     "Empty Clusters",
+			Clusters: Clusters{},
+			want:     Clusters{},
 		},
 	}
 
 	// Run tests
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Make a deep copy of the input clusters
-			input := make(clusters, len(tt.clusters))
-			copy(input, tt.clusters)
+			// Make a deep copy of the input Clusters
+			input := make(Clusters, len(tt.Clusters))
+			copy(input, tt.Clusters)
 
 			// Call the function
 			clearObservations(&input)
@@ -217,7 +217,7 @@ func TestInitializeClusters(t *testing.T) {
 		nrCandidateClusters int
 		wantError           bool
 		expectedError       error
-		expectedClusters    clusters
+		expectedClusters    Clusters
 	}{
 		{
 			name:                "NrClusters larger than length of observations",
@@ -225,7 +225,7 @@ func TestInitializeClusters(t *testing.T) {
 			nrCandidateClusters: 2,
 			expectedError:       ErrNrObservationsTooSmall,
 			wantError:           true,
-			expectedClusters:    clusters{},
+			expectedClusters:    Clusters{},
 		},
 		{
 			name:                "NrCandidateClusters smaller or equal to 0",
@@ -233,7 +233,7 @@ func TestInitializeClusters(t *testing.T) {
 			nrCandidateClusters: 0,
 			expectedError:       ErrNrCandidateClustersTooSmall,
 			wantError:           true,
-			expectedClusters:    clusters{},
+			expectedClusters:    Clusters{},
 		},
 		{
 			name:                "NrCandidateClusters larger than length of observations",
@@ -241,7 +241,7 @@ func TestInitializeClusters(t *testing.T) {
 			nrCandidateClusters: 4,
 			expectedError:       ErrNrObservationsTooSmall,
 			wantError:           true,
-			expectedClusters:    clusters{},
+			expectedClusters:    Clusters{},
 		},
 		{
 			name:                "NrClusters equal to length of observations",
@@ -249,10 +249,10 @@ func TestInitializeClusters(t *testing.T) {
 			nrCandidateClusters: 2,
 			expectedError:       nil,
 			wantError:           false,
-			expectedClusters: clusters{
-				createCluster(t, obs3.coordinates, []observation{obs3}),
-				createCluster(t, obs1.coordinates, []observation{obs1}),
-				createCluster(t, obs1.coordinates, []observation{obs1}),
+			expectedClusters: Clusters{
+				createCluster(t, obs3.Coordinates, []observation{obs3}),
+				createCluster(t, obs1.Coordinates, []observation{obs1}),
+				createCluster(t, obs1.Coordinates, []observation{obs1}),
 			},
 		},
 		{
@@ -261,9 +261,9 @@ func TestInitializeClusters(t *testing.T) {
 			nrCandidateClusters: 2,
 			expectedError:       nil,
 			wantError:           false,
-			expectedClusters: clusters{
-				createCluster(t, obs3.coordinates, []observation{obs3}),
-				createCluster(t, obs1.coordinates, []observation{obs1}),
+			expectedClusters: Clusters{
+				createCluster(t, obs3.Coordinates, []observation{obs3}),
+				createCluster(t, obs1.Coordinates, []observation{obs1}),
 			},
 		},
 	}
@@ -274,8 +274,8 @@ func TestInitializeClusters(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			randSeed := rand.New(rand.NewSource(12345))
 			// Call the function
-			clusters := clusters{}
-			got, err := initializeClusters(observations, clusters, tc.nrClusters, tc.nrCandidateClusters, randSeed)
+			Clusters := Clusters{}
+			got, err := initializeClusters(observations, Clusters, tc.nrClusters, tc.nrCandidateClusters, randSeed)
 
 			// Check the result
 			if err != tc.expectedError {
@@ -301,9 +301,9 @@ func TestChooseCandidates(t *testing.T) {
 	randSeed := rand.New(rand.NewSource(12345))
 
 	// Call the function and check the result
-	want := clusters{
-		createCluster(t, obs3.coordinates, []observation{obs3}),
-		createCluster(t, obs2.coordinates, []observation{obs2}),
+	want := Clusters{
+		createCluster(t, obs3.Coordinates, []observation{obs3}),
+		createCluster(t, obs2.Coordinates, []observation{obs2}),
 	}
 	got := chooseCandidates(observations, probabilities, nrCandidateClusters, randSeed)
 
@@ -317,15 +317,15 @@ func TestTotalSumDistance(t *testing.T) {
 	obs3 := createObservation(t, createCoordinate(t, 5, 6), 1)
 	observations := []observation{obs1, obs2, obs3}
 
-	cluster1 := createCluster(t, obs1.coordinates, []observation{obs1})
-	cluster2 := createCluster(t, obs2.coordinates, []observation{obs2})
-	clusters := []cluster{cluster1, cluster2}
+	cluster1 := createCluster(t, obs1.Coordinates, []observation{obs1})
+	cluster2 := createCluster(t, obs2.Coordinates, []observation{obs2})
+	Clusters := []Cluster{cluster1, cluster2}
 
 	// Define a test table with different scenarios
 	tests := []struct {
 		name         string
 		observations []observation
-		checkCluster []cluster
+		checkCluster []Cluster
 		want         float64
 		wantErr      bool
 		err          error
@@ -333,7 +333,7 @@ func TestTotalSumDistance(t *testing.T) {
 		{
 			name:         "normal case",
 			observations: observations,
-			checkCluster: clusters,
+			checkCluster: Clusters,
 			want:         math.Sqrt(8),
 			wantErr:      false,
 			err:          nil,
@@ -341,15 +341,15 @@ func TestTotalSumDistance(t *testing.T) {
 		{
 			name:         "empty observations",
 			observations: []observation{},
-			checkCluster: clusters,
+			checkCluster: Clusters,
 			want:         0,
 			wantErr:      false,
 			err:          nil,
 		},
 		{
-			name:         "empty clusters",
+			name:         "empty Clusters",
 			observations: observations,
-			checkCluster: []cluster{},
+			checkCluster: []Cluster{},
 			want:         0,
 			wantErr:      true,
 			err:          ErrNoClusters,
@@ -381,15 +381,15 @@ func TestTotalListDistance(t *testing.T) {
 	obs3 := createObservation(t, createCoordinate(t, 5, 6), 1)
 	observations := []observation{obs1, obs2, obs3}
 
-	cluster1 := createCluster(t, obs1.coordinates, []observation{obs1})
-	cluster2 := createCluster(t, obs2.coordinates, []observation{obs2})
-	clusters := []cluster{cluster1, cluster2}
+	cluster1 := createCluster(t, obs1.Coordinates, []observation{obs1})
+	cluster2 := createCluster(t, obs2.Coordinates, []observation{obs2})
+	Clusters := []Cluster{cluster1, cluster2}
 
 	// Define a test table with different scenarios
 	tests := []struct {
 		name          string
 		observations  []observation
-		clusters      []cluster
+		Clusters      []Cluster
 		wantDistances []float64
 		wantErr       bool
 		err           error
@@ -397,7 +397,7 @@ func TestTotalListDistance(t *testing.T) {
 		{
 			name:          "normal case",
 			observations:  observations,
-			clusters:      clusters,
+			Clusters:      Clusters,
 			wantDistances: []float64{math.Sqrt(8), 0, math.Sqrt(8)},
 			wantErr:       false,
 			err:           nil,
@@ -406,16 +406,16 @@ func TestTotalListDistance(t *testing.T) {
 			//since the makes a list based on the length of observations and loops over observations we want to recieve an empty list back
 			name:          "empty observations",
 			observations:  []observation{},
-			clusters:      clusters,
+			Clusters:      Clusters,
 			wantDistances: []float64{},
 			wantErr:       false,
 			err:           nil,
 		},
 		{
-			//because empty cluster defaults to center {0,0} we want the distances measured to 0
-			name:          "empty clusters",
+			//because empty Cluster defaults to Center {0,0} we want the distances measured to 0
+			name:          "empty Clusters",
 			observations:  observations,
-			clusters:      []cluster{},
+			Clusters:      []Cluster{},
 			wantDistances: []float64{2.23606797749979, 5, 7.810249675906654},
 			wantErr:       false,
 			err:           nil,
@@ -427,10 +427,10 @@ func TestTotalListDistance(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var gotDistances []float64
 			var err error
-			if len(tt.clusters) > 0 {
-				gotDistances = totalListDistance(tt.observations, tt.clusters[len(tt.clusters)-1])
+			if len(tt.Clusters) > 0 {
+				gotDistances = totalListDistance(tt.observations, tt.Clusters[len(tt.Clusters)-1])
 			} else {
-				gotDistances = totalListDistance(tt.observations, cluster{})
+				gotDistances = totalListDistance(tt.observations, Cluster{})
 			}
 
 			if tt.wantErr && err == nil {
@@ -462,18 +462,18 @@ func TestBestCandidateFunc(t *testing.T) {
 	obs2 := createObservation(t, createCoordinate(t, 3, 4), 2)
 	observations := []observation{obs1, obs2}
 
-	cluster1 := createCluster(t, obs1.coordinates, []observation{obs1})
-	cluster2 := createCluster(t, obs2.coordinates, []observation{obs2})
-	clusters := []cluster{cluster1, cluster2}
+	cluster1 := createCluster(t, obs1.Coordinates, []observation{obs1})
+	cluster2 := createCluster(t, obs2.Coordinates, []observation{obs2})
+	Clusters := []Cluster{cluster1, cluster2}
 
-	candidate1 := cluster{center: coordinates{latitude: 5.0, longitude: 6.0}, observations: []observation{}}
-	candidate2 := cluster{center: coordinates{latitude: 7.0, longitude: 8.0}, observations: []observation{}}
-	candidates := []cluster{candidate1, candidate2}
+	candidate1 := Cluster{Center: Coordinates{Latitude: 5.0, Longitude: 6.0}, observations: []observation{}}
+	candidate2 := Cluster{Center: Coordinates{Latitude: 7.0, Longitude: 8.0}, observations: []observation{}}
+	candidates := []Cluster{candidate1, candidate2}
 
 	t.Run("Normal run", func(t *testing.T) {
 		// Call the function and check the result
 		want := candidate1
-		got, err := bestCandidateFunc(candidates, clusters, observations)
+		got, err := bestCandidateFunc(candidates, Clusters, observations)
 		assertEqual(t, got, want, err)
 	})
 
@@ -485,23 +485,23 @@ func TestBestCandidateFunc(t *testing.T) {
 		//create two candidates that have equal sum of distances
 		middleCandidate1 := createCluster(t, createCoordinate(t, 1, 2), []observation{})
 		middleCandidate2 := createCluster(t, createCoordinate(t, 2, 1), []observation{})
-		candidates := []cluster{middleCandidate1, middleCandidate2}
+		candidates := []Cluster{middleCandidate1, middleCandidate2}
 		//since the comparison is < we expect the first candidate if the result is equal
 		want := middleCandidate1
 		// Call the function and check the result
-		got, err := bestCandidateFunc(candidates, []cluster{}, observationsEqual)
+		got, err := bestCandidateFunc(candidates, []Cluster{}, observationsEqual)
 		assertEqual(t, got, want, err)
 	})
 	t.Run("No candidates given", func(t *testing.T) {
-		candidates := []cluster{}
-		_, err := bestCandidateFunc(candidates, clusters, observations)
+		candidates := []Cluster{}
+		_, err := bestCandidateFunc(candidates, Clusters, observations)
 		assertError(t, err, ErrNrCandidateClustersTooSmall)
 	})
 
 }
 func TestDistanceToNearestCluster(t *testing.T) {
-	// Create clusters to test with
-	clusters := clusters{
+	// Create Clusters to test with
+	Clusters := Clusters{
 		createCluster(t, createCoordinate(t, 4, 6), make(observations, 0)),
 		createCluster(t, createCoordinate(t, 0, 0), make(observations, 0)),
 	}
@@ -514,13 +514,13 @@ func TestDistanceToNearestCluster(t *testing.T) {
 		wantIndex    int
 	}{
 		{
-			name:         "Center difference on longitude",
+			name:         "Center difference on Longitude",
 			observation:  createObservation(t, createCoordinate(t, 2, 6), 1),
 			wantDistance: 2.0,
 			wantIndex:    0,
 		},
 		{
-			name:         "Center difference on latitude",
+			name:         "Center difference on Latitude",
 			observation:  createObservation(t, createCoordinate(t, 4, 8), 1),
 			wantDistance: 2.0,
 			wantIndex:    0,
@@ -532,7 +532,7 @@ func TestDistanceToNearestCluster(t *testing.T) {
 			wantIndex:    0,
 		},
 		{
-			name:         "Point is on center",
+			name:         "Point is on Center",
 			observation:  createObservation(t, createCoordinate(t, 0, 0), 1),
 			wantDistance: 0.0,
 			wantIndex:    1,
@@ -546,14 +546,14 @@ func TestDistanceToNearestCluster(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Call the distanceToNearestCluster function and get the results
-			gotDistance, gotIndex, err := distanceToNearestCluster(tc.observation, clusters)
+			gotDistance, gotIndex, err := distanceToNearestCluster(tc.observation, Clusters)
 
 			// Check for errors
 			assert.NoError(t, err, "unexpected error")
 
-			// Check if the distance and cluster index are correct
+			// Check if the distance and Cluster index are correct
 			assert.InDeltaf(t, tc.wantDistance, gotDistance, epsilon, "distance: got %f, want %f", gotDistance, tc.wantDistance)
-			assert.Equalf(t, tc.wantIndex, gotIndex, "cluster index: got %d, want %d", gotIndex, tc.wantIndex)
+			assert.Equalf(t, tc.wantIndex, gotIndex, "Cluster index: got %d, want %d", gotIndex, tc.wantIndex)
 		})
 	}
 }
@@ -561,45 +561,45 @@ func TestDistanceToNearestCluster(t *testing.T) {
 func TestDistance(t *testing.T) {
 
 	t.Run("easy run", func(t *testing.T) {
-		//create an observation and a cluster with known coordinates
+		//create an observation and a Cluster with known Coordinates
 		observation := createObservation(t, createCoordinate(t, 10, 20), 1)
-		cluster := createCluster(t, createCoordinate(t, 15, 25), make(observations, 0))
-		//calculate the expected distance between the observation and the cluster
-		expectedDistance := math.Sqrt((observation.coordinates.latitude-cluster.center.latitude)*(observation.coordinates.latitude-cluster.center.latitude) +
-			(observation.coordinates.longitude-cluster.center.longitude)*(observation.coordinates.longitude-cluster.center.longitude))
+		Cluster := createCluster(t, createCoordinate(t, 15, 25), make(observations, 0))
+		//calculate the expected distance between the observation and the Cluster
+		expectedDistance := math.Sqrt((observation.Coordinates.Latitude-Cluster.Center.Latitude)*(observation.Coordinates.Latitude-Cluster.Center.Latitude) +
+			(observation.Coordinates.Longitude-Cluster.Center.Longitude)*(observation.Coordinates.Longitude-Cluster.Center.Longitude))
 
 		//call the distance function to calculate the actual distance
-		actualDistance := distance(observation, cluster)
+		actualDistance := distance(observation, Cluster)
 
 		//check if the actual distance matches the expected distance
 		if !AlmostEqual(t, actualDistance, expectedDistance, 0.0001) {
 			t.Errorf("distance calculation incorrect, expected: %v, got: %v", expectedDistance, actualDistance)
 		}
 	})
-	t.Run("latitude negative", func(t *testing.T) {
-		//create an observation and a cluster with known coordinates
+	t.Run("Latitude negative", func(t *testing.T) {
+		//create an observation and a Cluster with known Coordinates
 		observation := createObservation(t, createCoordinate(t, -5, 5), 1)
-		cluster := createCluster(t, createCoordinate(t, 5, 5), make(observations, 0))
-		//calculate the expected distance between the observation and the cluster
+		Cluster := createCluster(t, createCoordinate(t, 5, 5), make(observations, 0))
+		//calculate the expected distance between the observation and the Cluster
 		expectedDistance := 10.0
 
 		//call the distance function to calculate the actual distance
-		actualDistance := distance(observation, cluster)
+		actualDistance := distance(observation, Cluster)
 
 		//check if the actual distance matches the expected distance
 		if !AlmostEqual(t, actualDistance, expectedDistance, 0.0001) {
 			t.Errorf("distance calculation incorrect, expected: %v, got: %v", expectedDistance, actualDistance)
 		}
 	})
-	t.Run("longitude negative", func(t *testing.T) {
-		//create an observation and a cluster with known coordinates
+	t.Run("Longitude negative", func(t *testing.T) {
+		//create an observation and a Cluster with known Coordinates
 		observation := createObservation(t, createCoordinate(t, 5, -5), 1)
-		cluster := createCluster(t, createCoordinate(t, 5, 5), make(observations, 0))
-		//calculate the expected distance between the observation and the cluster
+		Cluster := createCluster(t, createCoordinate(t, 5, 5), make(observations, 0))
+		//calculate the expected distance between the observation and the Cluster
 		expectedDistance := 10.0
 
 		//call the distance function to calculate the actual distance
-		actualDistance := distance(observation, cluster)
+		actualDistance := distance(observation, Cluster)
 
 		//check if the actual distance matches the expected distance
 		if !AlmostEqual(t, actualDistance, expectedDistance, 0.0001) {
@@ -607,15 +607,15 @@ func TestDistance(t *testing.T) {
 		}
 	})
 	t.Run("complex float", func(t *testing.T) {
-		//create an observation and a cluster with known coordinates
+		//create an observation and a Cluster with known Coordinates
 		observation := createObservation(t, createCoordinate(t, 51.4486098, 5.4907148), 1)
-		cluster := createCluster(t, createCoordinate(t, 51.395216, 5.474121), make(observations, 0))
-		//calculate the expected distance between the observation and the cluster
-		expectedDistance := math.Sqrt((observation.coordinates.latitude-cluster.center.latitude)*(observation.coordinates.latitude-cluster.center.latitude) +
-			(observation.coordinates.longitude-cluster.center.longitude)*(observation.coordinates.longitude-cluster.center.longitude))
+		Cluster := createCluster(t, createCoordinate(t, 51.395216, 5.474121), make(observations, 0))
+		//calculate the expected distance between the observation and the Cluster
+		expectedDistance := math.Sqrt((observation.Coordinates.Latitude-Cluster.Center.Latitude)*(observation.Coordinates.Latitude-Cluster.Center.Latitude) +
+			(observation.Coordinates.Longitude-Cluster.Center.Longitude)*(observation.Coordinates.Longitude-Cluster.Center.Longitude))
 
 		//call the distance function to calculate the actual distance
-		actualDistance := distance(observation, cluster)
+		actualDistance := distance(observation, Cluster)
 
 		//check if the actual distance matches the expected distance
 		if !AlmostEqual(t, actualDistance, expectedDistance, 0.0000001) {
@@ -624,14 +624,14 @@ func TestDistance(t *testing.T) {
 	})
 
 	t.Run("distance with 0", func(t *testing.T) {
-		//create an observation and a cluster with known coordinates
+		//create an observation and a Cluster with known Coordinates
 		observation := createObservation(t, createCoordinate(t, 2, 3), 1)
-		cluster := createCluster(t, createCoordinate(t, 0, 0), make(observations, 0))
-		//calculate the expected distance between the observation and the cluster
+		Cluster := createCluster(t, createCoordinate(t, 0, 0), make(observations, 0))
+		//calculate the expected distance between the observation and the Cluster
 		expectedDistance := 3.605551275464
 
 		//call the distance function to calculate the actual distance
-		actualDistance := distance(observation, cluster)
+		actualDistance := distance(observation, Cluster)
 
 		//check if the actual distance matches the expected distance
 		if !AlmostEqual(t, actualDistance, expectedDistance, 0.0000001) {
@@ -651,16 +651,16 @@ func TestActivitiesToObservations(t *testing.T) {
 	want := observations{
 		{
 			id: 1,
-			coordinates: coordinates{
-				latitude:  51.5074,
-				longitude: -0.1278,
+			Coordinates: Coordinates{
+				Latitude:  51.5074,
+				Longitude: -0.1278,
 			},
 		},
 		{
 			id: 2,
-			coordinates: coordinates{
-				latitude:  52.5200,
-				longitude: 13.4050,
+			Coordinates: Coordinates{
+				Latitude:  52.5200,
+				Longitude: 13.4050,
 			},
 		},
 	}
@@ -674,8 +674,8 @@ func TestActivitiesToObservations(t *testing.T) {
 
 func TestHaversineDistance(t *testing.T) {
 	// Define some test data
-	point1 := coordinates{latitude: 51.4416, longitude: 5.4697} // btw Eindhoven :D
-	point2 := coordinates{latitude: 48.8566, longitude: 2.3522} // OUI Paris
+	point1 := Coordinates{Latitude: 51.4416, Longitude: 5.4697} // btw Eindhoven :D
+	point2 := Coordinates{Latitude: 48.8566, Longitude: 2.3522} // OUI Paris
 
 	// Call the function
 	got := haversineDistance(point1, point2)
@@ -696,17 +696,17 @@ func TestClusterToZoneModel(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		clusters   clusters
+		Clusters   Clusters
 		activities []model.ActivityModelBumbal
 		want       []model.ZoneModel
 		wantErr    bool
 	}{
 		{
 			name: "happy path",
-			clusters: clusters{
-				cluster{center: createCoordinate(t, 1, 2),
+			Clusters: Clusters{
+				Cluster{Center: createCoordinate(t, 1, 2),
 					observations: observations{createObservation(t, createCoordinate(t, 1, 2), 1), createObservation(t, createCoordinate(t, 1, 2), 2)}},
-				cluster{center: createCoordinate(t, 1, 2),
+				Cluster{Center: createCoordinate(t, 1, 2),
 					observations: observations{createObservation(t, createCoordinate(t, 1, 2), 3), createObservation(t, createCoordinate(t, 1, 2), 4)}},
 			},
 			activities: []model.ActivityModelBumbal{
@@ -728,8 +728,8 @@ func TestClusterToZoneModel(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:     "empty clusters",
-			clusters: clusters{},
+			name:     "empty Clusters",
+			Clusters: Clusters{},
 			activities: []model.ActivityModelBumbal{
 				*activity1,
 				*activity2,
@@ -741,10 +741,10 @@ func TestClusterToZoneModel(t *testing.T) {
 		},
 		{
 			name: "empty activities",
-			clusters: clusters{
-				cluster{center: createCoordinate(t, 1, 2),
+			Clusters: Clusters{
+				Cluster{Center: createCoordinate(t, 1, 2),
 					observations: observations{createObservation(t, createCoordinate(t, 1, 2), 1), createObservation(t, createCoordinate(t, 1, 2), 2)}},
-				cluster{center: createCoordinate(t, 1, 2),
+				Cluster{Center: createCoordinate(t, 1, 2),
 					observations: observations{createObservation(t, createCoordinate(t, 1, 2), 3), createObservation(t, createCoordinate(t, 1, 2), 4)}},
 			},
 			activities: []model.ActivityModelBumbal{},
@@ -753,10 +753,10 @@ func TestClusterToZoneModel(t *testing.T) {
 		},
 		{
 			name: "invalid activity id",
-			clusters: clusters{
-				cluster{center: createCoordinate(t, 1, 2),
+			Clusters: Clusters{
+				Cluster{Center: createCoordinate(t, 1, 2),
 					observations: observations{createObservation(t, createCoordinate(t, 1, 2), 1), createObservation(t, createCoordinate(t, 1, 2), 2)}},
-				cluster{center: createCoordinate(t, 1, 2),
+				Cluster{Center: createCoordinate(t, 1, 2),
 					observations: observations{createObservation(t, createCoordinate(t, 1, 2), 3), createObservation(t, createCoordinate(t, 1, 2), 4)}},
 			},
 			activities: []model.ActivityModelBumbal{
@@ -772,7 +772,7 @@ func TestClusterToZoneModel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := clusterToZoneModel(tt.clusters, tt.activities)
+			got, err := clusterToZoneModel(tt.Clusters, tt.activities)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -790,13 +790,13 @@ func TestClusterToZipcodeSet(t *testing.T) {
 	activity1 := makeActivity(t, "1", "52.3764", "4.9004", "1012")
 	activity2 := makeActivity(t, "2", "52.3764", "4.9004", "1017")
 	activity3 := makeActivity(t, "3", "51.2194", "4.4025", "2273")
-	cluster1 := createCluster(t, coordinates{52.3764, 4.9004}, observations{observation{id: 1, coordinates: createCoordinate(t, 4.9004, 52.3764)}, observation{id: 2, coordinates: createCoordinate(t, 4.9004, 52.3764)}})
-	cluster2 := createCluster(t, coordinates{51.2194, 4.4025}, observations{observation{id: 3, coordinates: createCoordinate(t, 4.4025, 51.2194)}})
-	clusters := clusters{cluster1, cluster2}
+	cluster1 := createCluster(t, Coordinates{52.3764, 4.9004}, observations{observation{id: 1, Coordinates: createCoordinate(t, 4.9004, 52.3764)}, observation{id: 2, Coordinates: createCoordinate(t, 4.9004, 52.3764)}})
+	cluster2 := createCluster(t, Coordinates{51.2194, 4.4025}, observations{observation{id: 3, Coordinates: createCoordinate(t, 4.4025, 51.2194)}})
+	Clusters := Clusters{cluster1, cluster2}
 	activities := []models.ActivityModelBumbal{*activity1, *activity2, *activity3}
 
 	// call the function
-	result, err := clusterToZipcodeSet(clusters, activities)
+	result, err := clusterToZipcodeSet(Clusters, activities)
 	if err != nil {
 		t.Errorf("Didn't expect an error, but got %q", err)
 	}
@@ -1041,20 +1041,20 @@ func makeActivity(t testing.TB, id string, lat string, long string, zipcode stri
 	return activity
 }
 
-func createCluster(t testing.TB, center coordinates, observations observations) cluster {
+func createCluster(t testing.TB, Center Coordinates, observations observations) Cluster {
 	t.Helper()
-	cluster := cluster{
-		center:       center,
+	Cluster := Cluster{
+		Center:       Center,
 		observations: observations,
 	}
-	return cluster
+	return Cluster
 }
 
-func createObservation(t testing.TB, coordinates coordinates, id int64) observation {
+func createObservation(t testing.TB, Coordinates Coordinates, id int64) observation {
 	t.Helper()
 	observation := observation{
 		id:          id,
-		coordinates: coordinates,
+		Coordinates: Coordinates,
 	}
 	return observation
 }
@@ -1076,17 +1076,17 @@ func AlmostEqual(t testing.TB, a, b, ε float64) bool {
 	return diff/math.Min(absA+absB, math.MaxFloat64) < ε
 }
 
-func createCoordinate(t testing.TB, lat float64, long float64) coordinates {
+func createCoordinate(t testing.TB, lat float64, long float64) Coordinates {
 	t.Helper()
-	coord := coordinates{
-		latitude:  lat,
-		longitude: long,
+	coord := Coordinates{
+		Latitude:  lat,
+		Longitude: long,
 	}
 
 	return coord
 }
 
-func createObservations(t testing.TB, coordinatesList []coordinates) observations {
+func createObservations(t testing.TB, coordinatesList []Coordinates) observations {
 	t.Helper()
 
 	observations := make(observations, 0)
@@ -1094,7 +1094,7 @@ func createObservations(t testing.TB, coordinatesList []coordinates) observation
 	for i, coord := range coordinatesList {
 		observations = append(observations, observation{
 			id:          int64(i),
-			coordinates: coord,
+			Coordinates: coord,
 		})
 	}
 
