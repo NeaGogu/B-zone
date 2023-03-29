@@ -2,7 +2,6 @@
 import { useEffect } from 'react'
 import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
-import randomColor from "randomcolor";
 
 var zipCodes = []
 // array of colors to display

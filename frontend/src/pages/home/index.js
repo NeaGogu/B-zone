@@ -7,6 +7,7 @@ import { Layout, Menu, theme, ConfigProvider, Spin } from 'antd';
 
 // Components
 import Map from './components/mapComponent';
+import TextComponent from './components/textComponent'
 
 // CSS
 import './index.css';
@@ -39,6 +40,10 @@ export default function Home() {
     const [algorithm, setAlgorithm] = useState(1);
     // for keeping track of selected algorithm, by default kmeans
     const [nrofzones, setNrofZones] = useState(1);
+    //for setting nae of zone in comparison (single)
+    const [zoneName, setZoneName] = useState("Initial Zone");
+    //for setting nae of zone in comparison (single)
+    const [zoneName2, setZoneName2] = useState("");
 
 
     // For radio.
@@ -239,6 +244,8 @@ export default function Home() {
                             algorithm={algorithm}
                             setAlgorithm={setAlgorithm}
                             setNrofZones={setNrofZones}
+                            setZoneName={setZoneName}
+                            setZoneName2={setZoneName2}
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
@@ -258,6 +265,18 @@ export default function Home() {
                                             : <></>
                                         }
                                     
+                                </div>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
+                                <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
+                                    <TextComponent zoneId={zoneId} zoneName={zoneName}/>
+                                </div>
+                                <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
+                                    {
+                                        showComparison ?
+                                            <TextComponent zoneId={zoneId} zoneName={zoneName2}/>
+                                            : <></>
+                                    }
                                 </div>
                             </div>
                         </Content>

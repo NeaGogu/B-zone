@@ -100,7 +100,9 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
 };
 
 function SiderComponent(props) {
-    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm, setAlgorithm, setNrofZones, currentView } = props;
+    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone,
+            setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm,
+            setAlgorithm, setNrofZones, currentView, setZoneName, setZoneName2 } = props;
 
 
     const toggleMap = () => {
@@ -192,6 +194,7 @@ function SiderComponent(props) {
                                     toggleMap()
                                     setCurrentView('')
                                     setZoneId(zone.user_plot_id)
+                                    setZoneName(zone.user_plot_name)
                                 
                                 
                                 }}>
@@ -206,6 +209,7 @@ function SiderComponent(props) {
                     
                                         setCurrentView(zone.user_plot_id)
                                         toggleComparison()
+                                        setZoneName2(zone.user_plot_name)
                                     }
                                 
                                 }}>
