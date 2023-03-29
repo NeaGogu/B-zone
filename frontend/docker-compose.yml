@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: docker-react-container
+    image: docker-react-i
+    build:
+        context: .
+    ports:
+        - 3000:30

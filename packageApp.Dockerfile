@@ -5,7 +5,7 @@ FROM golang:1.20-alpine3.16
 WORKDIR /app
 
 # Copy the source code into the container
-COPY . .
+COPY backend/ .
 
 # Build the application inside the container
 RUN go build -o b-zone ./cmd/web
