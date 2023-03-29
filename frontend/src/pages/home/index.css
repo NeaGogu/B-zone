@@ -82,3 +82,25 @@
     text-transform: none;
     margin-right: 25%;
 }
+
+/* width */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    /* background: rgba(54, 54, 54, 0.048); */
+    background: #393E46;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #ffd369;
+    border-radius: 4px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #b09148;
+}
