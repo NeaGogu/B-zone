@@ -1,10 +1,14 @@
-// External dependencies
+    // External dependencies
 import { useEffect } from 'react'
 import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
 import randomColor from "randomcolor";
 
 var zipCodes = []
+// array of colors to display
+const colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', 
+                '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', 
+                '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
 
 /** 
 * Fetches the initial zone configuration a user has from Bumbal, returns promise of the response from Bumbal API.
@@ -358,13 +362,12 @@ const PolygonVis = (props) => {
             // process which draws the zone
             //Iterates through zones.
             for (let i = 0; i < coordinatesList.length; i++) {
-                // Tterates through zone ranges inside of zones.
-                let color = randomColor({ luminosity: 'dark' });
                 for (let j = 0; j < coordinatesList[i].length; j++) {
                     // Iteratres through coordinates in zone ranges.
                     for (let k = 0; k < coordinatesList[i][j].length; k++) {
                         let polygon = L.polygon(coordinatesList[i][j][k].zone_coordinates)
-                        polygon.setStyle({ color: color })
+                        polygon.setStyle({ color: colors[i] })
+                        polygon.bindTooltip(`Zone ${i}`)
                         context.layerContainer.addLayer(polygon)
                     }
                 }
