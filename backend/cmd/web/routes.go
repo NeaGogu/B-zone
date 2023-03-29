@@ -3,8 +3,10 @@ package main
 import (
 	"bzone/backend/internal/bumbal"
 	"context"
+	"fmt"
 	"github.com/golang-jwt/jwt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi/middleware"
@@ -97,8 +99,16 @@ func JWTRequestChecker(next http.Handler) http.Handler {
 			return
 		}
 
+		// convert the user id from string to int as this is how it is stored in the database
+		userId, err := strconv.Atoi(uid)
+		if err != nil {
+			// userId is nil
+			http.Error(w, "uid is not a string", http.StatusInternalServerError)
+			return
+		}
+		fmt.Println(userId)
 		// Store the uid in the request context
-		ctx := context.WithValue(r.Context(), ContextUserKey, uid)
+		ctx := context.WithValue(r.Context(), ContextUserKey, userId)
 		next.ServeHTTP(w, r.WithContext(ctx))
 
 	}
@@ -150,8 +160,8 @@ func (app *application) routes() http.Handler {
 
 	// authorized routes
 	router.Group(func(r chi.Router) {
-		r.Use(JWTRequestChecker)
 		r.Use(JwtChecker)
+		r.Use(JWTRequestChecker)
 
 		r.Route("/zip", func(r chi.Router) {
 			r.Get("/coordinates", app.getZipCodeCoords)

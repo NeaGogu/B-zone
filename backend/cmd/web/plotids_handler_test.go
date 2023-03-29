@@ -298,17 +298,6 @@ func TestApplication_getUserPlotIDs(t *testing.T) {
 
 	})
 
-	// Create your subtest run instance
-	mt.Run("MissingUserId", func(mt *mtest.T) {
-
-		//set up the app for the tests
-		app := SetUpMockApp(mt)
-
-		//Test case for invalid user ID
-		usertestCase3(t, app)
-
-	})
-
 }
 
 // usertestCase1
@@ -320,10 +309,8 @@ func usertestCase1(t *testing.T, a *application) {
 
 	// Test handler, valid user ID case
 	req := httptest.NewRequest("GET", "/", nil)
-	ctx := context.WithValue(req.Context(), ContextUserKey, "1")
+	ctx := context.WithValue(req.Context(), ContextUserKey, 1)
 	req = req.WithContext(ctx)
-	token, _ := test.CreateAccessTokenString("1")
-	req.Header.Add("Authorization", token)
 	wValidUserId := httptest.NewRecorder()
 	a.getUserPlotIDs(wValidUserId, req)
 
@@ -371,10 +358,8 @@ func usertestCase2(t *testing.T, a *application) {
 
 	// Test handler, invalid user ID case
 	req := httptest.NewRequest("GET", "/", nil)
-	ctx := context.WithValue(req.Context(), ContextUserKey, "22")
+	ctx := context.WithValue(req.Context(), ContextUserKey, 22)
 	req = req.WithContext(ctx)
-	token, _ := test.CreateAccessTokenString("2432")
-	req.Header.Add("Authorization", token)
 	w := httptest.NewRecorder()
 
 	a.getUserPlotIDs(w, req)
@@ -387,25 +372,6 @@ func usertestCase2(t *testing.T, a *application) {
 	json.Unmarshal(bodyValidUserIdJSONString, &mockDBUser)
 
 	assert.Equal(t, http.StatusNotFound, responseMissingUserId.StatusCode) // We expect return code 404
-
-}
-
-// usertestCase3
-//
-//	@Description: test for missing user id in the token
-//	@param t
-//	@param a
-func usertestCase3(t *testing.T, a *application) {
-
-	// Test handler, missing user ID case
-	req := httptest.NewRequest("GET", "/", nil)
-	ctx := context.WithValue(req.Context(), ContextUserKey, "")
-	req = req.WithContext(ctx)
-	req.Header.Add("Authorization", "Bearer ")
-	w := httptest.NewRecorder()
-	a.getUserPlotIDs(w, req)
-	responseMissingUserId := w.Result()
-	assert.Equal(t, http.StatusInternalServerError, responseMissingUserId.StatusCode)
 
 }
 
@@ -436,16 +402,7 @@ func TestApplication_SavePlot(t *testing.T) {
 		userPlotTestCase1(t, app)
 
 	})
-	// Create your subtest run instance
-	mt.Run("MissingUserIDSavedPlot", func(mt *mtest.T) {
 
-		//set up the app for the tests
-		app := SetUpMockApp(mt)
-
-		//Test case for missing user ID
-		userPlotTestCase2(t, app)
-
-	})
 	// Create your subtest run instance
 	mt.Run("MissingPlot", func(mt *mtest.T) {
 
@@ -453,6 +410,9 @@ func TestApplication_SavePlot(t *testing.T) {
 		app := SetUpMockApp(mt)
 
 		//Test case for missing plot
+		userPlotTestCase2(t, app)
+
+		//Test case missing jsonBody in request
 		userPlotTestCase3(t, app)
 
 	})
@@ -478,8 +438,7 @@ func userPlotTestCase1(t *testing.T, a *application) {
 
 	jsonValue, _ := json.Marshal(plotModel)
 	req := httptest.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
-	// Test handler, missing user ID case
-	ctx := context.WithValue(req.Context(), ContextUserKey, "1")
+	ctx := context.WithValue(req.Context(), ContextUserKey, 1)
 	req = req.WithContext(ctx)
 
 	wSavePlot := httptest.NewRecorder()
@@ -489,54 +448,40 @@ func userPlotTestCase1(t *testing.T, a *application) {
 	assert.Equal(t, http.StatusCreated, responsePlotCreated.StatusCode)
 }
 
-// userPlotTestCase2
-//
-//	@Description: tests saving plot with missing user id
-//	@param t
-//	@param a
-func userPlotTestCase2(t *testing.T, a *application) {
-
-	plotModel := models.PlotModel{
-		PlotId:        "1",
-		Name:          "SavedPlot",
-		ZoneIds:       nil,
-		Zones:         nil,
-		PlotCreatedAt: time.Time{},
-		PlotSavedAt:   time.Time{},
-		Origin:        "Bumbal",
-	}
-
-	jsonValue, _ := json.Marshal(plotModel)
-	req := httptest.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
-	token, _ := test.CreateAccessTokenString("")
-
-	req.Header.Add("Authorization", token)
-	wSavePlot := httptest.NewRecorder()
-	a.SavePlot(wSavePlot, req)
-	responseMissingToken := wSavePlot.Result()
-
-	assert.Equal(t, http.StatusInternalServerError, responseMissingToken.StatusCode) // We expect return code 400
-}
-
 // userPlotTestCase3
 //
 //	@Description: sending empty plot model
 //	@param t
 //	@param a
-func userPlotTestCase3(t *testing.T, a *application) {
+func userPlotTestCase2(t *testing.T, a *application) {
 
 	var plotModel models.PlotModel
 
 	jsonValue, _ := json.Marshal(plotModel)
-	reqSavePlot := httptest.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
-	token, _ := test.CreateAccessTokenString("")
-
-	reqSavePlot.Header.Add("Authorization", token)
+	req := httptest.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
+	ctx := context.WithValue(req.Context(), ContextUserKey, 22)
+	req = req.WithContext(ctx)
 	wSavePlot := httptest.NewRecorder()
-	a.SavePlot(wSavePlot, reqSavePlot)
+	a.SavePlot(wSavePlot, req)
 	responseEmptyPlot := wSavePlot.Result()
 
-	assert.Equal(t, http.StatusInternalServerError, responseEmptyPlot.StatusCode) // We expect return code 400
+	assert.Equal(t, http.StatusInternalServerError, responseEmptyPlot.StatusCode)
+}
+
+// userPlotTestCase3
+//
+//	@Description: missing plot
+//	@param t
+//	@param a
+func userPlotTestCase3(t *testing.T, a *application) {
+	req := httptest.NewRequest("POST", "/", nil)
+	ctx := context.WithValue(req.Context(), ContextUserKey, 22)
+	req = req.WithContext(ctx)
+	wSavePlot := httptest.NewRecorder()
+	a.SavePlot(wSavePlot, req)
+	responseEmptyPlot := wSavePlot.Result()
+
+	assert.Equal(t, http.StatusBadRequest, responseEmptyPlot.StatusCode)
 }
 
 func TestApplication_DeletePlotById(t *testing.T) {
@@ -556,60 +501,46 @@ func TestApplication_DeletePlotById(t *testing.T) {
 		deletePlotTestCase0(t, app)
 
 	})
+	mt.Run("Bad Request config for deleting plot", func(mt *mtest.T) {
 
-	mt.Run("Invalid Request configuration to Delete the plot", func(mt *mtest.T) {
+		mt.AddMockResponses(bson.D{{"ok", 0}})
 
 		//set up the app for the tests
 		app := SetUpMockApp(mt)
-		//Test case for invalid token
+
+		//Test case for missing plot id
 		deletePlotTestCase1(t, app)
-		//Test case for invalid plot  ID
-		deletePlotTestCase2(t, app)
 
 	})
+
 }
 
 func deletePlotTestCase0(t *testing.T, a *application) {
 
 	req, _ := http.NewRequest("GET", "/", nil)
 	rctx := chi.NewRouteContext()
+	ctx := context.WithValue(req.Context(), ContextUserKey, 1)
+	req = req.WithContext(ctx)
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	rctx.URLParams.Add("plotId", "1")
-	token, _ := test.CreateAccessTokenString("0")
-	req.Header.Add("Authorization", token)
 	wSavePlot := httptest.NewRecorder()
 	a.DeletePlotById(wSavePlot, req)
-	responseMissingToken := wSavePlot.Result()
+	responseFailed := wSavePlot.Result()
 
-	assert.Equal(t, http.StatusInternalServerError, responseMissingToken.StatusCode)
+	assert.Equal(t, http.StatusInternalServerError, responseFailed.StatusCode)
 }
 
 func deletePlotTestCase1(t *testing.T, a *application) {
 
 	req, _ := http.NewRequest("GET", "/", nil)
 	rctx := chi.NewRouteContext()
-	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
-	rctx.URLParams.Add("plotId", "1")
-	token, _ := test.CreateAccessTokenString("1")
-	req.Header.Add("Authorization", token)
-	wSavePlot := httptest.NewRecorder()
-	a.DeletePlotById(wSavePlot, req)
-	responseMissingToken := wSavePlot.Result()
-
-	assert.Equal(t, http.StatusInternalServerError, responseMissingToken.StatusCode) // We expect return code 400
-}
-
-func deletePlotTestCase2(t *testing.T, a *application) {
-
-	req, _ := http.NewRequest("GET", "/", nil)
-	rctx := chi.NewRouteContext()
+	ctx := context.WithValue(req.Context(), ContextUserKey, 1)
+	req = req.WithContext(ctx)
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	rctx.URLParams.Add("plotId", "")
-	token, _ := test.CreateAccessTokenString("1")
-	req.Header.Add("Authorization", token)
 	wSavePlot := httptest.NewRecorder()
 	a.DeletePlotById(wSavePlot, req)
-	responseMissingToken := wSavePlot.Result()
+	responseMissingID := wSavePlot.Result()
 
-	assert.Equal(t, http.StatusBadRequest, responseMissingToken.StatusCode) // We expect return code 400
+	assert.Equal(t, http.StatusBadRequest, responseMissingID.StatusCode)
 }

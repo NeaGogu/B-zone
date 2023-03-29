@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -24,25 +23,7 @@ import (
 func (app *application) getUserPlotIDs(w http.ResponseWriter, r *http.Request) {
 
 	//Get user id from the Context
-	uidValue := r.Context().Value(ContextUserKey)
-	if uidValue == nil {
-		// handle the case where the uid is not present or nil
-		http.Error(w, "uid not found", http.StatusInternalServerError)
-		return
-	}
-	uid, ok := uidValue.(string)
-	if !ok {
-		// handle the case where the uid is not a string
-		http.Error(w, "uid is not a string", http.StatusInternalServerError)
-		return
-	}
-
-	// convert the user id from string to int as this is how it is stored in the database
-	userId, err := strconv.Atoi(uid)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	var userId = r.Context().Value(ContextUserKey).(int)
 
 	// send the user id to the model which will return the user's plot IDs
 	reqPlotIDs, err := app.bzoneDbModel.GetPlotIDs(userId)
@@ -95,25 +76,7 @@ func (app *application) GetPlotById(w http.ResponseWriter, r *http.Request) {
 func (app *application) SyncBumbalZones(w http.ResponseWriter, r *http.Request) {
 
 	//Get user id from the Context
-	uidValue := r.Context().Value("uid")
-	if uidValue == nil {
-		// handle the case where the uid is not present or nil
-		http.Error(w, "uid not found", http.StatusInternalServerError)
-		return
-	}
-	uid, ok := uidValue.(string)
-	if !ok {
-		// handle the case where the uid is not a string
-		http.Error(w, "uid is not a string", http.StatusInternalServerError)
-		return
-	}
-
-	// convert the user id from string to int as this is how it is stored in the database
-	userId, err := strconv.Atoi(uid)
-	if err != nil {
-
-	}
-
+	var userId = r.Context().Value(ContextUserKey).(int)
 	app.infoLog.Println("Syncing bumbal zones for user: ", userId)
 
 	// get zones from Bumbal through their API
@@ -159,31 +122,13 @@ func (app *application) SyncBumbalZones(w http.ResponseWriter, r *http.Request) 
 func (app *application) SavePlot(w http.ResponseWriter, r *http.Request) {
 
 	//Get user id from the Context
-	uidValue := r.Context().Value(ContextUserKey)
-	if uidValue == nil {
-		// handle the case where the uid is not present or nil
-		http.Error(w, "uid not found", http.StatusInternalServerError)
-		return
-	}
-	uid, ok := uidValue.(string)
-	if !ok {
-		// handle the case where the uid is not a string
-		http.Error(w, "uid is not a string", http.StatusInternalServerError)
-		return
-	}
-
-	// convert the user id from string to int as this is how it is stored in the database
-	userId, err := strconv.Atoi(uid)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	var userId = r.Context().Value(ContextUserKey).(int)
 
 	var receivedPlot models.PlotModel
 
 	// Try to decode the request body into the struct. If it is one of our custom error types
 	// return the appropriate status code
-	err = decodeJSONBody(w, r, &receivedPlot)
+	err := decodeJSONBody(w, r, &receivedPlot)
 	if err != nil {
 		var mr *malformedRequest
 
@@ -230,25 +175,7 @@ func (app *application) DeletePlotById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Get user id from the Context
-	uidValue := r.Context().Value("uid")
-	if uidValue == nil {
-		// handle the case where the uid is not present or nil
-		http.Error(w, "uid not found", http.StatusInternalServerError)
-		return
-	}
-	uid, ok := uidValue.(string)
-	if !ok {
-		// handle the case where the uid is not a string
-		http.Error(w, "uid is not a string", http.StatusInternalServerError)
-		return
-	}
-
-	// convert the user id from string to int as this is how it is stored in the database
-	userId, err := strconv.Atoi(uid)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	var userId = r.Context().Value(ContextUserKey).(int)
 
 	// --------------------
 
