@@ -142,14 +142,16 @@ function SiderComponent(props) {
             selectable={false}
         >
 
-            <SubMenu key="sub3" title="Heat map">
+
+            <SubMenu key="sub3" data-testid="heatmap-btn" title="Heat map" style={{}}>
+
                 <div style={{ width: '100%', textAlign: 'center' }}>
                     <Menu.Item key="5" style={{ padding: 0 }}>
                         <Radio.Group value={values} onChange={onChange} size='small'  >
-                            <Radio.Button value={1}>
+                            <Radio.Button data-testid="time-based" value={1}>
                                 Time based
                             </Radio.Button>
-                            <Radio.Button value={2}>
+                            <Radio.Button data-testid="location-based" value={2}>
                                 Location based
                             </Radio.Button>
                         </Radio.Group>
@@ -159,7 +161,7 @@ function SiderComponent(props) {
                 <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>
                     <div style={{ textAlign: "center" }}>Intensity</div>
                     <div style={{ textAlign: "center" }}>
-                        <InputNumber min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={values === 1 ? true : false} />
+                        <InputNumber data-testid='intensity-input' min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={values === 1 ? true : false} />
                     </div>
                 </Menu.Item>
             </SubMenu>

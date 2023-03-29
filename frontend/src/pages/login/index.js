@@ -106,15 +106,15 @@ export default function Login() {
                 <Card className='form-card' >
                     <Form name='login-form' className='login-form' onFinish={onFinish}>
                         <Form.Item name='Email' rules={[{ required: true, message: 'Email is required!' }]}>
-                            <Input placeholder='Email' prefix={<UserOutlined />} />
+                            <Input data-testid="username-input" placeholder='Email' prefix={<UserOutlined />} />
                         </Form.Item>
 
                         <Form.Item name='Password' rules={[{ required: true, message: 'Password is required!' }]}>
-                            <Input.Password placeholder='Password' prefix={<LockOutlined />} />
+                            <Input.Password data-testid="password-input" placeholder='Password' prefix={<LockOutlined />} />
                         </Form.Item>
 
                         <Form.Item >
-                            <Button type='primary' className='login-button' htmlType='submit'>
+                            <Button data-testid="button" type='primary' className='login-button' htmlType='submit'>
                                 Log in
                             </Button>
                             <a href='https://support.bumbal.eu/en/register' style={{ marginLeft: 35 }}> or Register!</a>
