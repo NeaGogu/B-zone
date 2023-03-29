@@ -45,7 +45,8 @@ func RunGenetic(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// get the data from the request's body
-		zonesInfo, err := getZonesInfo(r)
+		var zonesInfo ZonesInfo
+		zonesInfo, err = getZonesInfo(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

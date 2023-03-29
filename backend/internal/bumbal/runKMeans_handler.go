@@ -2,6 +2,7 @@ package bumbal
 
 import (
 	kMeans "bzone/backend/cmd/k-means"
+	"bzone/backend/internal/models"
 	"encoding/json"
 	"net/http"
 )
@@ -52,13 +53,15 @@ func RunKMeans(w http.ResponseWriter, r *http.Request) {
 		// filter the response so that only activities that have both address applied and depot address are used
 		filteredResp := filterResp(*respModel.Items)
 
-		computedClusters, err := kMeans.KMeans(filteredResp, clustersInfo.NrClusters, clustersInfo.NrCandidateClusters)
+		var computedClusters kMeans.Clusters
+		computedClusters, err = kMeans.KMeans(filteredResp, clustersInfo.NrClusters, clustersInfo.NrCandidateClusters)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		//convert the ouput clusters to zones
-		computedZones, err := kMeans.ClusterToZoneModel(computedClusters, filteredResp)
+		//convert the output clusters to zones
+		var computedZones []models.ZoneModel
+		computedZones, err = kMeans.ClusterToZoneModel(computedClusters, filteredResp)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
