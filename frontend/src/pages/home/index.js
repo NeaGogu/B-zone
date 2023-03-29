@@ -85,8 +85,8 @@ export default function Home() {
     * When the user clicks the delete button, the zone will be deleted.
     * @return {void}
     */
-    const handleDeleteZone = (id) => {
-        const confirm = window.confirm('Confirm plot deletion');
+    const handleDeleteZone = (id, name) => {
+        const confirm = window.confirm('Confirm deletion of ' + name);
         // make sure user actually want to delete plot
         if (confirm){
             deleteSavedZone(id)

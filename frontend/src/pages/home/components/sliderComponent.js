@@ -178,7 +178,7 @@ function SiderComponent(props) {
                                     <Button
                                         style={{ float: 'right' }}
                                         onClick={() => {
-                                            onDeleteZone(zone.user_plot_id);
+                                            onDeleteZone(zone.user_plot_id, zone.user_plot_name);
                                         }}
                                     >
                                         <DeleteOutlined />
