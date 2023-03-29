@@ -772,7 +772,7 @@ func TestClusterToZoneModel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := clusterToZoneModel(tt.Clusters, tt.activities)
+			got, err := ClusterToZoneModel(tt.Clusters, tt.activities)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
