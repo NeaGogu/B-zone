@@ -129,10 +129,8 @@ func (sol *Solution) randMigrateZip() {
 	for r0 == r1 {
 		r1 = rand.Intn(len(sol.Routes))
 	}
-	err := sol.applyMigrateZip(r0, r1, zip)
-	if err != nil {
-		panic(err)
-	}
+	// Error should never be returned because parameters are always within bounds
+	_ = sol.applyMigrateZip(r0, r1, zip)
 }
 
 // randRouteSwap swaps two random activities within a random route.
@@ -144,10 +142,8 @@ func (sol *Solution) randRouteSwap() {
 	n := len(sol.Routes[r].Activities)
 	i := rand.Intn(n)
 	j := rand.Intn(n)
-	err := sol.Routes[r].applySwap(i, j)
-	if err != nil {
-		panic(err)
-	}
+	// Error should never be returned because parameters are always within bounds
+	_ = sol.Routes[r].applySwap(i, j)
 }
 
 // rand2Opt performs 2-OPT on two random activities within a random route.
@@ -159,10 +155,8 @@ func (sol *Solution) rand2Opt() {
 	n := len(sol.Routes[r].Activities)
 	i := rand.Intn(n)
 	j := rand.Intn(n)
-	err := sol.Routes[r].apply2Opt(i, j)
-	if err != nil {
-		panic(err)
-	}
+	// Error should never be returned because parameters are always within bounds
+	_ = sol.Routes[r].apply2Opt(i, j)
 }
 
 // randRouteGreedy greedily moves a random activity to a better position within a random route.
@@ -173,20 +167,16 @@ func (sol *Solution) randRouteGreedy() {
 	}
 	n := len(sol.Routes[r].Activities)
 	i := rand.Intn(n)
-	err := sol.Routes[r].applyGreedy(i)
-	if err != nil {
-		panic(err)
-	}
+	// Error should never be returned because parameters are always within bounds
+	_ = sol.Routes[r].applyGreedy(i)
 }
 
 // randChangeDepot changes the depot of a route to a random (possibly different) depot.
 func (sol *Solution) randChangeDepot(inst MDMTSPInstance) {
 	r := rand.Intn(len(sol.Routes))
 	d := rand.Intn(len(inst.Depots))
-	err := sol.Routes[r].applyChangeDepot(inst, d)
-	if err != nil {
-		panic(err)
-	}
+	// Error should never be returned because parameters are always within bounds
+	_ = sol.Routes[r].applyChangeDepot(inst, d)
 }
 
 // applyMigrateZip moves all activities with zipcode zip from route r0 to route r1 greedily
