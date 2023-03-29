@@ -81,11 +81,16 @@ export default function Home() {
     // for zone sync
     const [currentView, setCurrentView] = useState('initial')
 
-    // for now not usefull
-    const handleDeleteZone = (key) => {
-        localStorage.removeItem(key);
-        const newSavedZones = savedZones.filter((item) => item.key !== key);
-        setSavedZones(newSavedZones);
+    /** 
+    * When the user clicks the delete button, the zone will be deleted.
+    * @return {void}
+    */
+    const handleDeleteZone = (id, name) => {
+        const confirm = window.confirm('Confirm deletion of ' + name);
+        // make sure user actually want to delete plot
+        if (confirm){
+            deleteSavedZone(id)
+        }
     };
 
     /** 
@@ -123,6 +128,32 @@ export default function Home() {
                 const saved = await getSavedZones();
                 setSavedZones(saved)
             }
+        })
+    }
+
+    /** 
+    * Deletes plot from database.
+    * @param {string} id - The id of the zone configuration to delete.
+    * @return {void}
+    */
+    async function deleteSavedZone(id){
+        const userToken = localStorage.getItem('token')
+        await fetch("http://localhost:4000/plot/" + id, {
+            method:'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userToken}`
+            }
+        }).then(async (response)=>{
+            if (response.ok) {
+                const saved = await getSavedZones();
+                setSavedZones(saved)
+                alert('Plot succesfully deleted')
+                return null
+            } 
+            alert('Could not delete plot, server error')
+            return null
         })
     }
 
@@ -204,6 +235,7 @@ export default function Home() {
                             setIntensity={setIntensity.bind(this)}
                             setZoneId={setZoneId}
                             setCurrentView={setCurrentView}
+                            currentView={currentView}
                             algorithm={algorithm}
                             setAlgorithm={setAlgorithm}
                             setNrofZones={setNrofZones}

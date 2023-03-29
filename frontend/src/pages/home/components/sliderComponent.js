@@ -100,7 +100,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
 };
 
 function SiderComponent(props) {
-    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm, setAlgorithm, setNrofZones } = props;
+    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm, setAlgorithm, setNrofZones, currentView } = props;
 
 
     const toggleMap = () => {
@@ -127,6 +127,7 @@ function SiderComponent(props) {
         setValue(e.target.value);
     };
 
+
     return (
         <Menu
             mode="inline"
@@ -135,10 +136,15 @@ function SiderComponent(props) {
             style={{
                 height: '100%',
                 borderRight: 0,
+                overflowY: 'auto', overflowX: 'hidden' 
             }}
+         
+            selectable={false}
         >
 
+
             <SubMenu key="sub3" data-testid="heatmap-btn" title="Heat map" style={{}}>
+
                 <div style={{ width: '100%', textAlign: 'center' }}>
                     <Menu.Item key="5" style={{ padding: 0 }}>
                         <Radio.Group value={values} onChange={onChange} size='small'  >
@@ -164,38 +170,52 @@ function SiderComponent(props) {
                 <ZoneSubMenu setZoneId={setZoneId} toggleMap={toggleMap} algorithm={algorithm} setAlgorithm={setAlgorithm} setNrofZones={setNrofZones} />
             </SubMenu>
 
-            <SubMenu key="sub2" title="Saved Zones" style={{'max-height': '30vh', 'overflow': 'auto'}}>
-                {savedZones.map((zone) => (
-                    <Menu.Item key={zone.user_plot_id} style={{ height: '80px', padding: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ paddingLeft: '10px' }}>{zone.user_plot_name}</span>
-                            {zone.user_plot_name !== 'Initial Zone' && (
-                                <Button
-                                    style={{ float: 'right' }}
-                                    onClick={() => {
-                                        onDeleteZone(zone.key);
-                                    }}
-                                >
-                                    <DeleteOutlined />
+            <SubMenu key="sub2" title="Saved Zones" >
+                <div style={{'max-height': '50vh', 'overflow': 'auto'}}>
+                    {savedZones.map((zone) => (
+                        <Menu.Item key={zone.user_plot_id} style={{ height: '80px', padding: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ paddingLeft: '10px' }}>{zone.user_plot_name}</span>
+                                {zone.user_plot_name !== '' && (
+                                    <Button
+                                        style={{ float: 'right' }}
+                                        onClick={() => {
+                                            onDeleteZone(zone.user_plot_id, zone.user_plot_name);
+                                        }}
+                                    >
+                                        <DeleteOutlined />
+                                    </Button>
+                                )}
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                <Button style={{ flex: 1, marginRight: '3px' }} onClick={() => {
+                                    toggleMap()
+                                    setCurrentView('')
+                                    setZoneId(zone.user_plot_id)
+                                
+                                
+                                }}>
+                                    View
                                 </Button>
-                            )}
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                            <Button style={{ flex: 1, marginRight: '3px' }} onClick={() => {
-                                toggleMap()
-                                setZoneId(zone.user_plot_id)
-                            }}>
-                                View
-                            </Button>
-                            <Button style={{ flex: 1, marginLeft: '3px' }} onClick={() =>{
-                                setCurrentView(zone.user_plot_id)
-                                toggleComparison()
-                            }}>
-                                Compare
-                            </Button>
-                        </div>
-                    </Menu.Item>
-                ))}
+                                <Button style={{ flex: 1, marginLeft: '3px' }} onClick={() =>{
+                                    if (currentView === zone.user_plot_id){
+                                        toggleMap()
+                                        setCurrentView('')
+                    
+                                    } else {
+                    
+                                        setCurrentView(zone.user_plot_id)
+                                        toggleComparison()
+                                    }
+                                
+                                }}>
+                                    Compare
+                                </Button>
+                            </div>
+                        </Menu.Item>
+                    ))}
+                </div>
+                
             </SubMenu>
         </Menu>
     );
