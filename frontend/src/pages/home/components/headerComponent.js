@@ -28,7 +28,7 @@ const user_items = [
     {
         key: '2',
         label: (
-            <button style={{ color: '#ffd369', textDecoration: 'underline', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }} onClick={() => signOut()}>
+            <button data-testid="btn" style={{ color: '#ffd369', textDecoration: 'underline', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }} onClick={() => signOut()}>
                 Sign Out
             </button>
         )
@@ -99,7 +99,7 @@ const HeaderComponent = ({handleSaveClick}) => {
                 >
                         <Space>
                             <UserOutlined style={{ verticalAlign: 'middle', color: '#ffd369' }} />
-                            <button type="button" onClick={signOut} style={{ color: '#ffd369', backgroundColor: 'transparent', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>
+                            <button data-testid= 'dropdown-btn' type="button" onClick={signOut} style={{ color: '#ffd369', backgroundColor: 'transparent', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>
                             </button>
                         </Space>
                 </Dropdown>
