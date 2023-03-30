@@ -278,10 +278,10 @@ export default function Home() {
                                             showComparison ? 
                                             <Spin spinning={!computed2 || !computedHeat2} delay={500} tip={
                                                 (()=>{
-                                                    if(!computed && !computedHeat2) {
+                                                    if(!computed2 && !computedHeat2) {
                                                         return 'Loading Plot and Heatmap'
                                                     }
-                                                    if(!computed ) {
+                                                    if(!computed2 ) {
                                                         return 'Loading Map'
                                                     }
                                                     if(!computedHeat2) {
@@ -303,7 +303,7 @@ export default function Home() {
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
                                     {
                                         showComparison ?
-                                            <TextComponent zoneId={zoneId} zoneName={zoneName2}/>
+                                            <TextComponent zoneId={currentView} zoneName={zoneName2}/>
                                             : <></>
                                     }
                                 </div>

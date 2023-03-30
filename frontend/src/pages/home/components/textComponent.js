@@ -199,6 +199,7 @@ function TextComponent(props) {
         }
 
         initial()
+        console.log('updated')
     },[zoneId])
 
 
