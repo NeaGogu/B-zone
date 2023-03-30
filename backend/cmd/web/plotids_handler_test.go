@@ -523,9 +523,9 @@ func deletePlotTestCase0(t *testing.T, a *application) {
 	req = req.WithContext(ctx)
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	rctx.URLParams.Add("plotId", "1")
-	wSavePlot := httptest.NewRecorder()
-	a.DeletePlotById(wSavePlot, req)
-	responseFailed := wSavePlot.Result()
+	w := httptest.NewRecorder()
+	a.DeletePlotById(w, req)
+	responseFailed := w.Result()
 
 	assert.Equal(t, http.StatusInternalServerError, responseFailed.StatusCode)
 }
@@ -538,9 +538,9 @@ func deletePlotTestCase1(t *testing.T, a *application) {
 	req = req.WithContext(ctx)
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	rctx.URLParams.Add("plotId", "")
-	wSavePlot := httptest.NewRecorder()
-	a.DeletePlotById(wSavePlot, req)
-	responseMissingID := wSavePlot.Result()
+	w := httptest.NewRecorder()
+	a.DeletePlotById(w, req)
+	responseMissingID := w.Result()
 
 	assert.Equal(t, http.StatusBadRequest, responseMissingID.StatusCode)
 }

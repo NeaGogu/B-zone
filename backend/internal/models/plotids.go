@@ -183,15 +183,6 @@ func (b *BzoneDBModel) deletePlotFromUser(userId int, plotId string) (*UserModel
 	return &updatedUser, nil
 }
 
-// {
-// 	"$push",
-// 	bson.D{
-// 		{
-// 			"sizes", bson.D{{"$each", []InternalStruct{}}, {"$slice", 1}}
-//         }
-//     }
-// }
-
 // helper function that converts a hex string to an ObjectID that can be used in a MongoDB query
 func objectIDFromHex(hex string) (primitive.ObjectID, error) {
 	objectID, err := primitive.ObjectIDFromHex(hex)
