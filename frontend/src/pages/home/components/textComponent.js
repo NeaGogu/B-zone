@@ -114,15 +114,31 @@ async function getDrivingTime(drivingData) {
     return sum;
 }
 
+async function getDrivingDistance(drivingData) {
+    //input: a fetch response from OSRM with multiple legs per driving route
+    //output: the total sum of the duration over all the legs of the route
+    let drivingLegs = drivingData.routes[0].legs
+    let sum = 0
+    console.log(drivingLegs)
+    for(let i = 0; i < drivingLegs.length; i++) {
+        sum = sum + drivingLegs[i].distance
+    }
+    console.log(sum)
+    return sum;
+}
+
 function TextComponent(props) {
     const { zoneId, zoneName } = props;
 
     const [time, setTime] = useState(0)
     const [drivingTime, setDrivingTime] = useState(0)
+    const [fuelCost, setFuelCost] = useState(0)
 
 
     useEffect(() =>{
         const initial = async () => {
+            let averageFuelCost = 1.8
+            let averageFuelConsumption = 0.047 //litres of fuel consumption per km
             totalActivityDurations(setTime) //set the total activity duration to be the time spend on activities
             const plot = await activityZoneAllocation(zoneId) //gets all plots which are saved to b-zone's backend
 
@@ -161,6 +177,8 @@ function TextComponent(props) {
             console.log(activities2Filtered)
             //array to hold driving time per zone
             let drivingTimeActivities = []
+            //array to hold driving distances per zone
+            let drivingDistanceActivities = []
             //array to hold fetch requests HTML per zone
             let drivingTimeReqs = []
             //body of the fetch request to be sent out to OSRM
@@ -171,6 +189,7 @@ function TextComponent(props) {
             for(let i = 0; i < plot.length; i++) {
                 //go through all activities to find which ones belong to zone i, calculate their driving time
                 drivingTimeActivities[i] = 0
+                drivingDistanceActivities[i] = 0
                 drivingTimeReqs[i] = "http://router.project-osrm.org/route/v1/driving/"
                 for(let j = 0; j < activities2Filtered.length; j++) {
                     if(activities2Filtered[j][3] === i) {
@@ -186,15 +205,22 @@ function TextComponent(props) {
                 console.log(drivingData)
                 //using the data from OSRM, compile over all legs of the activities what the total duration is and store it for zone i
                 drivingTimeActivities[i] = await getDrivingTime(drivingData)
+                drivingDistanceActivities[i] = await getDrivingDistance(drivingData)
             }
             console.log(drivingTimeReqs[1])
             console.log(drivingTimeActivities)
+            console.log(drivingDistanceActivities)
 
             let totalDrivingTime = 0
+            let totalDrivingDistance = 0
             for(let i = 0; i < drivingTimeActivities.length; i++) {
                 totalDrivingTime = totalDrivingTime + drivingTimeActivities[i]
+                totalDrivingDistance = totalDrivingDistance + drivingDistanceActivities[i]
             }
             setDrivingTime(totalDrivingTime/3600)
+            //time to find fuel cost: fuel cost = (litres used * fuel cost)
+            //litres used = driving distance * fuel efficiency
+            setFuelCost(((totalDrivingDistance/1000) * averageFuelConsumption) * averageFuelCost)
 
         }
 
@@ -215,7 +241,7 @@ function TextComponent(props) {
         <div style={{  position: "absolute", color: 'white'}}>
             <p>Title: {zoneName}</p>
             {/*fuel cost = fuel input times driving time*/}
-            <p>Total cost:  </p>
+            <p>Total cost: {fuelCost}</p>
             {/* done */}
             <p>Total activity time (hrs): {time}</p>
             {/*driving time = find activities per zone. find driving time in order between those activities using OSRM */}
