@@ -54,15 +54,6 @@ func RunKMeans(w http.ResponseWriter, r *http.Request) {
 		// filter the response so that only activities that have both address applied and depot address are used
 		filteredResp := filterResp(*respModel.Items)
 
-		var computedClusters kMeans.Clusters
-		computedClusters, err = kMeans.KMeans(filteredResp, clustersInfo.NrClusters, clustersInfo.NrCandidateClusters)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		//convert the output clusters to zones
-		var computedZones []models.ZoneModel
-		computedZones, err = kMeans.ClusterToZoneModel(computedClusters, filteredResp)
 		// use the collected data as input for the K-means algorithm
 		var computedZones []models.ZoneModel
 		computedZones, err = kMeans.KMeans(filteredResp, clustersInfo.NrClusters, clustersInfo.NrCandidateClusters)
