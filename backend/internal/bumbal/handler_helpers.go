@@ -5,6 +5,8 @@ import (
 	"bzone/backend/internal/models"
 	"encoding/json"
 	"net/http"
+
+	geojson "github.com/paulmach/go.geojson"
 )
 
 const (
@@ -14,6 +16,10 @@ const (
 // Output struct used for the body of the response
 type Output struct {
 	Result []models.ZoneModel `json:"result,omitempty"`
+}
+
+type OutputJSON struct {
+	Result geojson.FeatureCollection `json:"result,omitempty"`
 }
 
 // requestBumbalActivity

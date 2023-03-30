@@ -79,8 +79,9 @@ func TestVoronoiDiagram(t *testing.T) {
 		{Center: kMeans.Coordinates{51.5555, 5.0913}},     //tilburg
 		{Center: kMeans.Coordinates{51.5831, 4.7766}},     //Breda
 		{Center: kMeans.Coordinates{51.8126, 5.8372}},     //nimma
+		{Center: kMeans.Coordinates{50.8514, 5.6908}},     //Maastricht
 	}
-	result, err := voronoiDiagram(clusters)
+	result, err := VoronoiDiagram(clusters)
 
 	if err != nil {
 		t.Errorf("didn't expect error but got: %v", err)

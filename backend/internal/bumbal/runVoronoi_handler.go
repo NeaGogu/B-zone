@@ -1,25 +1,13 @@
 package bumbal
 
 import (
+	voronoi "bzone/backend/cmd/Fortunes"
 	kMeans "bzone/backend/cmd/k-means"
-	"bzone/backend/internal/models"
 	"encoding/json"
 	"net/http"
 )
 
-// ClustersInfo struct used for retrieving the data from the body of the request
-type ClustersInfo struct {
-	NrClusters          int `json:"number_of_clusters,omitempty"`
-	NrCandidateClusters int `json:"number_of_candidate_clusters,omitempty"`
-}
-
-// RunKMeans
-//
-//	 @Description: the main handler, does the request to Bumbal and calls the K-Means algorithm based
-//					on the input
-//	 @param w
-//	 @param r
-func RunKMeans(w http.ResponseWriter, r *http.Request) {
+func RunVoronoi(w http.ResponseWriter, r *http.Request) {
 	// Make the request to Bumbal
 	reqBody := []byte(`{"options":{"include_address_applied":true,"include_depot_address":true}}`)
 	resp, err := requestBumbalActivity(w, r, reqBody)
@@ -59,17 +47,12 @@ func RunKMeans(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		//convert the output clusters to zones
-		var computedZones []models.ZoneModel
-		computedZones, err = kMeans.ClusterToZoneModel(computedClusters, filteredResp)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		//convert the output clusters to voronoi
+		result, err := voronoi.VoronoiDiagram(computedClusters)
 
 		// set up the response
-		var output Output
-		output.Result = computedZones
+		var output OutputJSON
+		output.Result = *result
 
 		// encode the response
 		w.Header().Set("Content-Type", "application/json")

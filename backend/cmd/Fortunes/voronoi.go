@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	s2 "github.com/golang/geo/s2"
 	geojson "github.com/paulmach/go.geojson"
 	voronoi "github.com/pzsz/voronoi"
 )
@@ -48,14 +47,17 @@ func clusterToVertexList(clusters kMeans.Clusters) []voronoi.Vertex {
 			fmt.Fprintf(os.Stderr, "y coordinate too large, adjusting to the border: %f", y)
 			y = yb
 		}
-		point := s2.PointFromLatLng(s2.LatLngFromDegrees(x, y))
-		sites = append(sites, voronoi.Vertex{X: point.X, Y: point.Y})
+
+		//point := s2.PointFromLatLng(s2.LatLngFromDegrees(x, y))
+		sites = append(sites, voronoi.Vertex{X: x, Y: y})
+		// fmt.Println(fmt.Sprintf("Sites is : %v", sites))
+		// fmt.Println(fmt.Sprintf("Points is : %v", point))
 	}
 
 	return sites
 }
 
-func voronoiDiagram(clusters kMeans.Clusters) (*geojson.FeatureCollection, error) {
+func VoronoiDiagram(clusters kMeans.Clusters) (*geojson.FeatureCollection, error) {
 	// Set up the Voronoibox for the Netherlands
 	//bbox := voronoi.NewBBox(xl*coordinateMultiplier, xr*coordinateMultiplier, yt*coordinateMultiplier, yb*coordinateMultiplier)
 	// Generate the Voronoi diagram using the voronoi library
@@ -88,7 +90,7 @@ func voronoiDiagramToFeature(vd *voronoi.Diagram) *geojson.FeatureCollection {
 		// fmt.Println(fmt.Sprintf("the edge Vb (endvertex) is: %v", edge.Vb))
 
 		line := geojson.NewLineStringFeature([][]float64{featureFromVertex(edge.Va), featureFromVertex(edge.Vb)})
-		fmt.Println(fc)
+		// fmt.Println(fc)
 		fc.AddFeature(line)
 	}
 	return fc
