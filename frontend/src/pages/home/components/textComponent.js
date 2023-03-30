@@ -18,7 +18,8 @@ async function totalActivityDurations(settime) {
         window.location.reload()
     }
 
-    const data = await response;
+    const data = await response.json();
+    
     console.log(data)
     var data2 = []
     var time = 0;

@@ -111,10 +111,8 @@ const Heatmap = (props) => {
       };
       setComputed(false)
       fetchData();
-    
-  // warning not usefull
-  // eslint-disable-next-line
-  }, [context.layerContainer, value, intensity])
+   
+  }, [context.layerContainer, value, intensity, setComputed])
 
   return null
 }
