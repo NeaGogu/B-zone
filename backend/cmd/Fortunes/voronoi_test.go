@@ -65,3 +65,14 @@ func TestClusterToVertexList(t *testing.T) {
 		})
 	}
 }
+
+func TestVoronoiDiagram(t *testing.T) {
+	clusters := kMeans.Clusters{
+		{Center: kMeans.Coordinates{53.171767, 6.532410}}, //groningen
+		{Center: kMeans.Coordinates{52.313816, 4.906434}}, //amsterdam
+		{Center: kMeans.Coordinates{52.233807, 6.951607}}, //enschede
+		{Center: kMeans.Coordinates{51.668418, 5.298165}}, //den bosch
+	}
+	voronoiDiagram(clusters)
+	t.Errorf("result is in png")
+}

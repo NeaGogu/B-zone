@@ -3,12 +3,12 @@ package main
 import (
 	kMeans "bzone/backend/cmd/k-means"
 	"fmt"
-	"image"
-	"image/color"
-	"image/png"
-	"math/rand"
 	"os"
+	"syscall/js"
 
+	leaflet "github.com/ctessum/go-leaflet"
+	s2 "github.com/golang/geo/s2"
+	geojson "github.com/paulmach/go.geojson"
 	voronoi "github.com/pzsz/voronoi"
 )
 
@@ -20,7 +20,7 @@ import (
 //		return diagram
 //	}
 
-var coordinateMultiplier = 10.0
+var coordinateMultiplier = 100.0
 var xl = 3.1
 var xr = 7.1
 var yt = 50.6
@@ -50,21 +50,19 @@ func clusterToVertexList(clusters kMeans.Clusters) []voronoi.Vertex {
 			fmt.Fprintf(os.Stderr, "y coordinate too large, adjusting to the border: %f", y)
 			y = yb
 		}
-		sites = append(sites, voronoi.Vertex{X: x * coordinateMultiplier, Y: y * coordinateMultiplier})
+		point := s2.PointFromLatLng(s2.LatLngFromDegrees(x, y))
+		sites = append(sites, voronoi.Vertex{X: point.X, Y: point.Y})
 	}
 
 	return sites
 }
 
-// func generateVoronoiDiagram(vertices []voronoi.Vertex) *voronoi.Diagram {
-// 	bbox := voronoi.NewBBox(3.23, 7.3, 6.5, 5.92)
-// 	voronoiDiagram := voronoi.ComputeDiagram(vertices, bbox, true)
-// 	return voronoiDiagram
-// }
-
-func voronoiDiagram(clusters kMeans.Clusters) {
+func voronoiDiagram(clusters kMeans.Clusters) *voronoi.Diagram {
 	// Set up the Voronoibox for the Netherlands
-	bbox := voronoi.NewBBox(xl*coordinateMultiplier, xr*coordinateMultiplier, yt*coordinateMultiplier, yb*coordinateMultiplier)
+	//bbox := voronoi.NewBBox(xl*coordinateMultiplier, xr*coordinateMultiplier, yt*coordinateMultiplier, yb*coordinateMultiplier)
+	// Generate the Voronoi diagram using the voronoi library
+	bbox := voronoi.NewBBox(-180.0, 180.0, -90.0, 90.0)
+
 	//sites := generateRandomPoints(50, bbox)
 
 	//convert clusters to vertices
@@ -72,79 +70,24 @@ func voronoiDiagram(clusters kMeans.Clusters) {
 
 	v := voronoi.ComputeDiagram(sites, bbox, true)
 
-	// Create the output image
-	img := image.NewRGBA(image.Rect(0, 0, int(bbox.Xl-bbox.Xr), int(bbox.Yt-bbox.Yb)))
-	drawSites(img, sites, bbox)
-	drawEdges(img, v.Edges, bbox)
-
-	// Save the image to a file
-	f, err := os.Create("voronoi.png")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer f.Close()
-	err = png.Encode(f, img)
-	if err != nil {
-		fmt.Println(err)
-	}
+	return v
 }
 
-func generateRandomPoints(n int, bbox voronoi.BBox) []voronoi.Vertex {
-	var points []voronoi.Vertex
-	for i := 0; i < n; i++ {
-		x := rand.Float64()*(bbox.Xl-bbox.Xr) + bbox.Xr
-		fmt.Println(x)
-		y := rand.Float64()*(bbox.Yt-bbox.Yb) + bbox.Yb
-		points = append(points, voronoi.Vertex{x, y})
+func drawVoronoiDiagramOnMap(vd *voronoi.Diagram, mapElementID string) {
+	// Convert the Voronoi diagram to a GeoJSON feature collection
+	fc := geojson.NewFeatureCollection()
+	for _, edge := range vd.Edges {
+		line := geojson.NewLineStringFeature([][]float64{featureFromVertex(edge.Va), featureFromVertex(edge.Vb)})
+		fc.AddFeature(line)
 	}
-	return points
+
+	// Draw the Voronoi diagram on a Leaflet map
+	mapElement := js.Global().Get("document").Call("getElementById", mapElementID)
+	mapV := leaflet.NewMap(mapElement)
+	layer := leaflet.NewGeoJSONLayer(fc, leaflet.GeoJSONLayerOptions{})
+	mapV.AddLayer(layer)
 }
 
-func drawSites(img *image.RGBA, sites []voronoi.Vertex, bbox voronoi.BBox) {
-	for _, site := range sites {
-		x, y := int(site.X-bbox.Xr), int(site.Y-bbox.Yb)
-		img.Set(x, y, color.Black)
-	}
-}
-
-func drawEdges(img *image.RGBA, edges []*voronoi.Edge, bbox voronoi.BBox) {
-	for _, edge := range edges {
-		x1, y1 := int(edge.Va.X-bbox.Xr), int(edge.Va.Y-bbox.Yb)
-		x2, y2 := int(edge.Vb.X-bbox.Xr), int(edge.Vb.Y-bbox.Yb)
-		drawLine(img, x1, y1, x2, y2, color.Black)
-	}
-}
-
-func drawLine(img *image.RGBA, x1, y1, x2, y2 int, c color.Color) {
-	dx := x2 - x1
-	dy := y2 - y1
-	if dx == 0 && dy == 0 {
-		img.Set(x1, y1, c)
-		return
-	}
-	if abs(dx) >= abs(dy) {
-		if x2 < x1 {
-			x1, y1, x2, y2 = x2, y2, x1, y1
-		}
-		for x := x1; x <= x2; x++ {
-			y := y1 + dy*(x-x1)/dx
-			img.Set(x, y, c)
-		}
-	} else {
-		if y2 < y1 {
-			x1, y1, x2, y2 = x2, y2, x1, y1
-		}
-		for y := y1; y <= y2; y++ {
-			x := x1 + dx*(y-y1)/dy
-			img.Set(x, y, c)
-		}
-	}
-}
-
-func abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
+func featureFromVertex(v voronoi.EdgeVertex) []float64 {
+	return []float64{v.Vertex.X, v.Vertex.Y}
 }
