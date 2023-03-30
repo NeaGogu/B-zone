@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
 )
 
 const (
@@ -42,7 +43,8 @@ func requestBumbalActivity(w http.ResponseWriter, r *http.Request, reqBody []byt
 	req.Header.Add("Authorization", jwToken)
 
 	// make the request
-	resp, err := http.DefaultClient.Do(req)
+	var resp *http.Response
+	resp, err = http.DefaultClient.Do(req)
 	return resp, err
 }
 
@@ -65,12 +67,6 @@ func collectAllBumbalActivities(w http.ResponseWriter, r *http.Request) ([]model
 
 	// Check the status codes of the response from Bumbal
 	switch resp.StatusCode {
-	case http.StatusMethodNotAllowed:
-		http.Error(w, resp.Status, resp.StatusCode)
-		return nil, err
-	case http.StatusUnprocessableEntity:
-		http.Error(w, resp.Status, resp.StatusCode)
-		return nil, err
 	case http.StatusOK:
 		// If the response status is OK, get the data from the response's body
 		respModel, err := getResponseData(resp)
@@ -97,27 +93,37 @@ func collectAllBumbalActivities(w http.ResponseWriter, r *http.Request) ([]model
 		emptyList := make([]models.ActivityModelBumbal, 0)
 		fullRespModel.Items = &emptyList
 
+		// Set up a channel for collecting the responses from each request
+		respChan := make(chan *http.Response, numberOfRequests)
+		var mutex sync.Mutex  // mutex for protecting the channel
+		var wg sync.WaitGroup // wait group that waits for the goroutines to finish
+
 		for i := 0; i < int(numberOfRequests); i++ {
-			offset := []byte(fmt.Sprintf("%d", i*100))
-			reqBody = append(append(reqBodyHead, offset...), reqBodyTail...)
+			wg.Add(1)
+			// go routine that will make one of the requests to Bumbal
+			go func(i int) {
+				defer wg.Done()
+				offset := []byte(fmt.Sprintf("%d", i*100))
+				reqBody = append(append(reqBodyHead, offset...), reqBodyTail...)
 
-			var partResponse *http.Response
-			var err error
+				partResponse, _ := requestBumbalActivity(w, r, reqBody)
 
-			partResponse, err = requestBumbalActivity(w, r, reqBody)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return nil, err
-			}
+				mutex.Lock()
+				respChan <- partResponse
+				mutex.Unlock()
+			}(i)
+		}
 
+		// Wait for all goroutines to finish
+		wg.Wait()
+
+		// Close the channel
+		close(respChan)
+
+		// Take care of each response stored in the channel
+		for partResponse := range respChan {
 			// Check the status codes of the response from Bumbal
 			switch partResponse.StatusCode {
-			case http.StatusMethodNotAllowed:
-				http.Error(w, resp.Status, resp.StatusCode)
-				return nil, err
-			case http.StatusUnprocessableEntity:
-				http.Error(w, resp.Status, resp.StatusCode)
-				return nil, err
 			case http.StatusOK:
 				// If the response status is OK, get the data from the response's body
 				respModel, err := getResponseData(partResponse)
