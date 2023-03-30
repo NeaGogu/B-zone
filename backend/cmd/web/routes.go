@@ -3,7 +3,6 @@ package main
 import (
 	"bzone/backend/internal/bumbal"
 	"context"
-	"fmt"
 	"github.com/golang-jwt/jwt"
 	"net/http"
 	"strconv"
@@ -106,7 +105,7 @@ func JWTRequestChecker(next http.Handler) http.Handler {
 			http.Error(w, "uid is not a string", http.StatusInternalServerError)
 			return
 		}
-		fmt.Println(userId)
+
 		// Store the uid in the request context
 		ctx := context.WithValue(r.Context(), ContextUserKey, userId)
 		next.ServeHTTP(w, r.WithContext(ctx))
