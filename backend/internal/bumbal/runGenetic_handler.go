@@ -16,7 +16,7 @@ type ZonesInfo struct {
 
 // RunGenetic
 //
-//	 @Description: the main handler, does the request to Bumbal and calls the K-Means algorithm based
+//	 @Description: the main handler, does the request to Bumbal and calls the Genetic algorithm based
 //					on the input
 //	 @param w
 //	 @param r

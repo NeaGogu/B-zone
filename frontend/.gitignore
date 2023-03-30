@@ -4,7 +4,8 @@
 /node_modules
 /.pnp
 .pnp.js
-
+# match every fucking node_modules on earth
+.*node_modules(\/.*)*
 # testing
 /coverage
 
