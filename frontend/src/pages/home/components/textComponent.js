@@ -1,69 +1,8 @@
 //import 'leaflet.heat'
 
 import {useEffect, useState} from "react";
-
-async function querryDatabase(plotID) {
-    const userToken = localStorage.getItem('token')
-    var zones = []
-    await fetch("http://localhost:4000/plot/" + plotID, {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${userToken}`
-        }
-    }).then((response) => {
-        if (!response.ok) {
-            console.log("Response from our backend is not ok ???")
-        }
-        return response.json()
-    }).then((data) => {
-        zones = data.plot_zones
-    })
-
-    var zoneConfig = []
-
-    // go into each zone
-    for (let i = 0; i < zones.length; i++) {
-        var zoneRanges = zones[i].zone_ranges
-        var currZoneRange = []
-        // go into each range
-        for (let j = 0; j < zoneRanges.length; j++) {
-            //convert to format used in other GetCoordinates
-            var curr = {
-                zipFrom: zoneRanges[j].zipcode_from,
-                zipTo: zoneRanges[j].zipcode_to
-            }
-            currZoneRange.push(curr)
-        }
-        zoneConfig.push(currZoneRange)
-    }
-    return zoneConfig
-}
-
-async function getActivities() {
-    const token = localStorage.getItem('token')
-    console.log('token ' + token)
-
-    const requestOptions = {
-        method: 'PUT',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`, // Add token to Bearer Authorization when sending GET signOut request.
-        },
-        body: JSON.stringify({
-            "options": {
-                "include_address": true,
-                "include_depot_address": true
-            }
-        })
-    };
-
-    const response = await fetch('https://sep202302.bumbal.eu/api/v2/activity', requestOptions);
-    console.log('getActivities response ' + response.status)
-    return response.json();
-}
+import querryDatabase from "../functions/querryDatabase";
+import getActivities from "../functions/getActivities";
 
 /**
  Finds the latitude and longitude of each activity address and returns the data as an array.
@@ -94,11 +33,6 @@ async function totalActivityDurations(settime) {
         time += parseInt(data2[i].duration);
     }
     settime(time);
-}
-
-async function activityZoneAllocation(plotID) {
-    const db = await querryDatabase(plotID)
-    return db
 }
 
 async function getDrivingTime(drivingData) {
@@ -140,10 +74,11 @@ function TextComponent(props) {
             let averageFuelCost = 1.8
             let averageFuelConsumption = 0.047 //litres of fuel consumption per km
             totalActivityDurations(setTime) //set the total activity duration to be the time spend on activities
-            const plot = await activityZoneAllocation(zoneId) //gets all plots which are saved to b-zone's backend
+            const plot = await querryDatabase(zoneId) //gets all plots which are saved to b-zone's backend
 
 
             let listOfActivities = await getActivities() //gets all activity locations from Bumbal
+            listOfActivities =  await listOfActivities.json()
             //listOfActivities = await listOfActivities.json() //get json data from activity response
 
             // get activities and related zipcode + add a blank zone field with -1 id
