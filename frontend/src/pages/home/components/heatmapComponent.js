@@ -143,7 +143,7 @@ const Heatmap = (props) => {
         context.layerContainer.addLayer(heatRef.current)
         setComputed(true)
       };
-
+      setComputed(false)
       fetchData();
     
   }, [context.layerContainer, value, intensity])

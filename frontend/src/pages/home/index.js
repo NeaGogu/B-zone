@@ -39,7 +39,7 @@ export default function Home() {
     // for holding render state of map 2
     const [computed2, setComputed2] = useState(false)
     //for holding render state of heatmap 2
-    const [computedHeat2, setComputedHeat2] = useState(false)
+    const [computedHeat2, setComputedHeat2] = useState(true)
     // for keeping track of selected algorithm, by default kmeans
     const [algorithm, setAlgorithm] = useState(1);
     // for keeping track of selected algorithm, by default kmeans
@@ -278,13 +278,13 @@ export default function Home() {
                                             showComparison ? 
                                             <Spin spinning={!computed2 || !computedHeat2} delay={500} tip={
                                                 (()=>{
-                                                    if(!computed && !computedHeat) {
+                                                    if(!computed && !computedHeat2) {
                                                         return 'Loading Plot and Heatmap'
                                                     }
                                                     if(!computed ) {
                                                         return 'Loading Map'
                                                     }
-                                                    if(!computedHeat) {
+                                                    if(!computedHeat2) {
                                                         return 'Loading Heatmap'
                                                     }
                                                 })()
