@@ -43,4 +43,7 @@ jobs:
     - name: Test B-Zone API Handlers
       run: go test -v 
       working-directory: backend/cmd/web
-      
+
+    - name: Test Genetic Algorithm
+      run: go test -v 
+      working-directory: backend/cmd/genetic
