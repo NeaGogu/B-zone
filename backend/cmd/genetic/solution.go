@@ -118,46 +118,6 @@ func (sol *Solution) mutate(inst MDMTSPInstance, maxMutations int, mutationRate 
 	}
 }
 
-// randSolSwap swaps 2 random activities from 2 random routes.
-// During performance testing it was found that when this function was used in mutate()
-// it negatively affected the solution quality with the current implementation.
-func (sol *Solution) randSolSwap() {
-	r0 := rand.Intn(len(sol.Routes))
-	for len(sol.Routes[r0].Activities) == 0 {
-		r0 = rand.Intn(len(sol.Routes))
-	}
-	i := rand.Intn(len(sol.Routes[r0].Activities))
-	r1 := rand.Intn(len(sol.Routes))
-	for len(sol.Routes[r1].Activities) == 0 {
-		r1 = rand.Intn(len(sol.Routes))
-	}
-	j := rand.Intn(len(sol.Routes[r1].Activities))
-	err := sol.applySwap(r0, i, r1, j)
-	if err != nil {
-		panic(err)
-	}
-}
-
-// randMigrate moves a random activity from a random route to a different random route.
-// During performance testing it was found that when this function was used in mutate()
-// it negatively affected the solution quality with the current implementation.
-func (sol *Solution) randMigrate() {
-	r0 := rand.Intn(len(sol.Routes))
-	for len(sol.Routes[r0].Activities) == 0 {
-		r0 = rand.Intn(len(sol.Routes))
-	}
-	i := rand.Intn(len(sol.Routes[r0].Activities))
-	r1 := rand.Intn(len(sol.Routes))
-	for r0 == r1 {
-		r1 = rand.Intn(len(sol.Routes))
-	}
-	j := rand.Intn(len(sol.Routes[r1].Activities) + 1)
-	err := sol.applyMigrate(r0, i, r1, j)
-	if err != nil {
-		panic(err)
-	}
-}
-
 // randMigrateZip moves all activities with a random zipcode from a random route to a different random route.
 func (sol *Solution) randMigrateZip() {
 	r0 := rand.Intn(len(sol.Routes))
@@ -169,10 +129,8 @@ func (sol *Solution) randMigrateZip() {
 	for r0 == r1 {
 		r1 = rand.Intn(len(sol.Routes))
 	}
-	err := sol.applyMigrateZip(r0, r1, zip)
-	if err != nil {
-		panic(err)
-	}
+	// Error should never be returned because parameters are always within bounds
+	_ = sol.applyMigrateZip(r0, r1, zip)
 }
 
 // randRouteSwap swaps two random activities within a random route.
@@ -184,10 +142,8 @@ func (sol *Solution) randRouteSwap() {
 	n := len(sol.Routes[r].Activities)
 	i := rand.Intn(n)
 	j := rand.Intn(n)
-	err := sol.Routes[r].applySwap(i, j)
-	if err != nil {
-		panic(err)
-	}
+	// Error should never be returned because parameters are always within bounds
+	_ = sol.Routes[r].applySwap(i, j)
 }
 
 // rand2Opt performs 2-OPT on two random activities within a random route.
@@ -199,10 +155,8 @@ func (sol *Solution) rand2Opt() {
 	n := len(sol.Routes[r].Activities)
 	i := rand.Intn(n)
 	j := rand.Intn(n)
-	err := sol.Routes[r].apply2Opt(i, j)
-	if err != nil {
-		panic(err)
-	}
+	// Error should never be returned because parameters are always within bounds
+	_ = sol.Routes[r].apply2Opt(i, j)
 }
 
 // randRouteGreedy greedily moves a random activity to a better position within a random route.
@@ -213,67 +167,16 @@ func (sol *Solution) randRouteGreedy() {
 	}
 	n := len(sol.Routes[r].Activities)
 	i := rand.Intn(n)
-	err := sol.Routes[r].applyGreedy(i)
-	if err != nil {
-		panic(err)
-	}
+	// Error should never be returned because parameters are always within bounds
+	_ = sol.Routes[r].applyGreedy(i)
 }
 
 // randChangeDepot changes the depot of a route to a random (possibly different) depot.
 func (sol *Solution) randChangeDepot(inst MDMTSPInstance) {
 	r := rand.Intn(len(sol.Routes))
 	d := rand.Intn(len(inst.Depots))
-	err := sol.Routes[r].applyChangeDepot(inst, d)
-	if err != nil {
-		panic(err)
-	}
-}
-
-// applySwap swaps activity i in route r0 with the activity j in route r1.
-// Returns an error if r0,r1<0 or r0,r1>=len(sol.routes)
-// or i<0 or i>=len(sol.routes[r0].activities)
-// or j<0 or j>=len(sol.routes[r1].activities); otherwise returns nil.
-func (sol *Solution) applySwap(r0, i, r1, j int) error {
-	if r0 < 0 || r0 >= len(sol.Routes) || r1 < 0 || r1 >= len(sol.Routes) {
-		return fmt.Errorf("invalid route indices r0=%d, r1=%d; valid range is [0,%d)", r0, r1, len(sol.Routes))
-	}
-	if i < 0 || i >= len(sol.Routes[r0].Activities) {
-		return fmt.Errorf("invalid activity index i=%d for route r0=%d; valid range is [0,%d)",
-			i, r0, len(sol.Routes[r0].Activities))
-	}
-	if j < 0 || j >= len(sol.Routes[r1].Activities) {
-		return fmt.Errorf("invalid activity index j=%d for route r1=%d; valid range is [0,%d)",
-			j, r1, len(sol.Routes[r1].Activities))
-	}
-
-	sol.Routes[r0].Activities[i], sol.Routes[r1].Activities[j] = sol.Routes[r1].Activities[j], sol.Routes[r0].Activities[i]
-	return nil
-}
-
-// applyMigrate removes activity i from route r0 and inserts it at index j in route r1.
-// Returns an error if r0,r1<0 or r0,r1>=len(sol.routes)
-// or i<0 or i>=len(sol.routes[r0].activities)
-// or j<0 or j>len(sol.routes[r1].activities)
-// or r0==r1; otherwise returns nil.
-func (sol *Solution) applyMigrate(r0, i, r1, j int) error {
-	if r0 < 0 || r0 >= len(sol.Routes) || r1 < 0 || r1 >= len(sol.Routes) {
-		return fmt.Errorf("invalid route indices r0=%d, r1=%d; valid range is [0,%d)", r0, r1, len(sol.Routes))
-	}
-	if r0 == r1 {
-		return fmt.Errorf("r0 should not equal r1: r0=%d, r1=%d", r0, r1)
-	}
-
-	var act Pos
-	var err error
-	sol.Routes[r0].Activities, act, err = remove(sol.Routes[r0].Activities, i)
-	if err != nil {
-		return err
-	}
-	sol.Routes[r1].Activities, err = insert(sol.Routes[r1].Activities, act, j)
-	if err != nil {
-		return err
-	}
-	return nil
+	// Error should never be returned because parameters are always within bounds
+	_ = sol.Routes[r].applyChangeDepot(inst, d)
 }
 
 // applyMigrateZip moves all activities with zipcode zip from route r0 to route r1 greedily

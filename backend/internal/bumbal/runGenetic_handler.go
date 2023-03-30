@@ -2,6 +2,7 @@ package bumbal
 
 import (
 	"bzone/backend/cmd/genetic"
+	"bzone/backend/internal/models"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -45,7 +46,8 @@ func RunGenetic(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// get the data from the request's body
-		zonesInfo, err := getZonesInfo(r)
+		var zonesInfo ZonesInfo
+		zonesInfo, err = getZonesInfo(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -55,8 +57,14 @@ func RunGenetic(w http.ResponseWriter, r *http.Request) {
 		filteredResp := filterResp(*respModel.Items)
 
 		// use the collected data as input for the Genetic algorithm
-		computedZones := genetic.RunGeneticAlgorithm(filteredResp, zonesInfo.NZones, zonesInfo.NGenerations,
+		var computedZones []models.ZoneModel
+		computedZones, err = genetic.RunGeneticAlgorithm(filteredResp, zonesInfo.NZones, zonesInfo.NGenerations,
 			zonesInfo.MaxDuration*time.Minute)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		// set up the response
 		var output Output
