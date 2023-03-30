@@ -102,7 +102,9 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
 function SiderComponent(props) {
     const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone,
             setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm,
-            setAlgorithm, setNrofZones, currentView, setZoneName, setZoneName2 } = props;
+            setAlgorithm, setNrofZones, currentView, setZoneName, setZoneName2, loadedHeat } = props;
+
+    console.log(loadedHeat)
 
 
     const toggleMap = () => {
@@ -149,8 +151,8 @@ function SiderComponent(props) {
 
                 <div style={{ width: '100%', textAlign: 'center' }}>
                     <Menu.Item key="5" style={{ padding: 0 }}>
-                        <Radio.Group value={values} onChange={onChange} size='small'  >
-                            <Radio.Button data-testid="time-based" value={1}>
+                        <Radio.Group value={values} onChange={onChange} size='small' disabled={!loadedHeat}>
+                            <Radio.Button data-testid="time-based" value={1} >
                                 Time based
                             </Radio.Button>
                             <Radio.Button data-testid="location-based" value={2}>
@@ -163,7 +165,10 @@ function SiderComponent(props) {
                 <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>
                     <div style={{ textAlign: "center" }}>Intensity</div>
                     <div style={{ textAlign: "center" }}>
-                        <InputNumber data-testid='intensity-input' min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={values === 1 ? true : false} />
+                        <InputNumber data-testid='intensity-input' min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={(()=>{
+                            if (!loadedHeat || values ===1){return true}
+                            return false
+                        })()} />
                     </div>
                 </Menu.Item>
             </SubMenu>

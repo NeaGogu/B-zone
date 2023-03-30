@@ -7,7 +7,7 @@ import 'leaflet.heat'
  Sends a request to the Bumbal API to retrieve a list of activities.
  @returns {Promise<Response>} - The response from the API containing a list of activities.
  */
-async function getActivities() {
+async function getActivities(offset) {
   const token = localStorage.getItem('token')
   console.log('token ' + token)
 
@@ -20,14 +20,21 @@ async function getActivities() {
     },
     body: JSON.stringify({
       "options": {
-        "include_address": true,
-        "include_depot_address": true
-      }
+          "include_address": true,
+          "include_depot_address": true
+      },
+        "sorting_column": "id",
+        "as_list": true,
+        "count_only": false,
+        "limit": 100,
+        "offset": offset
+    
     })
   };
 
   const response = await fetch('https://sep202302.bumbal.eu/api/v2/activity', requestOptions);
-  console.log('getActivities response ' + response.status)
+
+
   return response;
 }
 
@@ -36,25 +43,49 @@ async function getActivities() {
  @returns {Promise<Array>} - The array containing latitude, longitude, and intensity for each address.
  */
 async function findAddressesPoints() {
-  const response = await getActivities();
+  const token = localStorage.getItem('token')
 
-  // If token is invalid, take the user to log in page.
-  if (response.status === 401) {
-    alert('Expired or Invalid Token')
-    localStorage.removeItem('token')
-    window.location.reload()
+  // first see how many activities there are
+  let  activities =  await fetch('https://sep202302.bumbal.eu/api/v2/activity', {
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`, // Add token to Bearer Authorization when sending GET signOut request.
+    },
+    body: JSON.stringify({
+      "count_only": true
+    })
+  }).then((response)=>{return response.json()})
+
+  let datatop = []
+  // for loop and get activities based on offset
+  for (let i = 0; i < activities.count_filtered;i = i + 100) {
+      const response = await getActivities(i);
+
+    // If token is invalid, take the user to log in page.
+    if (response.status === 401) {
+      alert('Expired or Invalid Token')
+      localStorage.removeItem('token')
+      window.location.reload()
+    }
+
+    const data = await response.json();
+    datatop.push(...data.items)
   }
+  console.log(activities.count_filtered)
+  
 
-  const data = await response.json();
-  console.log(data)
+  
   var data2 = []
-  for (let i = 0; i < data.items.length; i++) {
+  for (let i = 0; i < datatop.length; i++) {
     
-    if (data.items[i].depot_address !== null) {
-      data2.push(data.items[i])
+    if (datatop[i].depot_address !== null) {
+      console.log(datatop[i])
+      data2.push(datatop[i])
     }
   }
-console.log(data2)
+  //console.log(data2)
   let newData = data2.map((i) => {
     return [i.address.latitude, i.address.longitude, i.duration]; // Lat Lng intensity.
   })
@@ -70,50 +101,14 @@ const Heatmap = (props) => {
   const heatRef = useRef()
   const pointsRef = useRef()
   const renderRef = useRef()
-  const { value, intensity } = props;
+  const { value, intensity, setComputed } = props;
 
   // Map context.
   const context = useLeafletContext()
 
-  useEffect(() => {
-    // Async function in order to wait for response from API.
-    renderRef.current = 1;
-
-    const fetchData = async () => {
-      // Set address points.
-      let addressPoints = await findAddressesPoints();
-
-      // Map those points to something interpretable for the heat map.
-      const points = addressPoints
-        ? addressPoints.map((p) => {
-          // If activity time is selected.
-          if (value === 1) {
-            return [p[0], p[1], p[2]];
-          }
-          // If activity location is selected.
-          return [p[0], p[1], intensity];
-        })
-        : [];
-
-      pointsRef.current = points
-      heatRef.current = new L.heatLayer(points)
-
-      // Create new layer and add it to the map context.
-      context.layerContainer.addLayer(heatRef.current)
-    };
-
-    fetchData();
-
-    return () => {
-      context.layerContainer.removeLayer(heatRef.current)
-    }
-  }, [context.layerContainer, intensity, value])
 
   useEffect(() => {
-    if (renderRef.current === 1) {
-      console.log('firstime?')
-      renderRef.current += renderRef.current;
-    } else {
+  
       const fetchData = async () => {
         // Delete old heat layer if it exists.
         context.layerContainer.eachLayer(function (layer) {
@@ -121,11 +116,15 @@ const Heatmap = (props) => {
         })
 
         // Set address points.
+        setComputed(false)
         let addressPoints = await findAddressesPoints();
-
+        setComputed(false)
+        
         // Map those points to something interpretable for the heat map.
+        //console.log(addressPoints, 'hello')
         const points = addressPoints
           ? addressPoints.map((p) => {
+            setComputed(false)
             // If activity time is selected.
             if (value === 1) {
               return [p[0], p[1], p[2]];
@@ -136,14 +135,17 @@ const Heatmap = (props) => {
           : [];
 
         pointsRef.current = points
+        setComputed(false)
         heatRef.current = new L.heatLayer(points)
+        setComputed(false)
 
         // Create new layer and add it to the map context.
         context.layerContainer.addLayer(heatRef.current)
+        setComputed(true)
       };
-
+      setComputed(false)
       fetchData();
-    }
+    
   }, [context.layerContainer, value, intensity])
 
   return null
