@@ -2,7 +2,12 @@ package main
 
 import (
 	"bzone/backend/internal/bumbal"
+	"context"
+	"fmt"
+	"github.com/golang-jwt/jwt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
@@ -12,6 +17,11 @@ import (
 func hello(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello brothers!"))
 }
+
+// Context key for the token check
+type ContextKey string
+
+const ContextUserKey ContextKey = "user_id"
 
 // JwtChecker
 //
@@ -57,6 +67,54 @@ func JwtChecker(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
+func JWTRequestChecker(next http.Handler) http.Handler {
+	//Checks if the token was sent correctly
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		t := r.Header.Get("Authorization") // -> "Bearer <TOKEN>"
+
+		jwToken := strings.TrimPrefix(t, "Bearer ")
+
+		// check if we indeed have a bearer token
+		if jwToken == "" {
+			http.Error(w, "There is a problem with your token", http.StatusBadRequest)
+			return
+		}
+
+		// parse the token to extract its information, no need to verify the token sig
+		parsedToken, _, err := new(jwt.Parser).ParseUnverified(jwToken, jwt.MapClaims{})
+		if err != nil {
+			http.Error(w, "Cannot Parse the token", http.StatusInternalServerError)
+			return
+		}
+
+		claims := parsedToken.Claims.(jwt.MapClaims)
+		// get the user id from the decoded claims
+		uid, ok := claims["user_id"].(string)
+		if !ok {
+			http.Error(w, "Cannot get user_id from decoded claims", http.StatusInternalServerError)
+
+			return
+		} else if uid == "" {
+			http.Error(w, "Missing user ID in your token", http.StatusInternalServerError)
+			return
+		}
+
+		// convert the user id from string to int as this is how it is stored in the database
+		userId, err := strconv.Atoi(uid)
+		if err != nil {
+			// userId is nil
+			http.Error(w, "uid is not a string", http.StatusInternalServerError)
+			return
+		}
+		fmt.Println(userId)
+		// Store the uid in the request context
+		ctx := context.WithValue(r.Context(), ContextUserKey, userId)
+		next.ServeHTTP(w, r.WithContext(ctx))
+
+	}
+	return http.HandlerFunc(fn)
+}
+
 func (app *application) routes() http.Handler {
 	// init the router
 	router := chi.NewRouter()
@@ -91,13 +149,11 @@ func (app *application) routes() http.Handler {
 
 			r.Get("/coordinates", app.getZipCodeCoords)
 		})
-
-		r.Route("/zone/", func(r chi.Router) {
-			r.Post("/ranges", app.getZoneRanges)
-		})
-		//testing bzone plot getter
-		r.Route("/bzone", func(r chi.Router) {
-			r.Get("/plot", app.getBZonePlot)
+		r.Route("/plot", func(r chi.Router) {
+			r.Get("/{plotId}", app.GetPlotById)
+			r.Put("/sync", app.SyncBumbalZones)
+			r.Post("/save", app.SavePlot)
+			r.Delete("/{plotId}", app.DeletePlotById)
 		})
 
 	})
@@ -105,6 +161,7 @@ func (app *application) routes() http.Handler {
 	// authorized routes
 	router.Group(func(r chi.Router) {
 		r.Use(JwtChecker)
+		r.Use(JWTRequestChecker)
 
 		r.Route("/zip", func(r chi.Router) {
 			r.Get("/coordinates", app.getZipCodeCoords)
@@ -119,10 +176,6 @@ func (app *application) routes() http.Handler {
 			r.Put("/sync", app.SyncBumbalZones)
 			r.Post("/save", app.SavePlot)
 			r.Delete("/{plotId}", app.DeletePlotById)
-		})
-
-		r.Route("/bzone", func(r chi.Router) {
-			r.Get("/plot", app.getBZonePlot)
 		})
 
 		r.Route("/bumbal", func(r chi.Router) {

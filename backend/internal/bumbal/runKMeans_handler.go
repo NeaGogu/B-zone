@@ -44,7 +44,8 @@ func RunKMeans(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// get the data from the request's body
-		clustersInfo, err := getClustersInfo(r)
+		var clustersInfo ClustersInfo
+		clustersInfo, err = getClustersInfo(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -62,6 +63,9 @@ func RunKMeans(w http.ResponseWriter, r *http.Request) {
 		//convert the output clusters to zones
 		var computedZones []models.ZoneModel
 		computedZones, err = kMeans.ClusterToZoneModel(computedClusters, filteredResp)
+		// use the collected data as input for the K-means algorithm
+		var computedZones []models.ZoneModel
+		computedZones, err = kMeans.KMeans(filteredResp, clustersInfo.NrClusters, clustersInfo.NrCandidateClusters)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

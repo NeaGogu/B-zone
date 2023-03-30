@@ -2,6 +2,7 @@ package bumbal
 
 import (
 	"bzone/backend/cmd/genetic"
+	"bzone/backend/internal/models"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -16,7 +17,7 @@ type ZonesInfo struct {
 
 // RunGenetic
 //
-//	 @Description: the main handler, does the request to Bumbal and calls the K-Means algorithm based
+//	 @Description: the main handler, does the request to Bumbal and calls the Genetic algorithm based
 //					on the input
 //	 @param w
 //	 @param r
@@ -56,8 +57,14 @@ func RunGenetic(w http.ResponseWriter, r *http.Request) {
 		filteredResp := filterResp(*respModel.Items)
 
 		// use the collected data as input for the Genetic algorithm
-		computedZones := genetic.RunGeneticAlgorithm(filteredResp, zonesInfo.NZones, zonesInfo.NGenerations,
+		var computedZones []models.ZoneModel
+		computedZones, err = genetic.RunGeneticAlgorithm(filteredResp, zonesInfo.NZones, zonesInfo.NGenerations,
 			zonesInfo.MaxDuration*time.Minute)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		// set up the response
 		var output Output
