@@ -46,6 +46,6 @@ require (
 
 require github.com/pzsz/voronoi v0.0.0-20130609164533-4314be88c79f
 
-require github.com/golang/geo v0.0.0-20210211234256-740aa86cb551
+require github.com/paulmach/orb v0.9.0
 
-require github.com/ctessum/go-leaflet v0.0.0-20190930105439-32c1547876af
+require github.com/golang/geo v0.0.0-20210211234256-740aa86cb551

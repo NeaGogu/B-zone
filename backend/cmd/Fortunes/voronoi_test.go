@@ -72,7 +72,18 @@ func TestVoronoiDiagram(t *testing.T) {
 		{Center: kMeans.Coordinates{52.313816, 4.906434}}, //amsterdam
 		{Center: kMeans.Coordinates{52.233807, 6.951607}}, //enschede
 		{Center: kMeans.Coordinates{51.668418, 5.298165}}, //den bosch
+		{Center: kMeans.Coordinates{51.9202, 4.4818}},     //Rotterdam
+		{Center: kMeans.Coordinates{52.0705, 4.3007}},     //den haag
+		{Center: kMeans.Coordinates{52.0907, 5.1214}},     //utrecht
+		{Center: kMeans.Coordinates{51.4416, 5.4697}},     //Eindhoven
+		{Center: kMeans.Coordinates{51.5555, 5.0913}},     //tilburg
+		{Center: kMeans.Coordinates{51.5831, 4.7766}},     //Breda
+		{Center: kMeans.Coordinates{51.8126, 5.8372}},     //nimma
 	}
-	voronoiDiagram(clusters)
-	t.Errorf("result is in png")
+	result, err := voronoiDiagram(clusters)
+
+	if err != nil {
+		t.Errorf("didn't expect error but got: %v", err)
+	}
+	t.Errorf("result is : %v", result)
 }
