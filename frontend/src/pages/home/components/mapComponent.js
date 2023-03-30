@@ -62,10 +62,10 @@ function LocationMarker() {
 // Main function to hold the map, location marker and the layers.
 function MapComponent(props) {
     const { value, intensity, zoneId, setZipCodes, setComputed, algorithm, nrofzones, setComputedHeat } = props;    
-    const rendr = useRef(0)
-    useEffect(()=>{
-        rendr.current +=1
-    },[value, intensity])
+    // const rendr = useRef(0)
+    // useEffect(()=>{
+    //     rendr.current +=1
+    // },[value, intensity])
 
     return (
         <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '60vh', flex: "1" }}>
@@ -74,7 +74,7 @@ function MapComponent(props) {
 
             <LayersControl position='topright'>
                 <LayersControl.Overlay name='Heat map' checked={true}>
-                    <LayerGroup key={rendr.current} >
+                    <LayerGroup >
                         <Heatmap value={value} intensity={intensity} setComputed={setComputedHeat}/>
                     </LayerGroup>
                 </LayersControl.Overlay>

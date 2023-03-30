@@ -34,10 +34,12 @@ export default function Home() {
 
     // for holding render state of map 1
     const [computed, setComputed] = useState(false)
-    //for holding render state of heatmap
+    //for holding render state of heatmap 1
     const [computedHeat, setComputedHeat] = useState(false)
     // for holding render state of map 2
     const [computed2, setComputed2] = useState(false)
+    //for holding render state of heatmap 2
+    const [computedHeat2, setComputedHeat2] = useState(false)
     // for keeping track of selected algorithm, by default kmeans
     const [algorithm, setAlgorithm] = useState(1);
     // for keeping track of selected algorithm, by default kmeans
@@ -248,13 +250,14 @@ export default function Home() {
                             setNrofZones={setNrofZones}
                             setZoneName={setZoneName}
                             setZoneName2={setZoneName2}
+                            loadedHeat={computedHeat && computedHeat2 }
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
                         <Content className="map" id="map" style={{ minHeight: '60vh' }}>
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
-                                    <Spin spinning={ !computed || !computedHeat} delay={200} tip={
+                                    <Spin spinning={ !computed || !computedHeat} delay={500} tip={
                                         (()=>{
                                             if(!computed && !computedHeat) {
                                                 return 'Loading Plot and Heatmap'
@@ -273,8 +276,20 @@ export default function Home() {
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
                                         {
                                             showComparison ? 
-                                            <Spin spinning={!computed2} delay={500}> 
-                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} setComputed={setComputed2} setComputedHeat={setComputedHeat}/> 
+                                            <Spin spinning={!computed2 || !computedHeat2} delay={500} tip={
+                                                (()=>{
+                                                    if(!computed && !computedHeat) {
+                                                        return 'Loading Plot and Heatmap'
+                                                    }
+                                                    if(!computed ) {
+                                                        return 'Loading Map'
+                                                    }
+                                                    if(!computedHeat) {
+                                                        return 'Loading Heatmap'
+                                                    }
+                                                })()
+                                            }> 
+                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} setComputed={setComputed2} setComputedHeat={setComputedHeat2}/> 
                                             </Spin>
                                             : <></>
                                         }
