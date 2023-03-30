@@ -1,0 +1,30 @@
+services:
+  b-zone-backend:
+    build:
+#      context:
+      dockerfile: packageApp.Dockerfile
+    image: bzone/backend_image:1.0.0
+    container_name: b-zone-backend-container
+    ports:
+      - "4000:4000"
+    networks:
+      - bzone_network
+  b-zone-frontend:
+    build:
+      dockerfile: BuildFrontend.Dockerfile
+    image: bzone/frontend_image:1.0.0
+    container_name: b-zone-frontend-container
+    ports:
+      - "3000:80"
+    networks:
+      - bzone_network
+  mongodb:
+    image: goglete/sep_initial_db:v1.0.0
+    container_name: mongodb-container
+    ports:
+      - "27017:27017"
+    networks:
+      - bzone_network
+networks:
+  bzone_network:
+    driver: bridge
