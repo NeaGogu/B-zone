@@ -34,6 +34,8 @@ export default function Home() {
 
     // for holding render state of map 1
     const [computed, setComputed] = useState(false)
+    //for holding render state of heatmap
+    const [computedHeat, setComputedHeat] = useState(false)
     // for holding render state of map 2
     const [computed2, setComputed2] = useState(false)
     // for keeping track of selected algorithm, by default kmeans
@@ -201,9 +203,9 @@ export default function Home() {
         fetchData()
     }, []);
 
-    useEffect(() => {
-        console.log(nrofzones, 'home')
-    }, [nrofzones]);
+    // useEffect(() => {
+    //     console.log(computedHeat, 'home')
+    // }, [computedHeat]);
 
     return (
         <ConfigProvider
@@ -252,15 +254,27 @@ export default function Home() {
                         <Content className="map" id="map" style={{ minHeight: '60vh' }}>
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
-                                    <Spin spinning={!computed} delay={500}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones}/>;
+                                    <Spin spinning={ !computed || !computedHeat} delay={200} tip={
+                                        (()=>{
+                                            if(!computed && !computedHeat) {
+                                                return 'Loading Plot and Heatmap'
+                                            }
+                                            if(!computed ) {
+                                                return 'Loading Map'
+                                            }
+                                            if(!computedHeat) {
+                                                return 'Loading Heatmap'
+                                            }
+                                        })()
+                                    }>
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setComputedHeat={setComputedHeat}/>;
                                     </Spin>
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
                                         {
                                             showComparison ? 
                                             <Spin spinning={!computed2} delay={500}> 
-                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} setComputed={setComputed2} /> 
+                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} setComputed={setComputed2} setComputedHeat={setComputedHeat}/> 
                                             </Spin>
                                             : <></>
                                         }
