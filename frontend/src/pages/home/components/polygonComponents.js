@@ -327,6 +327,9 @@ const PolygonVis = (props) => {
             setComputed(true)
         };
         fetchData()
+    
+    // warning not usefull 
+    // eslint-disable-next-line 
     }, [context.layerContainer, setZipCodes, zoneId, setComputed])
 
 

@@ -68,7 +68,6 @@ async function findAddressesPoints() {
 const Heatmap = (props) => {
   const heatRef = useRef()
   const pointsRef = useRef()
-  const renderRef = useRef()
   const { value, intensity, setComputed } = props;
 
   // Map context.
@@ -76,7 +75,6 @@ const Heatmap = (props) => {
 
 
   useEffect(() => {
-  
       const fetchData = async () => {
         // Delete old heat layer if it exists.
         context.layerContainer.eachLayer(function (layer) {
@@ -114,6 +112,8 @@ const Heatmap = (props) => {
       setComputed(false)
       fetchData();
     
+  // warning not usefull
+  // eslint-disable-next-line
   }, [context.layerContainer, value, intensity])
 
   return null
