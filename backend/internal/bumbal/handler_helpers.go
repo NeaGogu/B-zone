@@ -71,12 +71,6 @@ func collectAllBumbalActivities(w http.ResponseWriter, r *http.Request) ([]model
 
 	// Check the status codes of the response from Bumbal
 	switch resp.StatusCode {
-	case http.StatusMethodNotAllowed:
-		http.Error(w, resp.Status, resp.StatusCode)
-		return nil, err
-	case http.StatusUnprocessableEntity:
-		http.Error(w, resp.Status, resp.StatusCode)
-		return nil, err
 	case http.StatusOK:
 		// If the response status is OK, get the data from the response's body
 		respModel, err := getResponseData(resp)
@@ -118,12 +112,6 @@ func collectAllBumbalActivities(w http.ResponseWriter, r *http.Request) ([]model
 
 			// Check the status codes of the response from Bumbal
 			switch partResponse.StatusCode {
-			case http.StatusMethodNotAllowed:
-				http.Error(w, resp.Status, resp.StatusCode)
-				return nil, err
-			case http.StatusUnprocessableEntity:
-				http.Error(w, resp.Status, resp.StatusCode)
-				return nil, err
 			case http.StatusOK:
 				// If the response status is OK, get the data from the response's body
 				respModel, err := getResponseData(partResponse)
@@ -135,6 +123,7 @@ func collectAllBumbalActivities(w http.ResponseWriter, r *http.Request) ([]model
 				respModelItems := *respModel.Items
 				newItems := append(fullRespModelItems, respModelItems...)
 				fullRespModel.Items = &newItems
+
 			default:
 				http.Error(w, resp.Status, resp.StatusCode)
 				return nil, err
