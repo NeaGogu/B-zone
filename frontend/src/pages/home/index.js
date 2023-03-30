@@ -97,7 +97,7 @@ export default function Home() {
     const handleDeleteZone = (id, name) => {
         const confirm = window.confirm('Confirm deletion of ' + name);
         // make sure user actually want to delete plot
-        if (confirm){
+        if (confirm) {
             deleteSavedZone(id)
         }
     };
@@ -145,22 +145,22 @@ export default function Home() {
     * @param {string} id - The id of the zone configuration to delete.
     * @return {void}
     */
-    async function deleteSavedZone(id){
+    async function deleteSavedZone(id) {
         const userToken = localStorage.getItem('token')
         await fetch("http://localhost:4000/plot/" + id, {
-            method:'DELETE',
+            method: 'DELETE',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${userToken}`
             }
-        }).then(async (response)=>{
+        }).then(async (response) => {
             if (response.ok) {
                 const saved = await getSavedZones();
                 setSavedZones(saved)
                 alert('Plot succesfully deleted')
                 return null
-            } 
+            }
             alert('Could not delete plot, server error')
             return null
         })
@@ -250,60 +250,60 @@ export default function Home() {
                             setNrofZones={setNrofZones}
                             setZoneName={setZoneName}
                             setZoneName2={setZoneName2}
-                            loadedHeat={computedHeat && computedHeat2 }
+                            loadedHeat={computedHeat && computedHeat2}
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
-                        <Content className="map" id="map" style={{ minHeight: '60vh' }}>
+                        <Content className="map" id="map" style={{ minHeight: '60vh', overflow:'auto' }}>
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
-                                    <Spin spinning={ !computed || !computedHeat} delay={500} tip={
-                                        (()=>{
-                                            if(!computed && !computedHeat) {
+                                    <Spin spinning={!computed || !computedHeat} delay={500} tip={
+                                        (() => {
+                                            if (!computed && !computedHeat) {
                                                 return 'Loading Plot and Heatmap'
                                             }
-                                            if(!computed ) {
+                                            if (!computed) {
                                                 return 'Loading Map'
                                             }
-                                            if(!computedHeat) {
+                                            if (!computedHeat) {
                                                 return 'Loading Heatmap'
                                             }
                                         })()
                                     }>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setComputedHeat={setComputedHeat}/>;
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setComputedHeat={setComputedHeat} />;
                                     </Spin>
-                                </div>
-                                <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
-                                        {
-                                            showComparison ? 
-                                            <Spin spinning={!computed2 || !computedHeat2} delay={500} tip={
-                                                (()=>{
-                                                    if(!computed2 && !computedHeat2) {
-                                                        return 'Loading Plot and Heatmap'
-                                                    }
-                                                    if(!computed2 ) {
-                                                        return 'Loading Map'
-                                                    }
-                                                    if(!computedHeat2) {
-                                                        return 'Loading Heatmap'
-                                                    }
-                                                })()
-                                            }> 
-                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} setComputed={setComputed2} setComputedHeat={setComputedHeat2}/> 
-                                            </Spin>
-                                            : <></>
-                                        }
-                                    
-                                </div>
-                            </div>
-                            <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
-                                <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
-                                    <TextComponent zoneId={zoneId} zoneName={zoneName}/>
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
                                     {
                                         showComparison ?
-                                            <TextComponent zoneId={currentView} zoneName={zoneName2}/>
+                                            <Spin spinning={!computed2 || !computedHeat2} delay={500} tip={
+                                                (() => {
+                                                    if (!computed2 && !computedHeat2) {
+                                                        return 'Loading Plot and Heatmap'
+                                                    }
+                                                    if (!computed2) {
+                                                        return 'Loading Map'
+                                                    }
+                                                    if (!computedHeat2) {
+                                                        return 'Loading Heatmap'
+                                                    }
+                                                })()
+                                            }>
+                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} setComputed={setComputed2} setComputedHeat={setComputedHeat2} />
+                                            </Spin>
+                                            : <></>
+                                    }
+
+                                </div>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
+                                <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
+                                    <TextComponent zoneId={zoneId} zoneName={zoneName} />
+                                </div>
+                                <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
+                                    {
+                                        showComparison ?
+                                            <TextComponent zoneId={currentView} zoneName={zoneName2} />
                                             : <></>
                                     }
                                 </div>

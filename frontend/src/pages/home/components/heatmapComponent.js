@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
 import 'leaflet.heat'
-import getActivities from '../functions/getActivities'
+import getAllActivities from '../functions/getAllActivities'
 
 
 
@@ -11,46 +11,15 @@ import getActivities from '../functions/getActivities'
  @returns {Promise<Array>} - The array containing latitude, longitude, and intensity for each address.
  */
 async function findAddressesPoints() {
-  const token = localStorage.getItem('token')
-
-  // first see how many activities there are
-  let  activities =  await fetch('https://sep202302.bumbal.eu/api/v2/activity', {
-    method: 'PUT',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`, // Add token to Bearer Authorization when sending GET signOut request.
-    },
-    body: JSON.stringify({
-      "count_only": true
-    })
-  }).then((response)=>{return response.json()})
-
-  let datatop = []
-  // for loop and get activities based on offset
-  for (let i = 0; i < activities.count_filtered;i = i + 100) {
-      const response = await getActivities(i);
-
-    // If token is invalid, take the user to log in page.
-    if (response.status === 401) {
-      alert('Expired or Invalid Token')
-      localStorage.removeItem('token')
-      window.location.reload()
-    }
-
-    const data = await response.json();
-    datatop.push(...data.items)
-  }
-  console.log(activities.count_filtered)
   
-
+  const activities = await getAllActivities()
   
   var data2 = []
-  for (let i = 0; i < datatop.length; i++) {
+  for (let i = 0; i < activities.length; i++) {
     
-    if (datatop[i].depot_address !== null) {
-      console.log(datatop[i])
-      data2.push(datatop[i])
+    if (activities[i].depot_address !== null) {
+      console.log(activities[i])
+      data2.push(activities[i])
     }
   }
   //console.log(data2)
