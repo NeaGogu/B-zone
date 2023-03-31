@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	geojson "github.com/paulmach/go.geojson"
 )
@@ -109,6 +110,8 @@ func collectAllBumbalActivities(w http.ResponseWriter, r *http.Request) ([]model
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return nil, err
 			}
+
+			time.Sleep(500 * time.Millisecond)
 
 			// Check the status codes of the response from Bumbal
 			switch partResponse.StatusCode {
