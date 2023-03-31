@@ -61,18 +61,15 @@ Here is an overview of the backend endpoints, together with instructions on how 
 1. Endpoint for running the `k-means algorithm`:
     - the `url` for this `PUT` request is: http://localhost:4000/bumbal/algorithm/kmeans
     - the request should have a `json` body which looks like this: 
-    - ![image](https://user-images.githubusercontent.com/53708808/229076698-cb81a46b-ffbb-4b1b-aadb-da5faa1bc41e.png)
-    - for convenience: `{"number_of_clusters":3,"number_of_candidate_clusters":1,"use_voronoi":false}`
-    - the first two fields are integer numbers, set them as needed, it's not mandatory to use the ones from the examples
-    - the `use_voronoi` field is a boolean
+    - ![image](https://user-images.githubusercontent.com/53708808/229141682-45c76d14-1ea0-4d70-bb39-57ac8ca6509a.png)
+    - for convenience: `{"number_of_clusters":3,"number_of_candidate_clusters":1}`
+    - both fields are integer numbers, set them as needed, it's not mandatory to use the ones from the examples
     - please make sure to also include the users's `authentication token` in the request!
     - the body of the response is in `json` format
-    - if you set `use_voronoi` to `FALSE`, use the field named `result` from the response, which contains a `list` of type ZoneModel
+    - the field `zone_model_result` outputs a list of type ZoneModel, while the field `clusters_result` outputs the center of the clusters of each zone
     - here is an example:
-    - ![image](https://user-images.githubusercontent.com/53708808/226575577-102ed80b-5171-455d-a218-2b15a8908f58.png)
-    - if you set `use_voronoi` to `TRUE`, the response will be in `geojson format`
-    - here is an example:
-    - ![image](https://user-images.githubusercontent.com/53708808/229077758-1fd3397f-acd5-492c-9a1f-f8b4726544e2.png)
+    - ![image](https://user-images.githubusercontent.com/53708808/229145390-f80e1b6a-4c2b-48be-a6a1-486f5e494392.png)
+    - ![image](https://user-images.githubusercontent.com/53708808/229145501-e16530df-bdd2-484f-9348-38d91818b9d6.png)
     - wow now you can finally say `SSIIIUUUUUU`
 
 2. Endpoint for running the `genetic algorithm`:
@@ -83,8 +80,8 @@ Here is an overview of the backend endpoints, together with instructions on how 
     - the three fields are integer numbers, set them as needed, it's not mandatory to use the ones from the examples. There is no need to have more than 10000 generations. The `maximum_runtime` field should include the maximum amount of minutes for which a user is willing to wait. In the example, the algorithm will return what it generated after 10 minutes even if it hasn't finished doing its calculations (in case of a very large input).
     - please make sure to also include the users's `authentication token` in the request!
     - the body of the response is in `json` format
-    - use the field named `result`, which contains a `list` of type ZoneModel
-    - the `json` structure present in the body of the response should be `similar` to the one from the `k-means` algorithm
+    - use the field named `zone_model_result`, which contains a `list` of type ZoneModel
+    - the `json` structure present in the body of the response should be similar to the one from the `k-means` algorithm
     - `VAAAMOOSS`
 
 - `[PUT] /plot/sync` -> call this right after logging in with bumbal; this ensures that the latest zones saved in bumbal are synced with our backend ( **OLD PLOTS WITH ORIGIN "bumbal" ARE REMOVED WHEN CALLING THIS**)
