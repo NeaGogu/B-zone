@@ -73,12 +73,19 @@ export default function Home() {
     * @return {void}
     */
     async function handleSaveClick() {
+        console.log(savedZones);
         if (zipCodes.length === 0) {
             alert('nothing to save')
             return null;
         }
         const name = window.prompt('Enter a name for the save:');
         if (name) {
+            for(let i = 0; i < savedZones.length; i++) {
+                if(name === savedZones[i].user_plot_name) {
+                    alert("you have already saved a zone under this name!")
+                    return null;
+                }
+            }
             addSavedZone(name);
         }
     }

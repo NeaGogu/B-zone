@@ -171,7 +171,7 @@ function TextComponent(props) {
 
 
     return (
-        <Card title={zoneName} style={{ width: 'fit-content', marginLeft: 'auto', marginRight: 'auto' }} >
+        <Card title={zoneName} style={{ width: 'fit-content', marginLeft: '0', marginRight: 'auto' }} >
             <Spin spinning={!loaded} delay={200} tip='Calculating...'>
                 <div >
                     {/*fuel cost = fuel input times driving time*/}
