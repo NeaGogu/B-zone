@@ -61,14 +61,18 @@ Here is an overview of the backend endpoints, together with instructions on how 
 1. Endpoint for running the `k-means algorithm`:
     - the `url` for this `PUT` request is: http://localhost:4000/bumbal/algorithm/kmeans
     - the request should have a `json` body which looks like this: 
-    - ![image](https://user-images.githubusercontent.com/53708808/226574702-fe906675-0c77-47b5-b618-059c1d525e1f.png)
-    - for convenience: `{"number_of_clusters":2,"number_of_candidate_clusters":1}`
-    - the two fields are integer numbers, set them as needed, it's not mandatory to use the ones from the examples
+    - ![image](https://user-images.githubusercontent.com/53708808/229076698-cb81a46b-ffbb-4b1b-aadb-da5faa1bc41e.png)
+    - for convenience: `{"number_of_clusters":3,"number_of_candidate_clusters":1,"use_voronoi":false}`
+    - the first two fields are integer numbers, set them as needed, it's not mandatory to use the ones from the examples
+    - the `use_voronoi` field is a boolean
     - please make sure to also include the users's `authentication token` in the request!
     - the body of the response is in `json` format
-    - use the field named `result`, which contains a `list` of type ZoneModel
+    - if you set `use_voronoi` to `FALSE`, use the field named `result` from the response, which contains a `list` of type ZoneModel
     - here is an example:
     - ![image](https://user-images.githubusercontent.com/53708808/226575577-102ed80b-5171-455d-a218-2b15a8908f58.png)
+    - if you set `use_voronoi` to `TRUE`, the response will be in `geojson format`
+    - here is an example:
+    - ![image](https://user-images.githubusercontent.com/53708808/229077758-1fd3397f-acd5-492c-9a1f-f8b4726544e2.png)
     - wow now you can finally say `SSIIIUUUUUU`
 
 2. Endpoint for running the `genetic algorithm`:
