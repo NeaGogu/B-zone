@@ -261,7 +261,7 @@ async function calculateZone(algorithm, nrofzones) {
 // Main function to visualize the polygons on the map.
 const PolygonVis = (props) => {
     //selections
-    const { zoneId, setZipCodes, setComputed, algorithm, nrofzones } = props
+    const { zoneId, setZipCodes, setComputed, algorithm, nrofzones, setCalculatedZone } = props
 
     // Map context.
     const context = useLeafletContext()
@@ -293,9 +293,15 @@ const PolygonVis = (props) => {
                     calculation = await calculateZone(algorithm, nrofzones)
                 }
                 
+<<<<<<< Updated upstream
                 //convertToStructure(calculation[0])
+=======
+                var zipcodes =  convertToStructure(calculation[0])
+>>>>>>> Stashed changes
                 setZipCodes(convertToStructure(calculation[0]));
+                setCalculatedZone(zipcodes)
                 coordinatesList = await getCoordinates(calculation[0])
+
 
             }
             // check if this is the initial run which displays the zone in bumbal

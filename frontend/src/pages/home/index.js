@@ -29,6 +29,8 @@ export default function Home() {
     // For comparison button to split map into two maps.
     const [showComparison, setShowComparison] = useState(false);
 
+    const [calculatedZone, setCalculatedZone] = useState([])
+
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
     // empty state
@@ -280,7 +282,7 @@ export default function Home() {
                                             }
                                         })()
                                     }>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setComputedHeat={setComputedHeat} />;
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setComputedHeat={setComputedHeat} setCalculatedZone={setCalculatedZone}/>;
                                     </Spin>
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
@@ -308,7 +310,7 @@ export default function Home() {
                             </div>
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
-                                    <TextComponent zoneId={zoneId} zoneName={zoneName} />
+                                    <TextComponent zoneId={zoneId} zoneName={zoneName} calculatedZone={calculatedZone} />
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
                                     {

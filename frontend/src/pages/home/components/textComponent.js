@@ -56,8 +56,9 @@ async function getDrivingDistance(drivingData) {
 }
 
 function TextComponent(props) {
-    const { zoneId, zoneName } = props;
+    const { zoneId, zoneName, calculatedZone } = props;
 
+    const [name, setName] = useState('')
     const [loaded, setLoaded] = useState(false)
     const [time, setTime] = useState(0)
     const [drivingTime, setDrivingTime] = useState(0)
@@ -70,7 +71,16 @@ function TextComponent(props) {
             let averageFuelCost = 1.8
             let averageFuelConsumption = 0.047 //litres of fuel consumption per km
             totalActivityDurations(setTime) //set the total activity duration to be the time spend on activities
-            const plot = await querryDatabase(zoneId) //gets all plots which are saved to b-zone's backend
+            let plot;
+            if (zoneId.startsWith('calculate')) {
+                plot = calculatedZone
+                setName('Calculated Zone')
+            }
+            else{
+                plot = await querryDatabase(zoneId)
+                setName(zoneName)
+            }//gets all plots which are saved to b-zone's backend
+            console.log(plot)
 
 
             let listOfActivities = await getAllActivities() //gets all activity locations from Bumbal
@@ -138,7 +148,7 @@ function TextComponent(props) {
                 drivingTimeActivities[i] = await getDrivingTime(drivingData)
                 drivingDistanceActivities[i] = await getDrivingDistance(drivingData)
             }
-            console.log(drivingTimeReqs[1])
+           // console.log(drivingTimeReqs[1])
             console.log(drivingTimeActivities)
             console.log(drivingDistanceActivities)
 
@@ -171,7 +181,7 @@ function TextComponent(props) {
 
 
     return (
-        <Card title={zoneName} style={{ width: 'fit-content', marginLeft: '0', marginRight: 'auto' }} >
+        <Card title={name} style={{ width: 'fit-content', marginLeft: '0', marginRight: 'auto' }} >
             <Spin spinning={!loaded} delay={200} tip='Calculating...'>
                 <div >
                     {/*fuel cost = fuel input times driving time*/}

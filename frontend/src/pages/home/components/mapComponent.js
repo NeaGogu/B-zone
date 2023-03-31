@@ -61,7 +61,7 @@ function LocationMarker() {
 
 // Main function to hold the map, location marker and the layers.
 function MapComponent(props) {
-    const { value, intensity, zoneId, setZipCodes, setComputed, algorithm, nrofzones, setComputedHeat } = props;    
+    const { value, intensity, zoneId, setZipCodes, setComputed, algorithm, nrofzones, setComputedHeat, setCalculatedZone } = props;
     // const rendr = useRef(0)
     // useEffect(()=>{
     //     rendr.current +=1
@@ -81,7 +81,7 @@ function MapComponent(props) {
 
                 <LayersControl.Overlay name='Zones' checked={true}>
                     <LayerGroup key={zoneId} >
-                        <PolygonVis zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones}/>
+                        <PolygonVis zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setCalculatedZone={setCalculatedZone}/>
                     </LayerGroup>
                 </LayersControl.Overlay>
             </LayersControl>
