@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 )
 
 const (
@@ -114,6 +115,9 @@ func collectAllBumbalActivities(w http.ResponseWriter, r *http.Request) ([]model
 			}
 
 			respChan <- partResponse
+
+			// wait 500 milliseconds in order to not get blacklisted by Bumbal
+			time.Sleep(500 * time.Millisecond)
 		}(i)
 	}
 
