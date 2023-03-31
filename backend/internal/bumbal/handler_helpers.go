@@ -2,6 +2,7 @@ package bumbal
 
 import (
 	"bytes"
+	kMeans "bzone/backend/cmd/k-means"
 	"bzone/backend/internal/models"
 	"encoding/json"
 	"fmt"
@@ -17,7 +18,8 @@ const (
 
 // Output struct used for the body of the response
 type Output struct {
-	Result []models.ZoneModel `json:"result,omitempty"`
+	Result         []models.ZoneModel `json:"zone_model_result,omitempty"`
+	ClustersResult kMeans.Clusters    `json:"clusters_result,omitempty"`
 }
 
 type OutputJSON struct {
