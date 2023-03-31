@@ -1,16 +1,19 @@
 package bumbal
 
 import (
+	voronoi "bzone/backend/cmd/Fortunes"
 	kMeans "bzone/backend/cmd/k-means"
 	"bzone/backend/internal/models"
 	"encoding/json"
+	geojson "github.com/paulmach/go.geojson"
 	"net/http"
 )
 
 // ClustersInfo struct used for retrieving the data from the body of the request
 type ClustersInfo struct {
-	NrClusters          int `json:"number_of_clusters,omitempty"`
-	NrCandidateClusters int `json:"number_of_candidate_clusters,omitempty"`
+	NrClusters          int  `json:"number_of_clusters,omitempty"`
+	NrCandidateClusters int  `json:"number_of_candidate_clusters,omitempty"`
+	UseVoronoi          bool `json:"use_voronoi,omitempty"`
 }
 
 // RunKMeans
@@ -43,16 +46,36 @@ func RunKMeans(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var computedZones []models.ZoneModel
-	computedZones, err = kMeans.ClusterToZoneModel(computedClusters, filteredResp)
+	if clustersInfo.UseVoronoi {
+		// make the Voronoi diagram
+		var output *geojson.FeatureCollection
+		output, err = voronoi.VoronoiDiagram(computedClusters)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	// set up the response
-	var output Output
-	output.Result = computedZones
+		// encode the response
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(*output)
+	} else {
+		// turn the clusters from the k-means algorithm into zone model
+		var computedZones []models.ZoneModel
+		computedZones, err = kMeans.ClusterToZoneModel(computedClusters, filteredResp)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	// encode the response
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(output)
+		// set up the response
+		var output Output
+		output.Result = computedZones
+
+		// encode the response
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(output)
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
