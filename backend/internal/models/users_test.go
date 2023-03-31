@@ -14,7 +14,7 @@ func TestBzoneDBModel_AddPlotToUserOrCreate(t *testing.T) {
 	defer mt.Close()
 
 	// Create your subtest run instance
-	mt.Run("Update User", func(mt *mtest.T) {
+	mt.Run("Insert User", func(mt *mtest.T) {
 
 		// Mock Plot data
 		findOne := mtest.CreateCursorResponse(
@@ -57,26 +57,20 @@ func TestBzoneDBModel_AddPlotToUserOrCreate(t *testing.T) {
 	})
 
 	mt.Run("Unsucessfully Adding User", func(mt *mtest.T) {
-
 		// Mock Plot data
 		findOne := mtest.CreateCursorResponse(
 			1,
 			"Bzone.users",
 			mtest.FirstBatch,
-			nil)
+			test.MockUsersData())
 
-		successResponse := mtest.CreateSuccessResponse(
-			bson.E{Key: "nModified", Value: 1},
-			bson.E{Key: "n", Value: 1},
-		)
-		killCursors := mtest.CreateCursorResponse(0, "Bzone.users", mtest.NextBatch)
-
-		mt.AddMockResponses(findOne, successResponse, killCursors)
+		// Mock Plot data
+		mt.AddMockResponses(findOne, bson.D{{"ok", 0}})
 		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
 		plotToSave := ValidPlotModelsCollections()
-		testUser := mockBZoneModel.AddPlotToUserOrCreate(&plotToSave, 1)
-
-		assert.ObjectsAreEqual(testUser, nil)
+		err := mockBZoneModel.AddPlotToUserOrCreate(&plotToSave, 1)
+		assert.NotNil(t, err)
 
 	})
+
 }

@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -183,11 +182,12 @@ func (b *BzoneDBModel) deletePlotFromUser(userId int, plotId string) (*UserModel
 	return &updatedUser, nil
 }
 
-// helper function that converts a hex string to an ObjectID that can be used in a MongoDB query
-func objectIDFromHex(hex string) (primitive.ObjectID, error) {
-	objectID, err := primitive.ObjectIDFromHex(hex)
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-	return objectID, nil
-}
+//
+//// helper function that converts a hex string to an ObjectID that can be used in a MongoDB query
+//func objectIDFromHex(hex string) (primitive.ObjectID, error) {
+//	objectID, err := primitive.ObjectIDFromHex(hex)
+//	if err != nil {
+//		return primitive.NilObjectID, err
+//	}
+//	return objectID, nil
+//}

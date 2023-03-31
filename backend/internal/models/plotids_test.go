@@ -15,7 +15,7 @@ func TestBzoneDBModel_GetPlotIDs(t *testing.T) {
 	defer mt.Close()
 
 	// Create your subtest run instance
-	mt.Run("ValidPlotIDs", func(mt *mtest.T) {
+	mt.Run("Valid Plot IDs", func(mt *mtest.T) {
 
 		// Mock Plot data
 		findOne := mtest.CreateCursorResponse(
@@ -32,14 +32,14 @@ func TestBzoneDBModel_GetPlotIDs(t *testing.T) {
 		mt.AddMockResponses(findOne, killCursors)
 		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
 		testUser, _ := mockBZoneModel.GetPlotIDs(1)
-		
+
 		//Check if the user data is  the same
 		assert.ObjectsAreEqualValues(ValidUserPlots(), testUser)
 
 	})
 
 	// Create your subtest run instance
-	mt.Run("MissingPlotIDs", func(mt *mtest.T) {
+	mt.Run("Missing Plot IDs", func(mt *mtest.T) {
 
 		mt.AddMockResponses(bson.D{{"ok", 0}})
 		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
@@ -59,7 +59,7 @@ func TestBzoneDBModel_GetPlotById(t *testing.T) {
 	defer mt.Close()
 
 	// Create your subtest run instance
-	mt.Run("ValidPlotId", func(mt *mtest.T) {
+	mt.Run("Valid PlotId", func(mt *mtest.T) {
 
 		// Mock Plot data
 		findOne := mtest.CreateCursorResponse(
@@ -80,7 +80,7 @@ func TestBzoneDBModel_GetPlotById(t *testing.T) {
 	})
 
 	// Create your subtest run instance
-	mt.Run("MissingPlotId", func(mt *mtest.T) {
+	mt.Run("Missing PlotId", func(mt *mtest.T) {
 
 		mt.AddMockResponses(bson.D{{"ok", 0}})
 		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
@@ -98,7 +98,7 @@ func TestBzoneDBModel_SavePlot(t *testing.T) {
 	// Create your subtest run instance
 	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 	defer mt.Close()
-	mt.Run("SuccessfulSavedPlot", func(mt *mtest.T) {
+	mt.Run("Successfully Saved Plot", func(mt *mtest.T) {
 
 		successResponse := mtest.CreateSuccessResponse(
 			bson.E{Key: "nModified", Value: 1},
@@ -119,7 +119,7 @@ func TestBzoneDBModel_SavePlot(t *testing.T) {
 		assert.ObjectsAreEqual(testSavePlot, nil)
 	})
 
-	mt.Run("UnsuccessfulSavedPlot", func(mt *mtest.T) {
+	mt.Run("Unsuccessfully Saved Plot", func(mt *mtest.T) {
 
 		mt.AddMockResponses(mtest.CreateWriteErrorsResponse(mtest.WriteError{
 			Index:   1,
@@ -132,5 +132,92 @@ func TestBzoneDBModel_SavePlot(t *testing.T) {
 		err := mockBZoneModel.SavePlot(1, &plotToSave)
 		assert.NotNil(t, err)
 		assert.True(t, mongo.IsDuplicateKeyError(err))
+	})
+}
+
+func TestBzoneDBModel_deletePlotFromUser(t *testing.T) {
+	// Create your subtest run instance
+	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+	defer mt.Close()
+	mt.Run("Successfully Deleted Plot", func(mt *mtest.T) {
+
+		mt.AddMockResponses(bson.D{
+			{"ok", 1},
+			{"value", test.MockPlotData()},
+		})
+
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		_, err := mockBZoneModel.deletePlotFromUser(1, "0")
+		assert.ObjectsAreEqual(err, nil)
+	})
+
+	mt.Run("Unsuccessfully Deleted Plot", func(mt *mtest.T) {
+
+		mt.AddMockResponses(bson.D{
+			{"ok", 0},
+			{"value", test.MockPlotData()},
+		})
+
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		_, err := mockBZoneModel.deletePlotFromUser(1, "0")
+		assert.NotNil(t, err)
+	})
+}
+
+func TestBzoneDBModel_DeletePlotsByOrigin(t *testing.T) {
+	// Create your subtest run instance
+	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+	defer mt.Close()
+	mt.Run("Successfully Deleted Plot", func(mt *mtest.T) {
+
+		mt.AddMockResponses(bson.D{
+			{"ok", 1},
+			{"value", test.MockPlotData()},
+		})
+
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		_, err := mockBZoneModel.DeletePlotsByOrigin("Bumbal", 1)
+		assert.ObjectsAreEqual(err, nil)
+	})
+
+	mt.Run("Unsuccessfully Deleted Plot", func(mt *mtest.T) {
+
+		mt.AddMockResponses(bson.D{
+			{"ok", 0},
+			{"value", test.MockPlotData()},
+		})
+
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		_, err := mockBZoneModel.DeletePlotsByOrigin("Bumbal", 1)
+		assert.NotNil(t, err)
+	})
+}
+
+func TestBzoneDBModel_DeletePlotById(t *testing.T) {
+	// Create your subtest run instance
+	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+	defer mt.Close()
+	mt.Run("Successfully Deleted Plot By ID", func(mt *mtest.T) {
+
+		mt.AddMockResponses(bson.D{
+			{"ok", 1},
+			{"value", test.MockPlotData()},
+		})
+
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		_, err := mockBZoneModel.DeletePlotById("0", 1)
+		assert.ObjectsAreEqual(err, nil)
+	})
+
+	mt.Run("Unsuccessfully Deleted Plot By ID", func(mt *mtest.T) {
+
+		mt.AddMockResponses(bson.D{
+			{"ok", 0},
+			{"value", test.MockPlotData()},
+		})
+
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		_, err := mockBZoneModel.DeletePlotById("0", 1)
+		assert.NotNil(t, err)
 	})
 }
