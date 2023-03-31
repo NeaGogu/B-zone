@@ -13,7 +13,7 @@ import (
 type ClustersInfo struct {
 	NrClusters          int  `json:"number_of_clusters,omitempty"`
 	NrCandidateClusters int  `json:"number_of_candidate_clusters,omitempty"`
-	UseVoronoi          bool `json:"use_voronoi,omitempty"`
+	UseVoronoi          bool `json:"use_voronoi,omitempty, default:"false"`
 }
 
 // RunKMeans
