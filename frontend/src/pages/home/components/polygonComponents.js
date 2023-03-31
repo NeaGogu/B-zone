@@ -287,13 +287,13 @@ const PolygonVis = (props) => {
             if (zoneId.startsWith('calculate')) {
                 var calculation;
                 if (algorithm === 1) {
-                    console.log(nrofzones)
+                    
                     calculation = await calculateZone(algorithm, nrofzones)
                 } else {
                     calculation = await calculateZone(algorithm, nrofzones)
                 }
                 
-                convertToStructure(calculation[0])
+                //convertToStructure(calculation[0])
                 setZipCodes(convertToStructure(calculation[0]));
                 coordinatesList = await getCoordinates(calculation[0])
 
@@ -306,6 +306,7 @@ const PolygonVis = (props) => {
             }
             // otherwise get zone from our database
             else {
+                setZipCodes([])
                 let querryZone = await querryDatabase(zoneId);
                 coordinatesList = await getCoordinates(querryZone)
             }
