@@ -31,6 +31,8 @@ export default function Home() {
 
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
+    // empty state
+    const [holder, setHolder] = useState([])
 
     // for holding render state of map 1
     const [computed, setComputed] = useState(false)
@@ -87,6 +89,7 @@ export default function Home() {
                 }
             }
             addSavedZone(name);
+            setZipCodes([])
         }
     }
 
@@ -296,7 +299,7 @@ export default function Home() {
                                                     }
                                                 })()
                                             }>
-                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} setComputed={setComputed2} setComputedHeat={setComputedHeat2} />
+                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setHolder} setComputed={setComputed2} setComputedHeat={setComputedHeat2} />
                                             </Spin>
                                             : <></>
                                     }

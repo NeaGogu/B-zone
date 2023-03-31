@@ -104,7 +104,7 @@ function SiderComponent(props) {
             setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm,
             setAlgorithm, setNrofZones, currentView, setZoneName, setZoneName2, loadedHeat } = props;
 
-    console.log(loadedHeat)
+    //console.log(loadedHeat)
 
 
     const toggleMap = () => {
