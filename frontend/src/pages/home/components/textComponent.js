@@ -1,5 +1,5 @@
 //import 'leaflet.heat'
-import {Card, Dropdown, Spin} from 'antd'
+import {Card, Dropdown, Spin, Tooltip} from 'antd'
 import { useEffect, useState } from "react";
 import querryDatabase from "../functions/querryDatabase";
 import getAllActivities from "../functions/getAllActivities";
@@ -229,7 +229,10 @@ function TextComponent(props) {
                         </Panel>
                     </Collapse>
                     {/* done */}
-                    <p>Total activity time (hrs): {time}</p>
+                    <Tooltip title = "This is computed by adding all of the activity times ">
+                        <p>Total activity time (hrs): {time}</p>
+                    </Tooltip>
+
                     {/*driving time = find activities per zone. find driving time in order between those activities using OSRM */}
                     {/*<p>Total driving time: {drivingTime}</p>*/}
                     <Collapse>
