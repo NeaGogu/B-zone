@@ -292,12 +292,8 @@ const PolygonVis = (props) => {
                 } else {
                     calculation = await calculateZone(algorithm, nrofzones)
                 }
-                
-<<<<<<< Updated upstream
-                //convertToStructure(calculation[0])
-=======
+
                 var zipcodes =  convertToStructure(calculation[0])
->>>>>>> Stashed changes
                 setZipCodes(convertToStructure(calculation[0]));
                 setCalculatedZone(zipcodes)
                 coordinatesList = await getCoordinates(calculation[0])
