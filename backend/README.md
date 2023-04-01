@@ -4,7 +4,7 @@
 The following steps are going to be the same for both dev teams until one point.
 
 1. First make sure you have docker engine installed on your system ( it should be installed if you installed docker desktop). Follow these instructions for your platform https://docs.docker.com/get-docker/ 
-2. In your terminal, go to `./B-zone/backend`. Run `docker compose up -d`. You should see some nicely coloured text like this
+2. In your terminal, go to `./B-zone`. Run `docker compose up -d`. You should see some nicely coloured text like this
 ![image](https://user-images.githubusercontent.com/70640237/224291503-25dc7053-e831-4057-bc54-e18b16e9f87c.png)
 3. If you look into docker desktop you'll also see something like this 
 ![image](https://user-images.githubusercontent.com/70640237/224291715-f23d961c-8d5e-4918-962d-27acdb4d5851.png)
@@ -45,8 +45,8 @@ This will run the server on port `3400` and you should see it reflected in the t
 ## For frontend devs 
 
 Normally you should not bother with anything else, you can just run the containers from Docker desktop. However, there might be changes made to backend that you need. In that case you can re-build the backend image with the following command:
-1. go to the `backend` folder in your terminal
-2. run `docker compose up --build --force-recreate b-zone`. **Dont forget the last argument. Otherwise your database instance will be rebuilt and you'll lose all your data**.
+1. go to the root (**BZONEB**) folder in your terminal
+2. run `docker compose up --build --force-recreate b-zone-backend`. **Dont forget the last argument. Otherwise your database instance will be rebuilt and you'll lose all your data**.
 3. Nice 👍
 
 ![image](https://user-images.githubusercontent.com/70640237/224294005-238c103f-add2-49f2-9d5d-f7658ad4df92.png)

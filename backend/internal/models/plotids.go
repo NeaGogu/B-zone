@@ -27,6 +27,9 @@ func (z *BzoneDBModel) GetPlotIDs(userId int) ([]PlotIDNamePair, error) {
 
 	err := coll.FindOne(context.TODO(), queryFilter).Decode(&user)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrDocumentNotFound
+		}
 		return nil, err
 	}
 
