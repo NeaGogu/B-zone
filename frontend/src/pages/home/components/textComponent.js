@@ -1,8 +1,11 @@
 //import 'leaflet.heat'
-import { Card, Spin } from 'antd'
+import {Card, Dropdown, Spin} from 'antd'
 import { useEffect, useState } from "react";
 import querryDatabase from "../functions/querryDatabase";
 import getAllActivities from "../functions/getAllActivities";
+import { Collapse } from 'antd';
+
+const { Panel } = Collapse;
 
 /**
  Finds the latitude and longitude of each activity address and returns the data as an array.
@@ -63,13 +66,17 @@ function TextComponent(props) {
     const [time, setTime] = useState(0)
     const [drivingTime, setDrivingTime] = useState(0)
     const [fuelCost, setFuelCost] = useState(0)
+    const [drivingTimeActiv, setDrivingTimeActiv] = useState([])
+    const [drivingDistanceActiv, setDrivingDistanceActiv] = useState([])
+    let averageFuelCost = 1.8
+    let averageFuelConsumption = 0.047 //litres of fuel consumption per km
+
 
 
     useEffect(() => {
         const initial = async () => {
             setLoaded(false)
-            let averageFuelCost = 1.8
-            let averageFuelConsumption = 0.047 //litres of fuel consumption per km
+
             totalActivityDurations(setTime) //set the total activity duration to be the time spend on activities
             let plot;
             if (zoneId.startsWith('calculate')) {
@@ -151,12 +158,15 @@ function TextComponent(props) {
            // console.log(drivingTimeReqs[1])
             console.log(drivingTimeActivities)
             console.log(drivingDistanceActivities)
-
+            setDrivingTimeActiv(prevDrivingTimeActiv => []);
+            setDrivingDistanceActiv(prevDrivingDistanceActiv => []);
             let totalDrivingTime = 0
             let totalDrivingDistance = 0
             for (let i = 0; i < drivingTimeActivities.length; i++) {
                 totalDrivingTime = totalDrivingTime + drivingTimeActivities[i]
+                setDrivingTimeActiv(prevDrivingTimeActiv => [...prevDrivingTimeActiv, drivingTimeActivities[i]]);
                 totalDrivingDistance = totalDrivingDistance + drivingDistanceActivities[i]
+                setDrivingDistanceActiv(prevDrivingDistanceActiv => [...prevDrivingDistanceActiv, drivingDistanceActivities[i]]);
             }
             setDrivingTime(totalDrivingTime / 3600)
             //time to find fuel cost: fuel cost = (litres used * fuel cost)
@@ -185,11 +195,51 @@ function TextComponent(props) {
             <Spin spinning={!loaded} delay={200} tip='Calculating...'>
                 <div >
                     {/*fuel cost = fuel input times driving time*/}
-                    <p>Total cost: {fuelCost}</p>
+                    {/*<p>Total cost: ${fuelCost}</p>*/}
+                    <Collapse>
+                        <Panel header = {`Total cost: ${fuelCost}`} key="1">
+                            <ul>
+                                <li>Distance over the zones</li>
+                                {drivingDistanceActiv.map((drivingDistance, index) => (
+                                    <p key={index}>Zone {index}: {drivingDistance}</p>
+                                ))}
+                                <li>Total driving distance</li>
+                                <p>
+                                    {drivingDistanceActiv.map((drivingDistance, index) => (
+                                        <span key={index}>{drivingDistance} {index < drivingDistanceActiv.length - 1 && '+'} </span>
+                                    ))}
+                                    = {drivingDistanceActiv.reduce((acc, time) => acc + time, 0)}
+                                </p>
+                                <li>Total cost with fuel consumption = {averageFuelConsumption} and fuel cost = {averageFuelCost}</li>
+                                <p>Total driving cost =(({drivingDistanceActiv.reduce((acc, time) => acc + time, 0)} / 1000) * {averageFuelConsumption}) * {averageFuelCost}) = {fuelCost}</p>
+                            </ul>
+                        </Panel>
+                    </Collapse>
                     {/* done */}
                     <p>Total activity time (hrs): {time}</p>
                     {/*driving time = find activities per zone. find driving time in order between those activities using OSRM */}
-                    <p>Total driving time: {drivingTime}</p>
+                    {/*<p>Total driving time: {drivingTime}</p>*/}
+                    <Collapse>
+                        <Panel key={2} header={`Total driving time: ${drivingTime}`}>
+                            <ul>
+                                <li>Driving time over the zones</li>
+                                {drivingTimeActiv.map((drivingTime, index) => (
+                                    <p key={index}>Zone {index}: {drivingTime}</p>
+                                ))}
+                                <li>Driving time sum</li>
+                                <p>Driving time = {drivingTimeActiv.map((drivingTime, index) => (
+                                    <span key={index}>{drivingTime} {index < drivingTimeActiv.length - 1 && '+'} </span>
+                                ))}
+                                    = {drivingTime * 3600} </p>
+                                <li>Driving time  in hrs</li>
+                                <p>Total driving time ={drivingTime * 3600} / 3600 = {drivingTime}</p>
+
+                            </ul>
+                        </Panel>
+                    </Collapse>
+
+
+
                 </div>
             </Spin>
         </Card>
