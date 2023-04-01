@@ -46,6 +46,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                         placeholder="input fuel cost"
                         type="number"
                         step="0.01"
+                        min="0"
                         value={averageFuelCost}
                         onChange={(e) => setAverageFuelCost(e.target.value)}
                     />
@@ -57,7 +58,8 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                     <Input
                         placeholder="input fuel usage of car"
                         type="number"
-                        step="0.01"
+                        step="0.001"
+                        min="0.0"
                         value={averageFuelUsage}
                         onChange={(e) => setAverageFuelUsage(e.target.value)}
                     />
@@ -78,6 +80,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                         placeholder="input desired number of zones"
                         type="number"
                         step="1"
+                        min="1"
                         
                         onChange={(e) => setNrofZones(e.target.value)}
                     />
