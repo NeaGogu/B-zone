@@ -208,7 +208,7 @@ function TextComponent(props) {
 
         initial()
         console.log('updated')
-    }, [zoneId])
+    }, [zoneId, calculatedZone])
 
 
     return (
