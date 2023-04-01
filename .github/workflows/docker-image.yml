@@ -28,5 +28,7 @@ jobs:
           context: .
           file: ./BuildFrontend.Dockerfile
           push: true
-          tags: goglete/sep_bzone_frontend:${{ github.sha }}
+          tags: |
+            goglete/sep_bzone_frontend:${{ github.sha }}
+            goglete/sep_bzone_frontend:latest
       
