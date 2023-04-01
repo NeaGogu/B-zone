@@ -41,7 +41,7 @@ async function getDrivingTime(drivingData) {
     for (let i = 0; i < drivingLegs.length; i++) {
         sum = sum + drivingLegs[i].duration
     }
-    console.log(sum)
+    //console.log(sum)
     return sum;
 }
 
@@ -81,10 +81,18 @@ function TextComponent(props) {
             let averageFuelCost = 1.8 //cost in euros per litre of fuel
             let averageFuelConsumption = 0.047 //litres of fuel consumption per km
             totalActivityDurations(setTime) //set the total activity duration to be the time spend on activities
-            let plot; //variable to hold the object of zones/zone configuration upon which to calculate driving time
+            let plot = []; //variable to hold the object of zones/zone configuration upon which to calculate driving time
             if (zoneId.startsWith('calculate')) { //the plot is a freshly calculated optimized plot
-                plot = calculatedZone //change this object model so that it can be used in the calculations below
+                //plot = calculatedZone.plot_zones[1].zone_ranges //change this object model so that it can be used in the calculations below
+                 for (let i = 0; i < calculatedZone.plot_zones.length; i++) {
+                     plot[i] = calculatedZone.plot_zones[i].zone_ranges
+                     for(let j = 0; j < plot[i].length; j ++) {
+                         plot[i][j] = {zipFrom: plot[i][j].zipcode_from, zipTo: plot[i][j].zipcode_to}
+                     }
+
+                 }
                 setName('Calculated Zone')
+                //console.log(plot)
             }
             else {
                 if(zoneId.startsWith('initial')) { //the plot is the initial plot from Bumbal
@@ -96,6 +104,7 @@ function TextComponent(props) {
                 }
 
             }
+            console.log("The plot currently working with is: ")
             console.log(plot)
 
             let listOfActivities = await getAllActivities() //gets all activity locations from Bumbal
@@ -158,14 +167,13 @@ function TextComponent(props) {
                 drivingTimeReqs[i] = drivingTimeReqs[i].slice(0, -1);
                 //check whether there are less than 2 activities in this zone
                 if (countActivities < 2) {
-                    console.log("less than two activities in this zone")
                     drivingTimeActivities[i] = 0 //minimal driving time needed in this zone
                     drivingDistanceActivities[i] = 0 //minimal distance to drive in this zone
                 } else {
                     //now that the request string for zone i is built, send out fetch request
                     const response = await fetch(drivingTimeReqs[i], drivingTimeBody);
                     const drivingData = await response.json();
-                    console.log(drivingData)
+                    //console.log(drivingData)
                     //using the data from OSRM, compile over all legs of the activities what the total duration is and store it for zone i
                     drivingTimeActivities[i] = await getDrivingTime(drivingData)
                     drivingDistanceActivities[i] = await getDrivingDistance(drivingData)
@@ -173,8 +181,8 @@ function TextComponent(props) {
 
             }
            // console.log(drivingTimeReqs[1])
-            console.log(drivingTimeActivities)
-            console.log(drivingDistanceActivities)
+            //console.log(drivingTimeActivities)
+            //console.log(drivingDistanceActivities)
             setDrivingTimeActiv(prevDrivingTimeActiv => []);
             setDrivingDistanceActiv(prevDrivingDistanceActiv => []);
 
