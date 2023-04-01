@@ -16,7 +16,7 @@ async function totalActivityDurations(settime) {
 
 
 
-    console.log(activities)
+    //console.log(activities)
     var data2 = []
     var time = 0;
     for (let i = 0; i < activities.length; i++) {
@@ -37,7 +37,7 @@ async function getDrivingTime(drivingData) {
     //output: the total sum of the duration over all the legs of the route
     let drivingLegs = drivingData.routes[0].legs
     let sum = 0
-    console.log(drivingLegs)
+    //console.log(drivingLegs)
     for (let i = 0; i < drivingLegs.length; i++) {
         sum = sum + drivingLegs[i].duration
     }
@@ -50,11 +50,11 @@ async function getDrivingDistance(drivingData) {
     //output: the total sum of the duration over all the legs of the route
     let drivingLegs = drivingData.routes[0].legs
     let sum = 0
-    console.log(drivingLegs)
+    //console.log(drivingLegs)
     for (let i = 0; i < drivingLegs.length; i++) {
         sum = sum + drivingLegs[i].distance
     }
-    console.log(sum)
+    //console.log(sum)
     return sum;
 }
 
@@ -76,31 +76,34 @@ function TextComponent(props) {
     useEffect(() => {
         const initial = async () => {
             setLoaded(false)
-
+            let averageFuelCost = 1.8 //cost in euros per litre of fuel
+            let averageFuelConsumption = 0.047 //litres of fuel consumption per km
             totalActivityDurations(setTime) //set the total activity duration to be the time spend on activities
-            let plot;
-            if (zoneId.startsWith('calculate')) {
-                plot = calculatedZone
+            let plot; //variable to hold the object of zones/zone configuration upon which to calculate driving time
+            if (zoneId.startsWith('calculate')) { //the plot is a freshly calculated optimized plot
+                plot = calculatedZone //change this object model so that it can be used in the calculations below
                 setName('Calculated Zone')
             }
-            else{
-                plot = await querryDatabase(zoneId)
-                setName(zoneName)
-            }//gets all plots which are saved to b-zone's backend
-            console.log(plot)
+            else {
+                if(zoneId.startsWith('initial')) { //the plot is the initial plot from Bumbal
+                    setName('Initial Zones')
+                    plot = await querryDatabase(zoneId) //retrieve the plot object from Bumbal and change it so that it can be used in the calculations below
+                } else { //the plot is a saved plot from our backend
+                    plot = await querryDatabase(zoneId)
+                    setName(zoneName)
+                }
 
+            }
+            console.log(plot)
 
             let listOfActivities = await getAllActivities() //gets all activity locations from Bumbal
 
-            //listOfActivities = await listOfActivities.json() //get json data from activity response
-
-            // get activities and related zipcode + add a blank zone field with -1 id
-            let activites2 = listOfActivities.map((i) => {
+            let activites2 = listOfActivities.map((i) => { // get activities and related zipcode + add a blank zone field with -1 id
                 return [i.address.latitude, i.address.longitude, i.address.zipcode, -1]; // Lat Lng intensity.
             })
-            // get zone model.
-            //console.log(activites2)
-            // go throught each activity and find matching zone
+            // get zone model
+
+            // go through each activity and find matching zone
             for (let i = 0; i < activites2.length; i++) {
                 //get the numerical part of a zipcode for each activity
                 let zipcode = parseInt(activites2[i][2].slice(0, 4))
@@ -109,7 +112,6 @@ function TextComponent(props) {
                     for (let k = 0; k < plot[j].length; k++) {
                         //for each zone range, check whether the zipcode of the activity fits into that zone range
                         if (zipcode >= plot[j][k].zipFrom && zipcode <= plot[j][k].zipTo) {
-
                             activites2[i][3] = j;
                         }
                     }
@@ -122,20 +124,23 @@ function TextComponent(props) {
                     activities2Filtered.push(activites2[i])
                 }
             }
-            console.log(activities2Filtered)
+            //console.log(activities2Filtered)
             //array to hold driving time per zone
-            let drivingTimeActivities = []
+            let drivingTimeActivities = new Array(plot.length);
             //array to hold driving distances per zone
-            let drivingDistanceActivities = []
+            let drivingDistanceActivities = new Array(plot.length);
             //array to hold fetch requests HTML per zone
-            let drivingTimeReqs = []
+            let drivingTimeReqs = new Array(plot.length);
             //body of the fetch request to be sent out to OSRM
             const drivingTimeBody = {
                 method: 'GET'
             };
+            //introduce activity counter to see how many activities there are per zone
+            let countActivities = 0
             //go through all zones to see what the driving time of activities in that zone is
             for (let i = 0; i < plot.length; i++) {
                 //go through all activities to find which ones belong to zone i, calculate their driving time
+                countActivities = 0
                 drivingTimeActivities[i] = 0
                 drivingDistanceActivities[i] = 0
                 drivingTimeReqs[i] = "http://router.project-osrm.org/route/v1/driving/"
@@ -143,23 +148,38 @@ function TextComponent(props) {
                     if (activities2Filtered[j][3] === i) {
                         //update the request for zone i to contain the coordinates of all activities
                         drivingTimeReqs[i] = drivingTimeReqs[i] + activities2Filtered[j][1] + ',' + activities2Filtered[j][0] + ';'
+                        countActivities = countActivities + 1;
 
                     }
                 }
+                //remove last ';' from the request string for driving time in zone i
                 drivingTimeReqs[i] = drivingTimeReqs[i].slice(0, -1);
-                //now that the request string for zone i is built, send out fetch request
-                const response = await fetch(drivingTimeReqs[i], drivingTimeBody);
-                const drivingData = await response.json();
-                console.log(drivingData)
-                //using the data from OSRM, compile over all legs of the activities what the total duration is and store it for zone i
-                drivingTimeActivities[i] = await getDrivingTime(drivingData)
-                drivingDistanceActivities[i] = await getDrivingDistance(drivingData)
+                //check whether there are less than 2 activities in this zone
+                if (countActivities < 2) {
+                    console.log("less than two activities in this zone")
+                    drivingTimeActivities[i] = 0 //minimal driving time needed in this zone
+                    drivingDistanceActivities[i] = 0 //minimal distance to drive in this zone
+                } else {
+                    //now that the request string for zone i is built, send out fetch request
+                    const response = await fetch(drivingTimeReqs[i], drivingTimeBody);
+                    const drivingData = await response.json();
+                    console.log(drivingData)
+                    //using the data from OSRM, compile over all legs of the activities what the total duration is and store it for zone i
+                    drivingTimeActivities[i] = await getDrivingTime(drivingData)
+                    drivingDistanceActivities[i] = await getDrivingDistance(drivingData)
+                }
+
             }
            // console.log(drivingTimeReqs[1])
             console.log(drivingTimeActivities)
             console.log(drivingDistanceActivities)
             setDrivingTimeActiv(prevDrivingTimeActiv => []);
             setDrivingDistanceActiv(prevDrivingDistanceActiv => []);
+
+            //console.log(drivingTimeReqs[1])
+            //console.log(drivingTimeActivities)
+            //console.log(drivingDistanceActivities)
+
             let totalDrivingTime = 0
             let totalDrivingDistance = 0
             for (let i = 0; i < drivingTimeActivities.length; i++) {
@@ -179,15 +199,6 @@ function TextComponent(props) {
         initial()
         console.log('updated')
     }, [zoneId])
-
-
-    //1. get list of activities from bumbal
-    //CASE: WE HAVE ID
-    //2. get all zones from bzone backend
-    //3. for each activity , see which zone it fits in via zipcode?
-    //
-
-
 
 
     return (
