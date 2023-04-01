@@ -14,9 +14,9 @@ import '../index.css';
 const { SubMenu } = Menu;
 
 //Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
-const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, setNrofZones }) => {
-    const [averageFuelCost, setAverageFuelCost] = useState("");
-    const [averageFuelUsage, setAverageFuelUsage] = useState("");
+const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, setNrofZones, setAverageFuelUsage,
+                         averageFuelCost,averageFuelUsage, setAverageFuelCost  }) => {
+
   
     const calculate = useRef(0)
 
@@ -101,8 +101,9 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
 
 function SiderComponent(props) {
     const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone,
-            setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm,
-            setAlgorithm, setNrofZones, currentView, setZoneName, setZoneName2, loadedHeat } = props;
+        setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm,
+        setAlgorithm, setNrofZones, currentView, setZoneName, setZoneName2, loadedHeat, setAverageFuelUsage,
+        averageFuelCost,averageFuelUsage, setAverageFuelCost  } = props;
 
     //console.log(loadedHeat)
 
@@ -130,6 +131,7 @@ function SiderComponent(props) {
     const onChange = (e) => {
         setValue(e.target.value);
     };
+
 
 
     return (
@@ -174,7 +176,17 @@ function SiderComponent(props) {
             </SubMenu>
 
             <SubMenu key="sub4" title="Zones">
-                <ZoneSubMenu setZoneId={setZoneId} toggleMap={toggleMap} algorithm={algorithm} setAlgorithm={setAlgorithm} setNrofZones={setNrofZones} />
+                <ZoneSubMenu
+                    setZoneId={setZoneId}
+                    toggleMap={toggleMap}
+                    algorithm={algorithm}
+                    setAlgorithm={setAlgorithm}
+                    setNrofZones={setNrofZones}
+                    averageFuelCost = {averageFuelCost}
+                    setAverageFuelCost = {setAverageFuelCost}
+                    averageFuelUsage = {averageFuelUsage}
+                    setAverageFuelUsage = {setAverageFuelUsage}
+                />
             </SubMenu>
 
             <SubMenu key="sub2" title="Saved Zones" >

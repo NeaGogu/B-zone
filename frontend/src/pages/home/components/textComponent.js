@@ -59,7 +59,8 @@ async function getDrivingDistance(drivingData) {
 }
 
 function TextComponent(props) {
-    const { zoneId, zoneName, calculatedZone } = props;
+    const { zoneId, zoneName, calculatedZone, setAverageFuelUsage,
+        averageFuelCost,averageFuelUsage, setAverageFuelCost  } = props;
 
     const [name, setName] = useState('')
     const [loaded, setLoaded] = useState(false)
@@ -68,8 +69,9 @@ function TextComponent(props) {
     const [fuelCost, setFuelCost] = useState(0)
     const [drivingTimeActiv, setDrivingTimeActiv] = useState([])
     const [drivingDistanceActiv, setDrivingDistanceActiv] = useState([])
-    let averageFuelCost = 1.8
-    let averageFuelConsumption = 0.047 //litres of fuel consumption per km
+    let averageCost = 1.8
+    let averageFuelConsumption = averageFuelUsage
+    let averageFuel = 0.047 //litres of fuel consumption per km
 
 
 

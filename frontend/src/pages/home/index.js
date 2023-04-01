@@ -57,6 +57,8 @@ export default function Home() {
     // For radio.
     const [value, setValue] = useState(1);
     const [zipCodes, setZipCodes] = useState([]);
+    const [averageFuelCost, setAverageFuelCost] = useState("1.8");
+    const [averageFuelUsage, setAverageFuelUsage] = useState("0.047");
     const onChange = (e) => {
         setValue(e.target.value);
     };
@@ -263,6 +265,10 @@ export default function Home() {
                             setZoneName={setZoneName}
                             setZoneName2={setZoneName2}
                             loadedHeat={computedHeat && computedHeat2}
+                            averageFuelCost = {averageFuelCost}
+                            setAverageFuelCost = {setAverageFuelCost}
+                            averageFuelUsage = {averageFuelUsage}
+                            setAverageFuelUsage = {setAverageFuelUsage}
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
@@ -310,12 +316,23 @@ export default function Home() {
                             </div>
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
-                                    <TextComponent zoneId={zoneId} zoneName={zoneName} calculatedZone={calculatedZone} />
+                                    <TextComponent zoneId={zoneId}
+                                                   zoneName={zoneName}
+                                                   calculatedZone={calculatedZone}
+                                                   averageFuelCost = {averageFuelCost}
+                                                   setAverageFuelCost = {setAverageFuelCost}
+                                                   averageFuelUsage = {averageFuelUsage}
+                                                   setAverageFuelUsage = {setAverageFuelUsage}
+                                    />
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
                                     {
                                         showComparison ?
-                                            <TextComponent zoneId={currentView} zoneName={zoneName2} />
+                                            <TextComponent zoneId={currentView} zoneName={zoneName2}
+                                                           averageFuelCost = {averageFuelCost}
+                                                           setAverageFuelCost = {setAverageFuelCost}
+                                                           averageFuelUsage = {averageFuelUsage}
+                                                           setAverageFuelUsage = {setAverageFuelUsage}/>
                                             : <></>
                                     }
                                 </div>
