@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"bzone/backend/internal/models"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"sync"
+	"time"
 )
 
 const (
@@ -41,8 +44,112 @@ func requestBumbalActivity(w http.ResponseWriter, r *http.Request, reqBody []byt
 	req.Header.Add("Authorization", jwToken)
 
 	// make the request
-	resp, err := http.DefaultClient.Do(req)
+	var resp *http.Response
+	resp, err = http.DefaultClient.Do(req)
 	return resp, err
+}
+
+// collectAllBumbalActivities
+//
+//	@Description: Function that first gets the number of activites stored at Bumbal and based on this information
+//					it collects all activities and then filters them in order to remove depot activities
+//	@param w
+//	@param r
+//	@return []models.ActivityModelBumbal
+//	@return error
+func collectAllBumbalActivities(w http.ResponseWriter, r *http.Request) ([]models.ActivityModelBumbal, error) {
+	// Make a request to Bumbal to retrieve the number of activities
+	reqBody := []byte(`{"count_only":true}`)
+	resp, err := requestBumbalActivity(w, r, reqBody)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil, err
+	}
+
+	// Check the status codes of the response from Bumbal
+	if resp.StatusCode != http.StatusOK {
+		http.Error(w, resp.Status, resp.StatusCode)
+		return nil, err
+	}
+
+	// If the response status is OK, get the data from the response's body
+	respModel, err := getResponseData(resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil, err
+	}
+
+	// Get the total number of needed requests
+	var numberOfRequests int32
+	if respModel.CountFiltered%100 == 0 {
+		numberOfRequests = respModel.CountFiltered / 100
+	} else {
+		numberOfRequests = respModel.CountFiltered/100 + 1
+	}
+
+	// Construct the layout of the requests to get activities
+	reqBodyHead := []byte(`{"options":{"include_address_applied":true,"include_depot_address": true},
+						"sorting_column":"id","as_list": true,"count_only":false,"limit":100,"offset":`)
+	reqBodyTail := []byte(`}`)
+
+	// Make a variable that will store a list of all activities collected from all requests
+	var fullRespModel models.ActivityListResponseBumbal
+	emptyList := make([]models.ActivityModelBumbal, 0)
+	fullRespModel.Items = &emptyList
+
+	// Set up a channel for collecting the responses from each request
+	respChan := make(chan *http.Response, numberOfRequests)
+	var wg sync.WaitGroup // wait group that waits for the goroutines to finish
+
+	for i := 0; i < int(numberOfRequests); i++ {
+		wg.Add(1)
+		// go routine that will make one of the requests to Bumbal
+		go func(i int) {
+			defer wg.Done()
+			offset := []byte(fmt.Sprintf("%d", i*100))
+			reqBody = append(append(reqBodyHead, offset...), reqBodyTail...)
+
+			partResponse, err := requestBumbalActivity(w, r, reqBody)
+			if err != nil {
+				return
+			}
+
+			respChan <- partResponse
+
+			// wait 500 milliseconds in order to not get blacklisted by Bumbal
+			time.Sleep(500 * time.Millisecond)
+		}(i)
+	}
+
+	// Wait for all goroutines to finish
+	wg.Wait()
+
+	// Close the channel
+	close(respChan)
+
+	// Take care of each response stored in the channel
+	for partResponse := range respChan {
+		// Check the status codes of the response from Bumbal
+		if partResponse.StatusCode != http.StatusOK {
+			http.Error(w, resp.Status, resp.StatusCode)
+			return nil, err
+		}
+		// If the response status is OK, get the data from the response's body
+		respModel, err := getResponseData(partResponse)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return nil, err
+		}
+		fullRespModelItems := *fullRespModel.Items
+		respModelItems := *respModel.Items
+		newItems := append(fullRespModelItems, respModelItems...)
+		fullRespModel.Items = &newItems
+	}
+
+	// filter the response so that only activities that have both address applied and depot address are used
+	filteredResp := filterResp(*fullRespModel.Items)
+
+	return filteredResp, err
 }
 
 // filterResp
