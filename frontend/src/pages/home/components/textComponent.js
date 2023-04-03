@@ -218,7 +218,7 @@ function TextComponent(props) {
                     {/*fuel cost = fuel input times driving time*/}
                     {/*<p>Total cost: ${fuelCost}</p>*/}
                     <Collapse>
-                        <Panel header = {`Total cost: ${fuelCost}`} key="1">
+                        <Panel header = {`Total cost: ${fuelCost.toPrecision(3)}`} key="1">
                             <ul>
                                 <li>Distance over the zones</li>
                                 {drivingDistanceActiv.map((drivingDistance, index) => (
@@ -244,7 +244,7 @@ function TextComponent(props) {
                     {/*driving time = find activities per zone. find driving time in order between those activities using OSRM */}
                     {/*<p>Total driving time: {drivingTime}</p>*/}
                     <Collapse>
-                        <Panel key={2} header={`Total driving time: ${drivingTime}`}>
+                        <Panel key={2} header={`Total driving time: ${drivingTime.toPrecision(3)}`}>
                             <ul>
                                 <li>Driving time over the zones</li>
                                 {drivingTimeActiv.map((drivingTime, index) => (
