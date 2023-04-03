@@ -2,63 +2,13 @@
 import { useEffect } from 'react'
 import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
-import randomColor from "randomcolor";
+import querryDatabase from '../functions/querryDatabase'
 
 var zipCodes = []
 // array of colors to display
 const colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', 
                 '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', 
                 '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
-
-/** 
-* Fetches the initial zone configuration a user has from Bumbal, returns promise of the response from Bumbal API.
-* @param {string} userToken - The user token retrieved from local storage.
-* @return {Promise<Array>} A promise that resolves with an array of objects representing the user's initial zone configuration.
-*/
-async function getInitialZones() {
-    // Gets list of zones.
-    // Definition of URl, body values, and userToken.
-    const zonesURL = "https://sep202302.bumbal.eu/api/v2/zone"
-
-    const bodyValues = JSON.stringify({
-        "options": {
-            "include_zone_ranges": true,
-            "include_brands": true
-        },
-        "filters": {}
-    })
-
-    const userToken = localStorage.getItem('token')
-
-    let initialZones = []
-
-    initialZones = await fetch(zonesURL, {
-        method: 'PUT',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${userToken}`
-        },
-        body: bodyValues
-    })
-        // Testing if response recorded was ok.
-        .then((response) => {
-            if (!response.ok) {
-                console.log("Response was not ok ???")
-                alert("Unable to retrieve this zone configuration!")
-            }
-            return response.json();
-        })
-
-        // Dealing with received list of zones.
-        .then(async (data) => {
-            return data.items
-        })
-
-        .catch(error => console.log(error, 'error'))
-
-    return initialZones
-}
 
 /** 
 * With a list of zones, fetches their zip codes and updates their polygon coordinates to coordinatesFile.
@@ -154,7 +104,59 @@ function convertToStructure(plot) {
 }
 
 /** 
+* Fetches the initial zone configuration a user has from Bumbal, returns promise of the response from Bumbal API.
+* @param {string} userToken - The user token retrieved from local storage.
+* @return {Promise<Array>} A promise that resolves with an array of objects representing the user's initial zone configuration.
+*/
+async function getInitialZones() {
+    // Gets list of zones.
+    // Definition of URl, body values, and userToken.
+    const zonesURL = "https://sep202302.bumbal.eu/api/v2/zone"
+
+    const bodyValues = JSON.stringify({
+        "options": {
+            "include_zone_ranges": true,
+            "include_brands": true
+        },
+        "filters": {}
+    })
+
+    const userToken = localStorage.getItem('token')
+
+    let initialZones = []
+
+    initialZones = await fetch(zonesURL, {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`
+        },
+        body: bodyValues
+    })
+        // Testing if response recorded was ok.
+        .then((response) => {
+            if (!response.ok) {
+                console.log("Response was not ok ???")
+                alert("Unable to retrieve this zone configuration!")
+            }
+            return response.json();
+        })
+
+        // Dealing with received list of zones.
+        .then(async (data) => {
+            return data.items
+        })
+
+        .catch(error => console.log(error, 'error'))
+
+    return initialZones
+}
+
+/** 
 * Fetches the calculated zone configuration from the backend, returns promise of the response from the backend.
+* @param {int} algorithm - The algorithm of choice for the calculation
+* @param {int} nrofzones - The number of zones to make
 * @return {Promise<Array>} A promise that resolves with an array of objects representing the user's calculated zone configuration.
 */
 async function calculateZone(algorithm, nrofzones) {
@@ -171,7 +173,7 @@ async function calculateZone(algorithm, nrofzones) {
         //body
         // FOR NOW HARD CODED
         const bodyValues = JSON.stringify({
-            "number_of_clusters":parseInt(nrofzones),
+            "number_of_clusters": parseInt(nrofzones),
             "number_of_candidate_clusters": 1
         })
 
@@ -207,7 +209,7 @@ async function calculateZone(algorithm, nrofzones) {
         const bodyValues = JSON.stringify({
             "number_of_zones": parseInt(nrofzones),
             "number_of_generations": 10000,
-            "maximum_runtime" : 10
+            "maximum_runtime": 10
         })
         calculatedZones = await fetch(url, {
             method: 'PUT',
@@ -234,10 +236,7 @@ async function calculateZone(algorithm, nrofzones) {
             .catch(error => console.log(error, 'error'))
 
     }
-
-
     // cleaning up array
-    //console.log(calculatedZones)
     var zoneConfig = []
 
     // go into each zone
@@ -255,69 +254,21 @@ async function calculateZone(algorithm, nrofzones) {
         }
         zoneConfig.push(currZoneRange)
     }
-
     return [zoneConfig, calculatedZones]
-
-
-
 }
 
-/** 
-* Fetches saved plot from the backend, returns promise of the response from the backend.
-* @param {string} plotID - Id of plot to be looked up.
-* @return {Promise<Array>} A promise that resolves with an array of objects representing the zone configuration of the plot.
-*/
-async function querryDatabase(plotID) {
-    const userToken = localStorage.getItem('token')
-    var zones = []
-    await fetch("http://localhost:4000/plot/" + plotID, {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${userToken}`
-        }
-    }).then((response) => {
-        if (!response.ok) {
-            console.log("Response from our backend is not ok ???")
-        }
-        return response.json()
-    }).then((data) => {
-        zones = data.plot_zones
-    })
-
-    var zoneConfig = []
-
-    // go into each zone
-    for (let i = 0; i < zones.length; i++) {
-        var zoneRanges = zones[i].zone_ranges
-        var currZoneRange = []
-        // go into each range
-        for (let j = 0; j < zoneRanges.length; j++) {
-            //convert to format used in other GetCoordinates
-            var curr = {
-                zipFrom: zoneRanges[j].zipcode_from,
-                zipTo: zoneRanges[j].zipcode_to
-            }
-            currZoneRange.push(curr)
-        }
-        zoneConfig.push(currZoneRange)
-    }
-    return zoneConfig
-}
 
 // Main function to visualize the polygons on the map.
 const PolygonVis = (props) => {
     //selections
-    const { zoneId, setZipCodes, setComputed, algorithm, nrofzones } = props
+    const { zoneId, setZipCodes, setComputed, algorithm, nrofzones, setCalculatedZone } = props
 
     // Map context.
     const context = useLeafletContext()
 
     // Runs when a polygon is to be generated
-    // CHANGE IT TO BE BASED ON LAST VIEWED
     useEffect(() => {
-        //console.log('hellobro')
+
         // maybe not needed
         context.layerContainer.eachLayer(function (layer) {
             context.layerContainer.removeLayer(layer)
@@ -336,25 +287,29 @@ const PolygonVis = (props) => {
             if (zoneId.startsWith('calculate')) {
                 var calculation;
                 if (algorithm === 1) {
-                    console.log(nrofzones)
+                    
                     calculation = await calculateZone(algorithm, nrofzones)
                 } else {
                     calculation = await calculateZone(algorithm, nrofzones)
                 }
-                
-                convertToStructure(calculation[0])
+
+                var zipcodes =  convertToStructure(calculation[0])
                 setZipCodes(convertToStructure(calculation[0]));
+                setCalculatedZone(zipcodes)
                 coordinatesList = await getCoordinates(calculation[0])
+
 
             }
             // check if this is the initial run which displays the zone in bumbal
             else if (zoneId === 'initial') {
                 let initialZones = await getInitialZones();
                 zipCodes = await getZipCodes(initialZones);
+                setCalculatedZone(zipCodes)
                 coordinatesList = await getCoordinates(zipCodes)
             }
             // otherwise get zone from our database
             else {
+                setZipCodes([])
                 let querryZone = await querryDatabase(zoneId);
                 coordinatesList = await getCoordinates(querryZone)
             }
@@ -376,6 +331,9 @@ const PolygonVis = (props) => {
             setComputed(true)
         };
         fetchData()
+    
+    // warning not usefull 
+    // eslint-disable-next-line 
     }, [context.layerContainer, setZipCodes, zoneId, setComputed])
 
 
