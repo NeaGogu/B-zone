@@ -304,6 +304,7 @@ const PolygonVis = (props) => {
             else if (zoneId === 'initial') {
                 let initialZones = await getInitialZones();
                 zipCodes = await getZipCodes(initialZones);
+                setCalculatedZone(zipCodes)
                 coordinatesList = await getCoordinates(zipCodes)
             }
             // otherwise get zone from our database

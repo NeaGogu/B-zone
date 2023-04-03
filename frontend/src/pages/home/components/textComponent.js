@@ -37,24 +37,20 @@ async function getDrivingTime(drivingData) {
     //output: the total sum of the duration over all the legs of the route
     let drivingLegs = drivingData.routes[0].legs
     let sum = 0
-    //console.log(drivingLegs)
     for (let i = 0; i < drivingLegs.length; i++) {
         sum = sum + drivingLegs[i].duration
     }
-    //console.log(sum)
     return sum;
 }
 
 async function getDrivingDistance(drivingData) {
     //input: a fetch response from OSRM with multiple legs per driving route
-    //output: the total sum of the duration over all the legs of the route
+    //output: the total sum of the distance over all the legs of the route
     let drivingLegs = drivingData.routes[0].legs
     let sum = 0
-    //console.log(drivingLegs)
     for (let i = 0; i < drivingLegs.length; i++) {
         sum = sum + drivingLegs[i].distance
     }
-    //console.log(sum)
     return sum;
 }
 
@@ -92,12 +88,17 @@ function TextComponent(props) {
 
                  }
                 setName('Calculated Zone')
-                //console.log(plot)
             }
             else {
                 if(zoneId.startsWith('initial')) { //the plot is the initial plot from Bumbal
-                    setName('Initial Zones')
-                    plot = await querryDatabase(zoneId) //retrieve the plot object from Bumbal and change it so that it can be used in the calculations below
+                    setName(zoneName)
+                    for(let i = 0; i < calculatedZone.length; i++) {
+                        for(let j = 0; j < calculatedZone[i].length; j++) {
+                            calculatedZone[i][j].zipFrom = parseInt(calculatedZone[i][j].zipFrom);
+                            calculatedZone[i][j].zipTo = parseInt(calculatedZone[i][j].zipTo);
+                        }
+                    }
+                    plot = calculatedZone //retrieve the current plot and work with it
                 } else { //the plot is a saved plot from our backend
                     plot = await querryDatabase(zoneId)
                     setName(zoneName)
@@ -112,7 +113,6 @@ function TextComponent(props) {
             let activites2 = listOfActivities.map((i) => { // get activities and related zipcode + add a blank zone field with -1 id
                 return [i.address.latitude, i.address.longitude, i.address.zipcode, -1]; // Lat Lng intensity.
             })
-            // get zone model
 
             // go through each activity and find matching zone
             for (let i = 0; i < activites2.length; i++) {
