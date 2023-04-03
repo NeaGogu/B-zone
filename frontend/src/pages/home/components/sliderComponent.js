@@ -67,9 +67,9 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
             </Form.Item>
             <div style={{ width: '100%', textAlign: 'center' }}>
                 <Radio.Group onChange={onChangeAlgo} value={algorithm} style={{ paddingBottom: '10px' }}>
-                    <Radio value={1}> KMeans </Radio>
+                    <Radio value={1}> Standard </Radio>
                     <Tooltip title="May take up to 10 minutes for result.">
-                        <Radio value={2}> Genetic </Radio>
+                        <Radio value={2}> Advanced </Radio>
                     </Tooltip>  
                 </Radio.Group>
             </div>
