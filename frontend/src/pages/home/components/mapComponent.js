@@ -41,7 +41,7 @@ function LocationMarker() {
                         setZipcode(null);
                     }
                 });
-            map.flyTo(e.latlng, map.getZoom());
+            //map.flyTo(e.latlng, map.getZoom());
         },
     });
 
