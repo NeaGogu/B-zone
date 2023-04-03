@@ -14,7 +14,7 @@ import '../index.css';
 const { SubMenu } = Menu;
 
 //Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
-const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, setNrofZones }) => {
+const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, setNrofZones, voronoi, setVoronoi }) => {
     const [averageFuelCost, setAverageFuelCost] = useState("");
     const [averageFuelUsage, setAverageFuelUsage] = useState("");
   
@@ -23,6 +23,17 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
     const onChangeAlgo = (e) => {
         setAlgorithm(e.target.value);
     };
+
+    const onChangeVoronoi = (e) => {
+        setVoronoi(e.target.value)
+    };
+
+    function disabledVornoi(algorithm) {
+        if (algorithm === 1){
+            return false;
+        }
+        return true
+    }
 
     const handleSubmit = (e) => {
         //e.preventDefault();
@@ -71,6 +82,19 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                     </Tooltip>  
                 </Radio.Group>
             </div>
+
+            <div style={{ padding: "0 5px"}}>
+                Kmeans Options
+            </div>
+
+            <div style={{ width: '100%', textAlign: 'center' }}>
+                <Radio.Group onChange={onChangeVoronoi} value={voronoi} style={{ paddingBottom: '10px' }} disabled={disabledVornoi(algorithm)}>
+                    <Radio value={false}> Standard </Radio>
+                    <Tooltip title="This is only visual, zones will be saved as standard.">
+                        <Radio value={true}> Expanded </Radio>
+                    </Tooltip>  
+                </Radio.Group>
+            </div>
             <Form.Item>
                 <div style={{ padding: "0 5px" }}>
                     Nunber of Zones
@@ -100,7 +124,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
 };
 
 function SiderComponent(props) {
-    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm, setAlgorithm, setNrofZones, currentView } = props;
+    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm, setAlgorithm, setNrofZones, currentView, voronoi, setVoronoi } = props;
 
 
     const toggleMap = () => {
@@ -167,7 +191,7 @@ function SiderComponent(props) {
             </SubMenu>
 
             <SubMenu key="sub4" title="Zones">
-                <ZoneSubMenu setZoneId={setZoneId} toggleMap={toggleMap} algorithm={algorithm} setAlgorithm={setAlgorithm} setNrofZones={setNrofZones} />
+                <ZoneSubMenu setZoneId={setZoneId} toggleMap={toggleMap} algorithm={algorithm} setAlgorithm={setAlgorithm} setNrofZones={setNrofZones} voronoi={voronoi} setVoronoi={setVoronoi} />
             </SubMenu>
 
             <SubMenu key="sub2" title="Saved Zones" >

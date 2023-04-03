@@ -31,6 +31,9 @@ export default function Home() {
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
 
+    // For displaying expanded or standared zones with kmeans calculation
+    const [voronoi, setVoronoi] = useState(false)
+
     // for holding render state of map 1
     const [computed, setComputed] = useState(false)
     // for holding render state of map 2
@@ -192,13 +195,13 @@ export default function Home() {
             // set the plots in the sider to be the saved plots
             setSavedZones(saved)
         }
-
+        
         fetchData()
     }, []);
 
     useEffect(() => {
-        console.log(nrofzones, 'home')
-    }, [nrofzones]);
+        console.log(voronoi, 'home')
+    }, [voronoi]);
 
     return (
         <ConfigProvider
@@ -239,6 +242,9 @@ export default function Home() {
                             algorithm={algorithm}
                             setAlgorithm={setAlgorithm}
                             setNrofZones={setNrofZones}
+                            voronoi={voronoi}
+                            setVoronoi={setVoronoi}
+
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
@@ -246,7 +252,7 @@ export default function Home() {
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
                                     <Spin spinning={!computed} delay={500}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones}/>;
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} voronoi={voronoi}/>;
                                     </Spin>
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>

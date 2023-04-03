@@ -1,14 +1,15 @@
-    // External dependencies
+// External dependencies
 import { useEffect } from 'react'
 import L from 'leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
 import randomColor from "randomcolor";
-
+import { voronoi, featureCollection, point, intersect } from '@turf/turf'
+import nl from '../Data/NL_Boundary.json'
 var zipCodes = []
 // array of colors to display
-const colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', 
-                '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', 
-                '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
+const colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6',
+    '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3',
+    '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
 
 /** 
 * Fetches the initial zone configuration a user has from Bumbal, returns promise of the response from Bumbal API.
@@ -172,7 +173,7 @@ async function calculateZone(algorithm, nrofzones) {
         //body
         // FOR NOW HARD CODED
         const bodyValues = JSON.stringify({
-            "number_of_clusters":parseInt(nrofzones),
+            "number_of_clusters": parseInt(nrofzones),
             "number_of_candidate_clusters": 1
         })
 
@@ -203,8 +204,8 @@ async function calculateZone(algorithm, nrofzones) {
                 return arr
             })
             .catch(error => console.log(error, 'error'))
-            calculatedZones=arr[0]
-            clusters = arr[1]
+        calculatedZones = arr[0]
+        clusters = arr[1]
     } else {
         console.log('here')
         //request url
@@ -214,7 +215,7 @@ async function calculateZone(algorithm, nrofzones) {
         const bodyValues = JSON.stringify({
             "number_of_zones": parseInt(nrofzones),
             "number_of_generations": 10000,
-            "maximum_runtime" : 10
+            "maximum_runtime": 10
         })
         calculatedZones = await fetch(url, {
             method: 'PUT',
@@ -263,7 +264,7 @@ async function calculateZone(algorithm, nrofzones) {
         zoneConfig.push(currZoneRange)
     }
 
-    if (algorithm === 1){
+    if (algorithm === 1) {
         return [zoneConfig, clusters]
     }
     return [zoneConfig, calculatedZones]
@@ -318,10 +319,11 @@ async function querryDatabase(plotID) {
 
 /** 
 * Function to render the non-expanded zones
-* @param {string} plotID - Id of plot to be looked up.
-* @return {Promise<Array>} A promise that resolves with an array of objects representing the zone configuration of the plot.
+* @param {Object} plotID - Id of plot to be looked up.
+* @param {Arrat} coordinatesList - Coordinates of zones to be rendered
+* @return {Void} 
 */
-function renderZones(context) {
+function renderZones(context, coordinatesList) {
     //Iterates through zones.
     for (let i = 0; i < coordinatesList.length; i++) {
         for (let j = 0; j < coordinatesList[i].length; j++) {
@@ -339,11 +341,11 @@ function renderZones(context) {
 // Main function to visualize the polygons on the map.
 const PolygonVis = (props) => {
     //selections
-    const { zoneId, setZipCodes, setComputed, algorithm, nrofzones, voronoi } = props
+    const { zoneId, setZipCodes, setComputed, algorithm, nrofzones, voronoib } = props
 
     // Map context.
     const context = useLeafletContext()
-    console.log(typeof(context))
+    
 
     // Runs when a polygon is to be generated
     // CHANGE IT TO BE BASED ON LAST VIEWED
@@ -362,21 +364,51 @@ const PolygonVis = (props) => {
             setComputed(false)
             // variable which holds the coordinates to be displayed
             var coordinatesList = []
+            var calculation;
 
             // check if zone is to be calculated
             if (zoneId.startsWith('calculate')) {
-                var calculation;
+
                 if (algorithm === 1) {
                     console.log(nrofzones)
                     calculation = await calculateZone(algorithm, nrofzones)
+                    
+                    convertToStructure(calculation[0])
+                    setZipCodes(convertToStructure(calculation[0]));
+                    
+                    // if expanded is selected render expanded zones
+                    if (voronoib) {
+                        // Netherlands bounding box
+                        var options = {
+                            bbox: [3.0741,50.7368,7.2208,53.749]
+                        };
+                        // make points in geojson format
+                        let points = []
+                        for (let i = 0; i < calculation[1].length; i++) {
+                            points.push(point([calculation[1][i].Center.Longitude, calculation[1][i].Center.Latitude]))
+                        }
+                        let featurePoints = featureCollection(points)
+                        let voronoiPolygons = voronoi(featurePoints, options);
+                        let layers = []
+                        // find intersection of polyongs with nl boundary and add them to layer
+                        for(let i = 0; i<voronoiPolygons.features.length; i++) {
+                            var intersection = intersect(nl.features[0],voronoiPolygons.features[i])
+                            layers.push(new L.geoJSON(intersection, {style : {color:colors[i]}}).bindTooltip(`Zone ${i}`))
+                        }
+                        // add laters to map
+                        context.layerContainer.addLayer(L.layerGroup(layers))
+                        // set computed to true
+                        setComputed(true)
+                        return;
+                    }
+                    
                 } else {
                     calculation = await calculateZone(algorithm, nrofzones)
                 }
-                
+
                 convertToStructure(calculation[0])
                 setZipCodes(convertToStructure(calculation[0]));
                 coordinatesList = await getCoordinates(calculation[0])
-
             }
             // check if this is the initial run which displays the zone in bumbal
             else if (zoneId === 'initial') {
@@ -389,8 +421,8 @@ const PolygonVis = (props) => {
                 let querryZone = await querryDatabase(zoneId);
                 coordinatesList = await getCoordinates(querryZone)
             }
-            
-            
+
+            renderZones(context,coordinatesList)
             // set render state to be true
             setComputed(true)
         };
