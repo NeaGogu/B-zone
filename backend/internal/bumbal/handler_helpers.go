@@ -9,8 +9,6 @@ import (
 	"net/http"
 	"sync"
 	"time"
-
-	geojson "github.com/paulmach/go.geojson"
 )
 
 const (
@@ -21,10 +19,6 @@ const (
 type Output struct {
 	Result         []models.ZoneModel `json:"zone_model_result,omitempty"`
 	ClustersResult kMeans.Clusters    `json:"clusters_result,omitempty"`
-}
-
-type OutputJSON struct {
-	Result geojson.FeatureCollection `json:"result,omitempty"`
 }
 
 // requestBumbalActivity
