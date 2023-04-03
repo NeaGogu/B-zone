@@ -7,6 +7,7 @@ import { Layout, Menu, theme, ConfigProvider, Spin } from 'antd';
 
 // Components
 import Map from './components/mapComponent';
+import TextComponent from './components/textComponent'
 
 // CSS
 import './index.css';
@@ -28,22 +29,36 @@ export default function Home() {
     // For comparison button to split map into two maps.
     const [showComparison, setShowComparison] = useState(false);
 
+    const [calculatedZone, setCalculatedZone] = useState([])
+
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
+    // empty state
+    const [holder, setHolder] = useState([])
 
     // for holding render state of map 1
     const [computed, setComputed] = useState(false)
+    //for holding render state of heatmap 1
+    const [computedHeat, setComputedHeat] = useState(false)
     // for holding render state of map 2
     const [computed2, setComputed2] = useState(false)
+    //for holding render state of heatmap 2
+    const [computedHeat2, setComputedHeat2] = useState(true)
     // for keeping track of selected algorithm, by default kmeans
     const [algorithm, setAlgorithm] = useState(1);
     // for keeping track of selected algorithm, by default kmeans
     const [nrofzones, setNrofZones] = useState(1);
+    //for setting nae of zone in comparison (single)
+    const [zoneName, setZoneName] = useState("Initial Zone");
+    //for setting nae of zone in comparison (single)
+    const [zoneName2, setZoneName2] = useState("");
 
 
     // For radio.
     const [value, setValue] = useState(1);
     const [zipCodes, setZipCodes] = useState([]);
+    const [averageFuelCost, setAverageFuelCost] = useState("1.8");
+    const [averageFuelUsage, setAverageFuelUsage] = useState("0.047");
     const onChange = (e) => {
         setValue(e.target.value);
     };
@@ -64,13 +79,21 @@ export default function Home() {
     * @return {void}
     */
     async function handleSaveClick() {
+        console.log(savedZones);
         if (zipCodes.length === 0) {
             alert('nothing to save')
             return null;
         }
         const name = window.prompt('Enter a name for the save:');
         if (name) {
+            for(let i = 0; i < savedZones.length; i++) {
+                if(name === savedZones[i].user_plot_name) {
+                    alert("you have already saved a zone under this name!")
+                    return null;
+                }
+            }
             addSavedZone(name);
+            setZipCodes([])
         }
     }
 
@@ -88,7 +111,7 @@ export default function Home() {
     const handleDeleteZone = (id, name) => {
         const confirm = window.confirm('Confirm deletion of ' + name);
         // make sure user actually want to delete plot
-        if (confirm){
+        if (confirm) {
             deleteSavedZone(id)
         }
     };
@@ -136,22 +159,22 @@ export default function Home() {
     * @param {string} id - The id of the zone configuration to delete.
     * @return {void}
     */
-    async function deleteSavedZone(id){
+    async function deleteSavedZone(id) {
         const userToken = localStorage.getItem('token')
         await fetch("http://localhost:4000/plot/" + id, {
-            method:'DELETE',
+            method: 'DELETE',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${userToken}`
             }
-        }).then(async (response)=>{
+        }).then(async (response) => {
             if (response.ok) {
                 const saved = await getSavedZones();
                 setSavedZones(saved)
                 alert('Plot succesfully deleted')
                 return null
-            } 
+            }
             alert('Could not delete plot, server error')
             return null
         })
@@ -196,9 +219,9 @@ export default function Home() {
         fetchData()
     }, []);
 
-    useEffect(() => {
-        console.log(nrofzones, 'home')
-    }, [nrofzones]);
+    // useEffect(() => {
+    //     console.log(computedHeat, 'home')
+    // }, [computedHeat]);
 
     return (
         <ConfigProvider
@@ -239,25 +262,79 @@ export default function Home() {
                             algorithm={algorithm}
                             setAlgorithm={setAlgorithm}
                             setNrofZones={setNrofZones}
+                            setZoneName={setZoneName}
+                            setZoneName2={setZoneName2}
+                            loadedHeat={computedHeat && computedHeat2}
+                            averageFuelCost = {averageFuelCost}
+                            setAverageFuelCost = {setAverageFuelCost}
+                            averageFuelUsage = {averageFuelUsage}
+                            setAverageFuelUsage = {setAverageFuelUsage}
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
-                        <Content className="map" id="map" style={{ minHeight: '60vh' }}>
+                        <Content className="map" id="map" style={{ minHeight: '60vh', overflow:'auto' }}>
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
-                                    <Spin spinning={!computed} delay={500}>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones}/>;
+                                    <Spin spinning={!computed || !computedHeat} delay={500} tip={
+                                        (() => {
+                                            if (!computed && !computedHeat) {
+                                                return 'Loading Plot and Heatmap'
+                                            }
+                                            if (!computed) {
+                                                return 'Loading Map'
+                                            }
+                                            if (!computedHeat) {
+                                                return 'Loading Heatmap'
+                                            }
+                                        })()
+                                    }>
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setComputedHeat={setComputedHeat} setCalculatedZone={setCalculatedZone}/>;
                                     </Spin>
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
-                                        {
-                                            showComparison ? 
-                                            <Spin spinning={!computed2} delay={500}> 
-                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setZipCodes} setComputed={setComputed2} /> 
+                                    {
+                                        showComparison ?
+                                            <Spin spinning={!computed2 || !computedHeat2} delay={500} tip={
+                                                (() => {
+                                                    if (!computed2 && !computedHeat2) {
+                                                        return 'Loading Plot and Heatmap'
+                                                    }
+                                                    if (!computed2) {
+                                                        return 'Loading Map'
+                                                    }
+                                                    if (!computedHeat2) {
+                                                        return 'Loading Heatmap'
+                                                    }
+                                                })()
+                                            }>
+                                                <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={currentView} setZipCodes={setHolder} setComputed={setComputed2} setComputedHeat={setComputedHeat2} />
                                             </Spin>
                                             : <></>
-                                        }
-                                    
+                                    }
+
+                                </div>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
+                                <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
+                                    <TextComponent zoneId={zoneId}
+                                                   zoneName={zoneName}
+                                                   calculatedZone={calculatedZone}
+                                                   averageFuelCost = {averageFuelCost}
+                                                   setAverageFuelCost = {setAverageFuelCost}
+                                                   averageFuelUsage = {averageFuelUsage}
+                                                   setAverageFuelUsage = {setAverageFuelUsage}
+                                    />
+                                </div>
+                                <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
+                                    {
+                                        showComparison ?
+                                            <TextComponent zoneId={currentView} zoneName={zoneName2}
+                                                           averageFuelCost = {averageFuelCost}
+                                                           setAverageFuelCost = {setAverageFuelCost}
+                                                           averageFuelUsage = {averageFuelUsage}
+                                                           setAverageFuelUsage = {setAverageFuelUsage}/>
+                                            : <></>
+                                    }
                                 </div>
                             </div>
                         </Content>

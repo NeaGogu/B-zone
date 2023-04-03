@@ -14,9 +14,9 @@ import '../index.css';
 const { SubMenu } = Menu;
 
 //Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
-const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, setNrofZones }) => {
-    const [averageFuelCost, setAverageFuelCost] = useState("");
-    const [averageFuelUsage, setAverageFuelUsage] = useState("");
+const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, setNrofZones, setAverageFuelUsage,
+                         averageFuelCost,averageFuelUsage, setAverageFuelCost  }) => {
+
   
     const calculate = useRef(0)
 
@@ -46,6 +46,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                         placeholder="input fuel cost"
                         type="number"
                         step="0.01"
+                        min="0"
                         value={averageFuelCost}
                         onChange={(e) => setAverageFuelCost(e.target.value)}
                     />
@@ -57,7 +58,8 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                     <Input
                         placeholder="input fuel usage of car"
                         type="number"
-                        step="0.01"
+                        step="0.001"
+                        min="0.0"
                         value={averageFuelUsage}
                         onChange={(e) => setAverageFuelUsage(e.target.value)}
                     />
@@ -65,9 +67,9 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
             </Form.Item>
             <div style={{ width: '100%', textAlign: 'center' }}>
                 <Radio.Group onChange={onChangeAlgo} value={algorithm} style={{ paddingBottom: '10px' }}>
-                    <Radio value={1}> KMeans </Radio>
+                    <Radio value={1}> Standard </Radio>
                     <Tooltip title="May take up to 10 minutes for result.">
-                        <Radio value={2}> Genetic </Radio>
+                        <Radio value={2}> Advanced </Radio>
                     </Tooltip>  
                 </Radio.Group>
             </div>
@@ -78,6 +80,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                         placeholder="input desired number of zones"
                         type="number"
                         step="1"
+                        min="1"
                         
                         onChange={(e) => setNrofZones(e.target.value)}
                     />
@@ -100,7 +103,12 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
 };
 
 function SiderComponent(props) {
-    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone, setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm, setAlgorithm, setNrofZones, currentView } = props;
+    const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone,
+        setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm,
+        setAlgorithm, setNrofZones, currentView, setZoneName, setZoneName2, loadedHeat, setAverageFuelUsage,
+        averageFuelCost,averageFuelUsage, setAverageFuelCost  } = props;
+
+    //console.log(loadedHeat)
 
 
     const toggleMap = () => {
@@ -128,6 +136,7 @@ function SiderComponent(props) {
     };
 
 
+
     return (
         <Menu
             mode="inline"
@@ -147,8 +156,8 @@ function SiderComponent(props) {
 
                 <div style={{ width: '100%', textAlign: 'center' }}>
                     <Menu.Item key="5" style={{ padding: 0 }}>
-                        <Radio.Group value={values} onChange={onChange} size='small'  >
-                            <Radio.Button data-testid="time-based" value={1}>
+                        <Radio.Group value={values} onChange={onChange} size='small' disabled={!loadedHeat}>
+                            <Radio.Button data-testid="time-based" value={1} >
                                 Time based
                             </Radio.Button>
                             <Radio.Button data-testid="location-based" value={2}>
@@ -161,13 +170,26 @@ function SiderComponent(props) {
                 <Menu.Item key="6" style={{ height: "80px", padding: 0 }}>
                     <div style={{ textAlign: "center" }}>Intensity</div>
                     <div style={{ textAlign: "center" }}>
-                        <InputNumber data-testid='intensity-input' min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={values === 1 ? true : false} />
+                        <InputNumber data-testid='intensity-input' min={1} max={1000} defaultValue={500} onChange={onChangeNumber} disabled={(()=>{
+                            if (!loadedHeat || values ===1){return true}
+                            return false
+                        })()} />
                     </div>
                 </Menu.Item>
             </SubMenu>
 
             <SubMenu key="sub4" title="Zones">
-                <ZoneSubMenu setZoneId={setZoneId} toggleMap={toggleMap} algorithm={algorithm} setAlgorithm={setAlgorithm} setNrofZones={setNrofZones} />
+                <ZoneSubMenu
+                    setZoneId={setZoneId}
+                    toggleMap={toggleMap}
+                    algorithm={algorithm}
+                    setAlgorithm={setAlgorithm}
+                    setNrofZones={setNrofZones}
+                    averageFuelCost = {averageFuelCost}
+                    setAverageFuelCost = {setAverageFuelCost}
+                    averageFuelUsage = {averageFuelUsage}
+                    setAverageFuelUsage = {setAverageFuelUsage}
+                />
             </SubMenu>
 
             <SubMenu key="sub2" title="Saved Zones" >
@@ -192,6 +214,7 @@ function SiderComponent(props) {
                                     toggleMap()
                                     setCurrentView('')
                                     setZoneId(zone.user_plot_id)
+                                    setZoneName(zone.user_plot_name)
                                 
                                 
                                 }}>
@@ -206,6 +229,7 @@ function SiderComponent(props) {
                     
                                         setCurrentView(zone.user_plot_id)
                                         toggleComparison()
+                                        setZoneName2(zone.user_plot_name)
                                     }
                                 
                                 }}>
