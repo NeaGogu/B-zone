@@ -10,9 +10,7 @@ services:
     networks:
       - bzone_network
   b-zone-frontend:
-    build:
-      dockerfile: BuildFrontend.Dockerfile
-    image: bzone/frontend_image:1.0.0
+    image: goglete/sep_bzone_frontend:latest
     container_name: b-zone-frontend-container
     ports:
       - "3000:80"
