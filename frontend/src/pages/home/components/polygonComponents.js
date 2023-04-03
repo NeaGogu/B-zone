@@ -163,6 +163,7 @@ async function calculateZone(algorithm, nrofzones) {
 
     // array to hold zone configuration
     let calculatedZones = []
+    let clusters = []
 
     // calculated based on algorithm
     if (algorithm === 1) {
@@ -176,7 +177,7 @@ async function calculateZone(algorithm, nrofzones) {
         })
 
 
-        calculatedZones = await fetch(url, {
+        let arr = await fetch(url, {
             method: 'PUT',
             headers: {
                 'Accept': 'application/json',
@@ -195,11 +196,17 @@ async function calculateZone(algorithm, nrofzones) {
             })
             // Dealing with received list of zones.
             .then(async (data) => {
-                //console.log(data.result)
-                return data.result
+                let arr = []
+                arr[0] = data.zone_model_result
+                arr[1] = data.clusters_result
+                //console.log(arr)
+                return arr
             })
             .catch(error => console.log(error, 'error'))
+            calculatedZones=arr[0]
+            clusters = arr[1]
     } else {
+        console.log('here')
         //request url
         const url = "http://localhost:4000/bumbal/algorithm/genetic"
         //body
@@ -228,8 +235,8 @@ async function calculateZone(algorithm, nrofzones) {
             })
             // Dealing with received list of zones.
             .then(async (data) => {
-                //console.log(data.result)
-                return data.result
+                console.log(data.zone_model_result)
+                return data.zone_model_result
             })
             .catch(error => console.log(error, 'error'))
 
@@ -237,7 +244,7 @@ async function calculateZone(algorithm, nrofzones) {
 
 
     // cleaning up array
-    //console.log(calculatedZones)
+    console.log(calculatedZones)
     var zoneConfig = []
 
     // go into each zone
@@ -256,6 +263,9 @@ async function calculateZone(algorithm, nrofzones) {
         zoneConfig.push(currZoneRange)
     }
 
+    if (algorithm === 1){
+        return [zoneConfig, clusters]
+    }
     return [zoneConfig, calculatedZones]
 
 
@@ -306,13 +316,34 @@ async function querryDatabase(plotID) {
     return zoneConfig
 }
 
+/** 
+* Function to render the non-expanded zones
+* @param {string} plotID - Id of plot to be looked up.
+* @return {Promise<Array>} A promise that resolves with an array of objects representing the zone configuration of the plot.
+*/
+function renderZones(context) {
+    //Iterates through zones.
+    for (let i = 0; i < coordinatesList.length; i++) {
+        for (let j = 0; j < coordinatesList[i].length; j++) {
+            // Iteratres through coordinates in zone ranges.
+            for (let k = 0; k < coordinatesList[i][j].length; k++) {
+                let polygon = L.polygon(coordinatesList[i][j][k].zone_coordinates)
+                polygon.setStyle({ color: colors[i] })
+                polygon.bindTooltip(`Zone ${i}`)
+                context.layerContainer.addLayer(polygon)
+            }
+        }
+    }
+}
+
 // Main function to visualize the polygons on the map.
 const PolygonVis = (props) => {
     //selections
-    const { zoneId, setZipCodes, setComputed, algorithm, nrofzones } = props
+    const { zoneId, setZipCodes, setComputed, algorithm, nrofzones, voronoi } = props
 
     // Map context.
     const context = useLeafletContext()
+    console.log(typeof(context))
 
     // Runs when a polygon is to be generated
     // CHANGE IT TO BE BASED ON LAST VIEWED
@@ -358,20 +389,8 @@ const PolygonVis = (props) => {
                 let querryZone = await querryDatabase(zoneId);
                 coordinatesList = await getCoordinates(querryZone)
             }
-
-            // process which draws the zone
-            //Iterates through zones.
-            for (let i = 0; i < coordinatesList.length; i++) {
-                for (let j = 0; j < coordinatesList[i].length; j++) {
-                    // Iteratres through coordinates in zone ranges.
-                    for (let k = 0; k < coordinatesList[i][j].length; k++) {
-                        let polygon = L.polygon(coordinatesList[i][j][k].zone_coordinates)
-                        polygon.setStyle({ color: colors[i] })
-                        polygon.bindTooltip(`Zone ${i}`)
-                        context.layerContainer.addLayer(polygon)
-                    }
-                }
-            }
+            
+            
             // set render state to be true
             setComputed(true)
         };
