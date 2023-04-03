@@ -17,7 +17,7 @@ const (
 	activitiesUrl = "activity"
 )
 
-// Output struct used for the body of the response
+// Output struct used for the body of the response of the K-means algo handler
 type Output struct {
 	Result         []models.ZoneModel `json:"zone_model_result,omitempty"`
 	ClustersResult kMeans.Clusters    `json:"clusters_result,omitempty"`
