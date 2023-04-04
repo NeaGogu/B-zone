@@ -1,4 +1,4 @@
-import { Card, Spin, Tooltip } from 'antd'
+import { Card, Spin } from 'antd'
 import { useEffect, useState } from "react";
 import querryDatabase from "../functions/querryDatabase";
 import getAllActivities from "../functions/getAllActivities";
