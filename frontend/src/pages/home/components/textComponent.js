@@ -198,10 +198,10 @@ function TextComponent(props) {
                 totalDrivingDistance = totalDrivingDistance + drivingDistanceActivities[i]
                 setDrivingDistanceActiv(prevDrivingDistanceActiv => [...prevDrivingDistanceActiv, drivingDistanceActivities[i]]);
             }
-            setDrivingTime(totalDrivingTime.toPrecision(3) / 3600)
+            setDrivingTime(totalDrivingTime/ 3600)
             //time to find fuel cost: fuel cost = (litres used * fuel cost)
             //litres used = driving distance * fuel efficiency
-            setFuelCost(((totalDrivingDistance.toPrecision(4) / 1000) * averageFuelConsumption) * averageFuelCost)
+            setFuelCost(((totalDrivingDistance/ 1000) * averageFuelConsumption) * averageFuelCost)
             setLoaded(true)
 
         }
@@ -222,17 +222,17 @@ function TextComponent(props) {
                             <ul>
                                 <li>Distance over the zones</li>
                                 {drivingDistanceActiv.map((drivingDistance, index) => (
-                                    <p key={index}>Zone {index}: {drivingDistance}</p>
+                                    <p key={index}>Zone {index}: {drivingDistance.toFixed(2)}</p>
                                 ))}
                                 <li>Total driving distance</li>
                                 <p>
                                     {drivingDistanceActiv.map((drivingDistance, index) => (
-                                        <span key={index}>{drivingDistance} {index < drivingDistanceActiv.length - 1 && '+'} </span>
+                                        <span key={index}>{drivingDistance.toFixed(2)} {index < drivingDistanceActiv.length - 1 && '+'} </span>
                                     ))}
-                                    = {drivingDistanceActiv.reduce((acc, time) => acc + time, 0)}
+                                    = {drivingDistanceActiv.reduce((acc, time) => acc + time, 0).toFixed(2)}
                                 </p>
                                 <li>Total cost with fuel consumption = {averageFuelConsumption} and fuel cost = {averageFuelCost}</li>
-                                <p>Total driving cost =(({drivingDistanceActiv.reduce((acc, time) => acc + time, 0)} / 1000) * {averageFuelConsumption}) * {averageFuelCost}) = {fuelCost.toPrecision(3)}</p>
+                                <p>Total driving cost =(({drivingDistanceActiv.reduce((acc, time) => acc + time, 0).toFixed(2)} / 1000) * {averageFuelConsumption}) * {averageFuelCost} = {fuelCost.toFixed(2)}</p>
                             </ul>
                         </Panel>
                     </Collapse>
@@ -248,15 +248,15 @@ function TextComponent(props) {
                             <ul>
                                 <li>Driving time over the zones</li>
                                 {drivingTimeActiv.map((drivingTime, index) => (
-                                    <p key={index}>Zone {index}: {drivingTime}</p>
+                                    <p key={index}>Zone {index}: {drivingTime.toFixed(2)}</p>
                                 ))}
                                 <li>Driving time sum</li>
                                 <p>Driving time = {drivingTimeActiv.map((drivingTime, index) => (
-                                    <span key={index}>{drivingTime} {index < drivingTimeActiv.length - 1 && '+'} </span>
+                                    <span key={index}>{drivingTime.toFixed(2)} {index < drivingTimeActiv.length - 1 && '+'} </span>
                                 ))}
-                                    = {drivingTime * 3600} </p>
+                                    = {drivingTime.toFixed(2) * 3600} </p>
                                 <li>Driving time  in hrs</li>
-                                <p>Total driving time ={drivingTime * 3600} / 3600 = {drivingTime.toPrecision(3)}</p>
+                                <p>Total driving time ={drivingTime.toFixed(2) * 3600} / 3600 = {drivingTime.toFixed(2)}</p>
 
                             </ul>
                         </Panel>
