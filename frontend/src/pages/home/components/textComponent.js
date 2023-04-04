@@ -162,7 +162,7 @@ function TextComponent(props) {
 
                     }
                 }
-                
+
                 // Remove last ';' from the request string for driving time in zone i
                 drivingTimeReqs[i] = drivingTimeReqs[i].slice(0, -1);
                 // Check whether there are less than 2 activities in this zone
@@ -178,10 +178,9 @@ function TextComponent(props) {
                     drivingDistanceActivities[i] = await getDrivingDistance(drivingData)
                 }
             }
-            //FOR TANIA
-            console.log(activityTimeZone)
-            for (let i = 0; i < plot.length; i++){
-                setTimeZoneText(prevTimeZoneText => [...prevTimeZoneText,activityTimeZone[i]]) ;
+
+            for (let i = 0; i < plot.length; i++) {
+                setTimeZoneText(prevTimeZoneText => [...prevTimeZoneText, activityTimeZone[i]]);
             }
 
             setDrivingTimeActiv(prevDrivingTimeActiv => []);
@@ -196,6 +195,7 @@ function TextComponent(props) {
                 totalDrivingDistance = totalDrivingDistance + drivingDistanceActivities[i]
                 setDrivingDistanceActiv(prevDrivingDistanceActiv => [...prevDrivingDistanceActiv, drivingDistanceActivities[i]]);
             }
+
             setDrivingTime(totalDrivingTime.toPrecision(3) / 3600)
             // Time to find fuel cost: fuel cost = (litres used * fuel cost)
             // Litres used = driving distance * fuel efficiency
@@ -208,7 +208,7 @@ function TextComponent(props) {
     }, [zoneId, zoneName, calculatedZone])
 
     return (
-        <Card title={name} style={{  marginLeft: 'auto', marginRight: 'auto', flex: '1' }} >
+        <Card title={name} style={{ marginLeft: 'auto', marginRight: 'auto', flex: '1' }} >
             <Spin spinning={!loaded} delay={200} tip='Calculating...'>
                 <div >
                     {/*fuel cost = fuel input times driving time*/}
@@ -236,17 +236,13 @@ function TextComponent(props) {
                     <Collapse>
                         <Panel key={3} header={`Total activity time in hours: ${time}`}>
                             <ul>
-                                <li>Total time over each zone: </li>
+                                <li> Activity time over the zones: </li>
                                 {timeZoneText.map((zoneText, index) => (
                                     <p key={index}>Zone {index}: {zoneText} hours</p>
                                 ))}
-                                <li>Total time:</li>
-                                <p>
-                                    {timeZoneText.map((zoneText, index) => (
-                                        <span key={index}>{zoneText} {index < timeZoneText.length - 1 && '+'} </span>
-                                    ))}
-                                    = {time} hours
-                                </p>
+                                <li> Total activity time: {timeZoneText.map((zoneText, index) => (
+                                    <span key={index}>{zoneText} {index < timeZoneText.length - 1 && '+'} </span>
+                                ))} = {time} hours </li>
                             </ul>
                         </Panel>
                     </Collapse>
