@@ -33,6 +33,7 @@ async function getDrivingTime(drivingData) {
     // Output: the total sum of the duration over all the legs of the route
     let drivingLegs = drivingData.routes[0].legs
     let sum = 0
+
     for (let i = 0; i < drivingLegs.length; i++) {
         sum = sum + drivingLegs[i].duration
     }
@@ -204,17 +205,17 @@ function TextComponent(props) {
                             <ul>
                                 <li>Distance over the zones: </li>
                                 {drivingDistanceActiv.map((drivingDistance, index) => (
-                                    <p key={index}>Zone {index}: {drivingDistance.toFixed(2)}</p>
+                                    <p key={index}>Zone {index}: {drivingDistance.toFixed(2)} meters</p>
                                 ))}
                                 <li>Total driving distance: </li>
                                 <p>
                                     {drivingDistanceActiv.map((drivingDistance, index) => (
                                         <span key={index}>{drivingDistance.toFixed(2)} {index < drivingDistanceActiv.length - 1 && '+'} </span>
                                     ))}
-                                    = {drivingDistanceActiv.reduce((acc, time) => acc + time, 0).toFixed(2)}
+                                    = {drivingDistanceActiv.reduce((acc, time) => acc + time, 0).toFixed(2)} meters
                                 </p>
-                                <li>Total cost with fuel consumption: {averageFuelConsumption} and fuel cost = {averageFuelCost}</li>
-                                <p>Total driving cost: (({drivingDistanceActiv.reduce((acc, time) => acc + time, 0).toFixed(2)} / 1000) * {averageFuelConsumption}) * {averageFuelCost} = {fuelCost.toFixed(2)}</p>
+                                <li>Total cost with fuel consumption: {averageFuelConsumption} euros and fuel cost = {averageFuelCost} euros:</li>
+                                <p>(({drivingDistanceActiv.reduce((acc, time) => acc + time, 0).toFixed(2)} / 1000) * {averageFuelConsumption}) * {averageFuelCost} = {fuelCost.toFixed(2)} euros</p>
                             </ul>
                         </Panel>
                     </Collapse>
@@ -230,13 +231,13 @@ function TextComponent(props) {
                             <ul>
                                 <li>Driving time over the zones in seconds:</li>
                                 {drivingTimeActiv.map((drivingTime, index) => (
-                                    <p key={index}>Zone {index}: {drivingTime.toFixed(2)}</p>
+                                    <p key={index}>Zone {index}: {drivingTime.toFixed(2)} seconds</p>
                                 ))}
                                 <li>Driving time sum in seconds:</li>
                                 <p>{drivingTimeActiv.map((drivingTime, index) => (
                                     <span key={index}>{drivingTime.toFixed(2)} {index < drivingTimeActiv.length - 1 && '+'} </span>
                                 ))}
-                                    = {drivingTime.toFixed(2) * 3600} </p>
+                                    = {drivingTime.toFixed(2) * 3600} seconds</p>
                                 <p>Total driving time in hours and minutes: {Math.floor(drivingTime)} hours and {Math.round((drivingTime % 1) * 60)} minutes</p>
                             </ul>
                         </Panel>
