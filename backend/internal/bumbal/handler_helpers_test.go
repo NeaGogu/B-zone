@@ -2,7 +2,11 @@ package bumbal
 
 import (
 	"bzone/backend/internal/models"
+	"encoding/json"
+	"io"
+	"net/http"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -175,6 +179,57 @@ func TestFilterResp(t *testing.T) {
 				if !reflect.DeepEqual(filteredResp[i], tc.expectedResp[i]) {
 					t.Errorf("Expected %+v, but got %+v", tc.expectedResp[i], filteredResp[i])
 				}
+			}
+		})
+	}
+}
+
+func TestGetClustersInfo(t *testing.T) {
+	testCases := []struct {
+		name     string
+		request  *http.Request
+		expected ClustersInfo
+		err      error
+	}{
+		{
+			name: "Valid request with data",
+			request: &http.Request{
+				Body: io.NopCloser(strings.NewReader(`{"number_of_clusters":5,"number_of_candidate_clusters":10}`)),
+			},
+			expected: ClustersInfo{
+				NrClusters:          5,
+				NrCandidateClusters: 10,
+			},
+			err: nil,
+		},
+		{
+			name: "Valid request with missing fields",
+			request: &http.Request{
+				Body: io.NopCloser(strings.NewReader(`{}`)),
+			},
+			expected: ClustersInfo{},
+			err:      nil,
+		},
+		{
+			name: "Invalid request with malformed JSON",
+			request: &http.Request{
+				Body: io.NopCloser(strings.NewReader(`{"number_of_clusters":5,"number_of_candidate_clusters":}`)),
+			},
+			expected: ClustersInfo{},
+			err:      &json.SyntaxError{Offset: 46},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			clustersInfo, err := getClustersInfo(tc.request)
+
+			if !reflect.DeepEqual(clustersInfo, tc.expected) {
+				t.Errorf("Expected %v, but got %v", tc.expected, clustersInfo)
+			}
+
+			if reflect.TypeOf(err) != reflect.TypeOf(tc.err) {
+				t.Errorf("Expected error of type %T, but got %T", tc.err, err)
 			}
 		})
 	}
