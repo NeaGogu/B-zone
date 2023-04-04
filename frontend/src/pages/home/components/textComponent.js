@@ -229,7 +229,7 @@ function TextComponent(props) {
                     <Collapse>
                         <Panel key={2} header={`Total driving time: ${Math.floor(drivingTime)} hours and ${Math.round((drivingTime % 1) * 60)} minutes`}>
                             <ul>
-                                <li>Driving time over the zones in seconds:</li>
+                                <li>Driving time over the zones:</li>
                                 {drivingTimeActiv.map((drivingTime, index) => {
                                     const hours = Math.floor(drivingTime / 3600);
                                     const minutes = Math.floor((drivingTime % 3600) / 60);
@@ -241,7 +241,7 @@ function TextComponent(props) {
                                     );
                                 })}
 
-                                <li>Driving time sum in seconds:</li>
+                                <li>Driving time sum:</li>
                                 <p>
                                     {drivingTimeActiv.map((drivingTime, index) => {
                                         const hours = Math.floor(drivingTime / 3600);
@@ -258,7 +258,7 @@ function TextComponent(props) {
                                     })}
                                 </p>
 
-                                <p>Total driving time in hours and minutes: {Math.floor(drivingTime)} hours and {Math.round((drivingTime % 1) * 60)} minutes</p>
+                                <p>Total driving time: {Math.floor(drivingTime)} hours and {Math.round((drivingTime % 1) * 60)} minutes</p>
                             </ul>
                         </Panel>
                     </Collapse>
