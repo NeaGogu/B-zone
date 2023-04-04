@@ -18,13 +18,14 @@ func TestFilterResp(t *testing.T) {
 	zipcodeCaracal, latitudeCaracal, longitudeCaracal := "253200", "44.115745", "24.342475"
 	zipcodeGalati, latitudeGalati, longitudeGalati := "800017", "45.435321", "28.007994"
 	zipcodeBacau, latitudeBacau, longitudeBacau := "600087", "46.568825", "26.916025"
+
 	// Define test cases
 	tests := []struct {
 		name         string
 		respModel    []models.ActivityModelBumbal
 		expectedResp []models.ActivityModelBumbal
 	}{
-		// Test cases here...
+		// Test cases
 		{
 			name:         "Empty input slice",
 			respModel:    []models.ActivityModelBumbal{},
@@ -34,15 +35,13 @@ func TestFilterResp(t *testing.T) {
 			name: "Input slice with no matching elements",
 			respModel: []models.ActivityModelBumbal{
 				{
-					Id:             nil,
-					AddressApplied: nil,
+					Id: nil, AddressApplied: nil,
 					DepotAddress: &models.AddressModelBumbal{
 						Zipcode: &zipcodeBacau, Latitude: &latitudeBacau, Longitude: &longitudeBacau,
 					},
 				},
 				{
-					Id:             nil,
-					AddressApplied: nil,
+					Id: nil, AddressApplied: nil,
 					DepotAddress: &models.AddressModelBumbal{
 						Zipcode: &zipcodeGalati, Latitude: &latitudeGalati, Longitude: &longitudeGalati,
 					},
@@ -55,9 +54,7 @@ func TestFilterResp(t *testing.T) {
 					DepotAddress: nil,
 				},
 				{
-					Id:             nil,
-					AddressApplied: nil,
-					DepotAddress:   nil,
+					Id: nil, AddressApplied: nil, DepotAddress: nil,
 				},
 			},
 			expectedResp: []models.ActivityModelBumbal{},
@@ -185,6 +182,7 @@ func TestFilterResp(t *testing.T) {
 }
 
 func TestGetClustersInfo(t *testing.T) {
+	// Test cases
 	testCases := []struct {
 		name     string
 		request  *http.Request
@@ -196,11 +194,8 @@ func TestGetClustersInfo(t *testing.T) {
 			request: &http.Request{
 				Body: io.NopCloser(strings.NewReader(`{"number_of_clusters":5,"number_of_candidate_clusters":10}`)),
 			},
-			expected: ClustersInfo{
-				NrClusters:          5,
-				NrCandidateClusters: 10,
-			},
-			err: nil,
+			expected: ClustersInfo{NrClusters: 5, NrCandidateClusters: 10},
+			err:      nil,
 		},
 		{
 			name: "Valid request with missing fields",
@@ -220,9 +215,61 @@ func TestGetClustersInfo(t *testing.T) {
 		},
 	}
 
+	// Run test cases
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			clustersInfo, err := getClustersInfo(tc.request)
+
+			if !reflect.DeepEqual(clustersInfo, tc.expected) {
+				t.Errorf("Expected %v, but got %v", tc.expected, clustersInfo)
+			}
+
+			if reflect.TypeOf(err) != reflect.TypeOf(tc.err) {
+				t.Errorf("Expected error of type %T, but got %T", tc.err, err)
+			}
+		})
+	}
+}
+
+func TestGetZonesInfo(t *testing.T) {
+	// Test cases
+	testCases := []struct {
+		name     string
+		request  *http.Request
+		expected ZonesInfo
+		err      error
+	}{
+		{
+			name: "Valid request with data",
+			request: &http.Request{
+				Body: io.NopCloser(strings.NewReader(`{"number_of_zones":5,"number_of_generations":10,
+													"maximum_runtime":10}`)),
+			},
+			expected: ZonesInfo{NZones: 5, NGenerations: 10, MaxDuration: 10},
+			err:      nil,
+		},
+		{
+			name: "Valid request with missing fields",
+			request: &http.Request{
+				Body: io.NopCloser(strings.NewReader(`{}`)),
+			},
+			expected: ZonesInfo{},
+			err:      nil,
+		},
+		{
+			name: "Invalid request with malformed JSON",
+			request: &http.Request{
+				Body: io.NopCloser(strings.NewReader(`{"number_of_zones":5,"number_of_generations":}`)),
+			},
+			expected: ZonesInfo{},
+			err:      &json.SyntaxError{Offset: 43},
+		},
+	}
+
+	// Run test cases
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			clustersInfo, err := getZonesInfo(tc.request)
 
 			if !reflect.DeepEqual(clustersInfo, tc.expected) {
 				t.Errorf("Expected %v, but got %v", tc.expected, clustersInfo)
