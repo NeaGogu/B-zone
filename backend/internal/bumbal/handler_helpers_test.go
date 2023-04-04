@@ -281,3 +281,108 @@ func TestGetZonesInfo(t *testing.T) {
 		})
 	}
 }
+
+func TestGetResponseData(t *testing.T) {
+	// Define testing variables
+	zipcodePloiesti, latitudePloiesti, longitudePloiesti := "100051", "44.933334", "26.033333"
+	zipcodeSurani, latitudeSurani, longitudeSurani := "107545", "45.1955", "26.1853"
+
+	// Test cases
+	testCases := []struct {
+		name     string
+		response *http.Response
+		expected models.ActivityListResponseBumbal
+		err      error
+	}{
+		{
+			name: "Valid response with items",
+			response: &http.Response{
+				StatusCode: http.StatusOK,
+				Body: io.NopCloser(strings.NewReader(`{
+                    "items": [
+                        {
+                            "id": null,
+                            "address_applied": {
+                                "zipcode": "100051",
+                                "latitude": "44.933334",
+                                "longitude": "26.033333"
+                            },
+                            "depot_address": {
+                                "zipcode": "107545",
+                                "latitude": "45.1955",
+                                "longitude": "26.1853"
+                            }
+                        }
+                    ],
+                    "count_filtered": 1,
+                    "count_unfiltered": 1,
+                    "count_limited": 1
+                }`)),
+			},
+			expected: models.ActivityListResponseBumbal{
+				Items: &[]models.ActivityModelBumbal{
+					{
+						Id: nil,
+						AddressApplied: &models.AddressAppliedModelBumbal{
+							Zipcode:   &zipcodePloiesti,
+							Latitude:  &latitudePloiesti,
+							Longitude: &longitudePloiesti,
+						},
+						DepotAddress: &models.AddressModelBumbal{
+							Zipcode:   &zipcodeSurani,
+							Latitude:  &latitudeSurani,
+							Longitude: &longitudeSurani,
+						},
+					},
+				},
+				CountFiltered:   1,
+				CountUnfiltered: 1,
+				CountLimited:    1,
+			},
+			err: nil,
+		},
+		{
+			name: "Valid response without items",
+			response: &http.Response{
+				StatusCode: http.StatusOK,
+				Body: io.NopCloser(strings.NewReader(`{
+                    "items": null,
+                    "count_filtered": 0,
+                    "count_unfiltered": 0,
+                    "count_limited": 0
+                }`)),
+			},
+			expected: models.ActivityListResponseBumbal{
+				Items:           nil,
+				CountFiltered:   0,
+				CountUnfiltered: 0,
+				CountLimited:    0,
+			},
+			err: nil,
+		},
+		{
+			name: "Invalid response with non-JSON data",
+			response: &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader(`not json data`)),
+			},
+			expected: models.ActivityListResponseBumbal{},
+			err:      &json.SyntaxError{},
+		},
+	}
+
+	// Run test cases
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			respModel, err := getResponseData(tc.response)
+
+			if !reflect.DeepEqual(respModel, tc.expected) {
+				t.Errorf("Expected response model to be %+v, but got %+v", tc.expected, respModel)
+			}
+
+			if reflect.TypeOf(err) != reflect.TypeOf(tc.err) {
+				t.Errorf("Expected error type to be %T, but got %T", tc.err, err)
+			}
+		})
+	}
+}
