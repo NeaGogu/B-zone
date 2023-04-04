@@ -232,7 +232,7 @@ function TextComponent(props) {
                                     = {drivingDistanceActiv.reduce((acc, time) => acc + time, 0)}
                                 </p>
                                 <li>Total cost with fuel consumption = {averageFuelConsumption} and fuel cost = {averageFuelCost}</li>
-                                <p>Total driving cost =(({drivingDistanceActiv.reduce((acc, time) => acc + time, 0)} / 1000) * {averageFuelConsumption}) * {averageFuelCost}) = {fuelCost}</p>
+                                <p>Total driving cost =(({drivingDistanceActiv.reduce((acc, time) => acc + time, 0)} / 1000) * {averageFuelConsumption}) * {averageFuelCost}) = {fuelCost.toPrecision(3)}</p>
                             </ul>
                         </Panel>
                     </Collapse>
@@ -256,7 +256,7 @@ function TextComponent(props) {
                                 ))}
                                     = {drivingTime * 3600} </p>
                                 <li>Driving time  in hrs</li>
-                                <p>Total driving time ={drivingTime * 3600} / 3600 = {drivingTime}</p>
+                                <p>Total driving time ={drivingTime * 3600} / 3600 = {drivingTime.toPrecision(3)}</p>
 
                             </ul>
                         </Panel>
