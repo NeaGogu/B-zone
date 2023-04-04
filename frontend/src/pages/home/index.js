@@ -35,27 +35,27 @@ export default function Home() {
     const [showMap, setShowMap] = useState(true);
 
     // Empty state
-    const [setHolder] = useState([])
+    const [holder, setHolder] = useState([])
 
     // For holding render state of map 1
     const [computed, setComputed] = useState(false)
-    // For holding render state of heatmap 1
+    // For holding render state of heat map 1
     const [computedHeat, setComputedHeat] = useState(false)
     // For holding render state of map 2
     const [computed2, setComputed2] = useState(false)
-    // For holding render state of heatmap 2
+    // For holding render state of heat map 2
     const [computedHeat2, setComputedHeat2] = useState(true)
     // For keeping track of selected algorithm, by default kmeans
     const [algorithm, setAlgorithm] = useState(1);
-    // For keeping track of selected algorithm, by default kmeans
+    // For keeping track of number of zones
     const [nrofzones, setNrofZones] = useState(1);
-    // For setting nae of zone in comparison (single)
+    // For setting name of zone in comparison (single)
     const [zoneName, setZoneName] = useState("Initial Zone");
-    // For setting nae of zone in comparison (single)
+    // For setting name of zone in comparison (single)
     const [zoneName2, setZoneName2] = useState("");
 
 
-    // For radio.
+    // For radio
     const [value, setValue] = useState(1);
     const [zipCodes, setZipCodes] = useState([]);
     const [averageFuelCost, setAverageFuelCost] = useState("1.8");
@@ -310,7 +310,7 @@ export default function Home() {
 
                                 </div>
                             </div>
-                            <div style={{ display: "flex", justifyContent: showComparison ? "space-between" : "flex-start", padding: "5px" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
                                     <TextComponent zoneId={zoneId}
                                         zoneName={zoneName}
