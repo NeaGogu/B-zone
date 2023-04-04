@@ -198,10 +198,10 @@ function TextComponent(props) {
                 totalDrivingDistance = totalDrivingDistance + drivingDistanceActivities[i]
                 setDrivingDistanceActiv(prevDrivingDistanceActiv => [...prevDrivingDistanceActiv, drivingDistanceActivities[i]]);
             }
-            setDrivingTime(totalDrivingTime / 3600)
+            setDrivingTime(totalDrivingTime.toPrecision(3) / 3600)
             //time to find fuel cost: fuel cost = (litres used * fuel cost)
             //litres used = driving distance * fuel efficiency
-            setFuelCost(((totalDrivingDistance / 1000) * averageFuelConsumption) * averageFuelCost)
+            setFuelCost(((totalDrivingDistance.toPrecision(4) / 1000) * averageFuelConsumption) * averageFuelCost)
             setLoaded(true)
 
         }
