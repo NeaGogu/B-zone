@@ -214,7 +214,7 @@ function TextComponent(props) {
                                     ))}
                                     = {drivingDistanceActiv.reduce((acc, time) => acc + time, 0).toFixed(2)} meters
                                 </p>
-                                <li>Total cost with fuel consumption: {averageFuelConsumption} euros and fuel cost = {averageFuelCost} euros:</li>
+                                <li>Total cost with fuel consumption = {averageFuelConsumption} euros and fuel cost = {averageFuelCost} euros:</li>
                                 <p>(({drivingDistanceActiv.reduce((acc, time) => acc + time, 0).toFixed(2)} / 1000) * {averageFuelConsumption}) * {averageFuelCost} = {fuelCost.toFixed(2)} euros</p>
                             </ul>
                         </Panel>
@@ -230,14 +230,34 @@ function TextComponent(props) {
                         <Panel key={2} header={`Total driving time: ${Math.floor(drivingTime)} hours and ${Math.round((drivingTime % 1) * 60)} minutes`}>
                             <ul>
                                 <li>Driving time over the zones in seconds:</li>
-                                {drivingTimeActiv.map((drivingTime, index) => (
-                                    <p key={index}>Zone {index}: {drivingTime.toFixed(2)} seconds</p>
-                                ))}
+                                {drivingTimeActiv.map((drivingTime, index) => {
+                                    const hours = Math.floor(drivingTime / 3600);
+                                    const minutes = Math.floor((drivingTime % 3600) / 60);
+                                    const seconds = Math.floor(drivingTime % 60);
+                                    return (
+                                        <p key={index}>
+                                            Zone {index}: {hours > 0 && `${hours} hour${hours > 1 ? 's' : ''} `}{minutes > 0 && `${minutes} minute${minutes > 1 ? 's' : ''} `}{seconds} second{seconds !== 1 ? 's' : ''}
+                                        </p>
+                                    );
+                                })}
+
                                 <li>Driving time sum in seconds:</li>
-                                <p>{drivingTimeActiv.map((drivingTime, index) => (
-                                    <span key={index}>{drivingTime.toFixed(2)} {index < drivingTimeActiv.length - 1 && '+'} </span>
-                                ))}
-                                    = {drivingTime.toFixed(2) * 3600} seconds</p>
+                                <p>
+                                    {drivingTimeActiv.map((drivingTime, index) => {
+                                        const hours = Math.floor(drivingTime / 3600);
+                                        const minutes = Math.floor((drivingTime % 3600) / 60);
+                                        const seconds = Math.floor(drivingTime % 60);
+                                        return (
+                                            <span key={index}>
+                                                {hours > 0 && `${hours} hour${hours > 1 ? 's' : ''} `}
+                                                {minutes > 0 && `${minutes} minute${minutes > 1 ? 's' : ''} `}
+                                                {seconds} second{seconds !== 1 ? 's' : ''}
+                                                {index < drivingTimeActiv.length - 1 && ' + '}
+                                            </span>
+                                        );
+                                    })}
+                                </p>
+
                                 <p>Total driving time in hours and minutes: {Math.floor(drivingTime)} hours and {Math.round((drivingTime % 1) * 60)} minutes</p>
                             </ul>
                         </Panel>
