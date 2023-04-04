@@ -195,7 +195,7 @@ function TextComponent(props) {
     }, [zoneId, zoneName, calculatedZone])
 
     return (
-        <Card title={name} style={{ width: 'fit-content', marginLeft: '0', marginRight: 'auto' }} >
+        <Card title={name} style={{  marginLeft: 'auto', marginRight: 'auto', flex: '1' }} >
             <Spin spinning={!loaded} delay={200} tip='Calculating...'>
                 <div >
                     {/*fuel cost = fuel input times driving time*/}
@@ -219,10 +219,11 @@ function TextComponent(props) {
                             </ul>
                         </Panel>
                     </Collapse>
-                    {/* Done */}
-                    <Tooltip title="This is computed by adding all of the activity times ">
-                        <p>Total activity time in hours: {time}</p>
-                    </Tooltip>
+                    <Collapse>
+                        <Panel key={3} header={`Total activity time in hours: ${time}`}>
+                            <li>This is computed by adding all of the activity times </li>
+                        </Panel>
+                    </Collapse>
 
                     {/*driving time = find activities per zone. find driving time in order between those activities using OSRM */}
                     {/*<p>Total driving time: {drivingTime}</p>*/}
