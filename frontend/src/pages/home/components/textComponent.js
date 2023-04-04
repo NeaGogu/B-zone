@@ -200,7 +200,7 @@ function TextComponent(props) {
                     {/*fuel cost = fuel input times driving time*/}
                     {/*<p>Total cost: ${fuelCost}</p>*/}
                     <Collapse>
-                        <Panel header = {`Total cost: ${fuelCost.toPrecision(3)}`} key="1">
+                        <Panel header={`Total cost: \u20AC${fuelCost.toPrecision(3)}`} key="1">
                             <ul>
                                 <li>Distance over the zones</li>
                                 {drivingDistanceActiv.map((drivingDistance, index) => (
