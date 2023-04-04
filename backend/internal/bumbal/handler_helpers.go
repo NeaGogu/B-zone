@@ -27,7 +27,7 @@ type Output struct {
 //	@param w used to write http responses
 //	@param r used to fetch the http request
 //	@return *http.Response return a http response for further processing
-//	@return error for debugging purposes/robustness
+//	@return error for debugging purposes/ robustness
 func requestBumbalActivity(w http.ResponseWriter, r *http.Request, reqBody []byte) (*http.Response, error) {
 	reqUrl := baseUrl + activitiesUrl
 	// set the request body so that it retrieves the address_applied field as well
