@@ -2,13 +2,43 @@ package bumbal
 
 import (
 	"bzone/backend/internal/models"
+	"bzone/backend/internal/test"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
 )
+
+func TestRequestBumbalActivity(t *testing.T) {
+
+	t.Run("Request Bumbal Activity", func(t *testing.T) {
+		var err error
+		var req *http.Request
+
+		req, err = http.NewRequest("PUT", "/test", nil)
+		assert.NoError(t, err)
+		token, _ := test.CreateAccessTokenString("1")
+		req.Header.Add("Authorization", token)
+		rr := httptest.NewRecorder()
+		body := map[string]string{
+			"plot_name": "MyPlot",
+			"plot_id":   "30",
+		}
+
+		var reqBody []byte
+		reqBody, err = json.Marshal(body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, errR := requestBumbalActivity(rr, req, reqBody, baseUrl)
+
+		assert.Nil(t, errR)
+	})
+}
 
 func TestFilterResp(t *testing.T) {
 	// Define testing variables
