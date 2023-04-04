@@ -19,8 +19,8 @@ type ZonesInfo struct {
 //
 //	 @Description: the main handler, does the requests to Bumbal and calls the Genetic algorithm based
 //					on the input
-//	 @param w
-//	 @param r
+//	 @param w used to write http responses
+//	 @param r used to fetch the http request
 func RunGenetic(w http.ResponseWriter, r *http.Request) {
 	// Collect all the activities from Bumbal
 	filteredResp, err := collectAllBumbalActivities(w, r)
