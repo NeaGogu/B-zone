@@ -66,6 +66,7 @@ function MapComponent(props) {
     // useEffect(()=>{
     //     rendr.current +=1
     // },[value, intensity])
+    console.log(voronoi)
 
     return (
         <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '60vh', flex: "1" }}>

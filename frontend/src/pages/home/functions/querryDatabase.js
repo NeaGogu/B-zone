@@ -15,7 +15,15 @@ async function querryDatabase(plotID) {
         }
     }).then((response) => {
         if (!response.ok) {
-            console.log("Response from our backend is not ok ???")
+            if (response.status === 401){
+                alert("Unable to retrieve this zone configuration! " + response.status + ' Error')
+                localStorage.removeItem('token')
+                localStorage.removeItem('email')
+                localStorage.removeItem('id')
+                window.location.reload()
+                return null
+            } 
+            alert("Unable to retrieve this zone configuration! " + response.status + ' Error')
         }
         return response.json()
     }).then((data) => {

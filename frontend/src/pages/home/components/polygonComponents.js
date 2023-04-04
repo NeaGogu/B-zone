@@ -139,8 +139,12 @@ async function getInitialZones() {
         // Testing if response recorded was ok.
         .then((response) => {
             if (!response.ok) {
-                console.log("Response was not ok ???")
-                alert("Unable to retrieve this zone configuration!")
+                //console.log("Response was not ok ???")
+                alert("Unable to retrieve this zone configuration! " + response.status + ' error')
+                localStorage.removeItem('token')
+                localStorage.removeItem('email')
+                localStorage.removeItem('id')
+                window.location.reload()
             }
             return response.json();
         })
@@ -180,7 +184,6 @@ async function calculateZone(algorithm, nrofzones) {
             "number_of_candidate_clusters": 1
         })
 
-
         let arr = await fetch(url, {
             method: 'PUT',
             headers: {
@@ -193,8 +196,15 @@ async function calculateZone(algorithm, nrofzones) {
             // Testing if response recorded was ok.
             .then((response) => {
                 if (!response.ok) {
-                    console.log("Response was not ok ???")
-                    alert("Unable to retrieve this zone configuration!")
+                    if (response.status === 401){
+                        alert("Unable to retrieve this zone configuration! " + response.status + ' Error')
+                        localStorage.removeItem('token')
+                        localStorage.removeItem('email')
+                        localStorage.removeItem('id')
+                        window.location.reload()
+                        return
+                    } 
+                    alert("Unable to retrieve this zone configuration! " + response.status + ' Error')
                 }
                 return response.json();
             })
@@ -203,10 +213,11 @@ async function calculateZone(algorithm, nrofzones) {
                 let arr = []
                 arr[0] = data.zone_model_result
                 arr[1] = data.clusters_result
-                //console.log(arr)
+                console.log(arr)
                 return arr
             })
             .catch(error => console.log(error, 'error'))
+
         calculatedZones = arr[0]
         clusters = arr[1]
     } else {
@@ -232,8 +243,15 @@ async function calculateZone(algorithm, nrofzones) {
             // Testing if response recorded was ok.
             .then((response) => {
                 if (!response.ok) {
-                    console.log("Response was not ok ???")
-                    alert("Unable to retrieve this zone configuration!")
+                    if (response.status === 401){
+                        alert("Unable to retrieve this zone configuration! " + response.status + ' Error')
+                        localStorage.removeItem('token')
+                        localStorage.removeItem('email')
+                        localStorage.removeItem('id')
+                        window.location.reload()
+                        return
+                    } 
+                    alert("Unable to retrieve this zone configuration! " + response.status + ' Error')
                 }
                 return response.json();
             })
@@ -243,14 +261,10 @@ async function calculateZone(algorithm, nrofzones) {
                 return data.zone_model_result
             })
             .catch(error => console.log(error, 'error'))
-
     }
 
-
     // cleaning up array
-    //console.log(calculatedZones)
     var zoneConfig = []
-
     // go into each zone
     for (let i = 0; i < calculatedZones.length; i++) {
         var zoneRanges = calculatedZones[i].zone_ranges
@@ -333,10 +347,12 @@ const PolygonVis = (props) => {
 
                     convertToStructure(calculation[0])
                     setZipCodes(convertToStructure(calculation[0]));
+                    console.log(voronoib)
 
                     // if expanded is selected render expanded zones
                     if (voronoib) {
                         // Netherlands bounding box
+                        
                         var options = {
                             bbox: [3.0741,50.7368,7.2208,53.749]
                         };
@@ -357,13 +373,14 @@ const PolygonVis = (props) => {
                         context.layerContainer.addLayer(L.layerGroup(layers))
                         // set computed to true
                         setComputed(true)
+                        setZipCodes(convertToStructure(calculation[0]));
+                        setCalculatedZone(convertToStructure(calculation[0]))
                         return;
                     }
 
-                } else {
-                    calculation = await calculateZone(algorithm, nrofzones)
-                }
+                } 
 
+                calculation = await calculateZone(algorithm, nrofzones)
                 var zipcodes =  convertToStructure(calculation[0])
                 setZipCodes(convertToStructure(calculation[0]));
                 setCalculatedZone(zipcodes)
