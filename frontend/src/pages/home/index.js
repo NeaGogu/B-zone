@@ -36,6 +36,9 @@ export default function Home() {
     // empty state
     const [holder, setHolder] = useState([])
 
+    // For displaying expanded or standared zones with kmeans calculation
+    const [voronoi, setVoronoi] = useState(false)
+
     // for holding render state of map 1
     const [computed, setComputed] = useState(false)
     //for holding render state of heatmap 1
@@ -269,6 +272,9 @@ export default function Home() {
                             setAverageFuelCost = {setAverageFuelCost}
                             averageFuelUsage = {averageFuelUsage}
                             setAverageFuelUsage = {setAverageFuelUsage}
+                            voronoi={voronoi}
+                            setVoronoi={setVoronoi}
+
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
@@ -289,6 +295,8 @@ export default function Home() {
                                         })()
                                     }>
                                         <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setComputedHeat={setComputedHeat} setCalculatedZone={setCalculatedZone}/>;
+                                    <Spin spinning={!computed} delay={500}>
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} voronoi={voronoi}/>;
                                     </Spin>
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
