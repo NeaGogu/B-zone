@@ -16,6 +16,7 @@ import (
 // MinNormal is the smallest positive normal value of type float64.
 var MinNormal = math.Float64frombits(0x0010000000000000)
 
+//TODO:
 // func TestKMeans(t *testing.T) {
 // 	// Define some test data
 // 	activity1 := makeActivity(t, "1", "1", "1", "1234")
