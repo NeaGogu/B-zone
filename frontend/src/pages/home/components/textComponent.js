@@ -104,7 +104,7 @@ function TextComponent(props) {
             let listOfActivities = await getAllActivities() // Get all activity locations from Bumbal
 
             let activites2 = listOfActivities.map((i) => { // Get activities and related zipcode + add a blank zone field with -1 id
-                return [i.address.latitude, i.address.longitude, i.address.zipcode, -1]; // Lat Lng intensity.
+                return [i.address.latitude, i.address.longitude, i.address.zipcode, -1, i.duration]; // Lat Lng intensity.
             })
 
             // Go through each activity and find matching zone
@@ -135,6 +135,8 @@ function TextComponent(props) {
             let drivingDistanceActivities = new Array(plot.length);
             // Array to hold fetch requests HTML per zone
             let drivingTimeReqs = new Array(plot.length);
+            //Driving time per zone, index i = zone i
+            let activityTimeZone = []
             // Body of the fetch request to be sent out to OSRM
             const drivingTimeBody = {
                 method: 'GET'
@@ -147,15 +149,18 @@ function TextComponent(props) {
                 countActivities = 0
                 drivingTimeActivities[i] = 0
                 drivingDistanceActivities[i] = 0
+                activityTimeZone[i] = 0;
                 drivingTimeReqs[i] = "http://router.project-osrm.org/route/v1/driving/"
                 for (let j = 0; j < activities2Filtered.length; j++) {
                     if (activities2Filtered[j][3] === i) {
                         // Update the request for zone i to contain the coordinates of all activities
                         drivingTimeReqs[i] = drivingTimeReqs[i] + activities2Filtered[j][1] + ',' + activities2Filtered[j][0] + ';'
                         countActivities = countActivities + 1;
+                        activityTimeZone[i] = activityTimeZone[i] + parseInt(activities2Filtered[j][4])
 
                     }
                 }
+                
                 // Remove last ';' from the request string for driving time in zone i
                 drivingTimeReqs[i] = drivingTimeReqs[i].slice(0, -1);
                 // Check whether there are less than 2 activities in this zone
@@ -171,6 +176,8 @@ function TextComponent(props) {
                     drivingDistanceActivities[i] = await getDrivingDistance(drivingData)
                 }
             }
+            //FOR TANIA
+            console.log(activityTimeZone)
 
             setDrivingTimeActiv(prevDrivingTimeActiv => []);
             setDrivingDistanceActiv(prevDrivingDistanceActiv => []);
