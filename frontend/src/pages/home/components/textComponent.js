@@ -128,6 +128,7 @@ function TextComponent(props) {
                     activities2Filtered.push(activites2[i])
                 }
             }
+
             // Array to hold driving time per zone
             let drivingTimeActivities = new Array(plot.length);
             // Array to hold driving distances per zone
@@ -200,7 +201,7 @@ function TextComponent(props) {
                 <div >
                     {/*fuel cost = fuel input times driving time*/}
                     {/*<p>Total cost: ${fuelCost}</p>*/}
-                    <Collapse>
+                    <Collapse >
                         <Panel header={`Total cost: \u20AC${fuelCost.toPrecision(3)}`} key="1">
                             <ul>
                                 <li>Distance over the zones: </li>
@@ -219,11 +220,13 @@ function TextComponent(props) {
                             </ul>
                         </Panel>
                     </Collapse>
+                    <p> </p>
                     <Collapse>
                         <Panel key={3} header={`Total activity time in hours: ${time}`}>
                             <li>This is computed by adding all of the activity times </li>
                         </Panel>
                     </Collapse>
+                    <p> </p>
 
                     {/*driving time = find activities per zone. find driving time in order between those activities using OSRM */}
                     {/*<p>Total driving time: {drivingTime}</p>*/}
