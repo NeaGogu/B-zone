@@ -1,4 +1,4 @@
-import {Card, Spin, Tooltip} from 'antd'
+import { Card, Spin, Tooltip } from 'antd'
 import { useEffect, useState } from "react";
 import querryDatabase from "../functions/querryDatabase";
 import getAllActivities from "../functions/getAllActivities";
@@ -44,7 +44,7 @@ async function getDrivingDistance(drivingData) {
     // Output: the total sum of the distance over all the legs of the route
     let drivingLegs = drivingData.routes[0].legs
     let sum = 0
-    
+
     for (let i = 0; i < drivingLegs.length; i++) {
         sum = sum + drivingLegs[i].distance
     }
@@ -52,7 +52,7 @@ async function getDrivingDistance(drivingData) {
 }
 
 function TextComponent(props) {
-    const { zoneId, zoneName, calculatedZone, averageFuelCost,averageFuelUsage  } = props;
+    const { zoneId, zoneName, calculatedZone, averageFuelCost, averageFuelUsage } = props;
 
     const [name, setName] = useState('')
     const [loaded, setLoaded] = useState(false)
@@ -70,14 +70,14 @@ function TextComponent(props) {
             let averageFuelConsumption = 0.047 // Litres of fuel consumption per km
             totalActivityDurations(setTime) // Set the total activity duration to be the time spend on activities
             let plot = []; // Variable to hold the object of zones/zone configuration upon which to calculate driving time
-           
+
             if (zoneId.startsWith('calculate')) { // The plot is a freshly calculated optimized plot
-                 for (let i = 0; i < calculatedZone.plot_zones.length; i++) {
-                     plot[i] = calculatedZone.plot_zones[i].zone_ranges
-                     for(let j = 0; j < plot[i].length; j ++) {
-                         plot[i][j] = {zipFrom: plot[i][j].zipcode_from, zipTo: plot[i][j].zipcode_to}
-                     }
-                 }
+                for (let i = 0; i < calculatedZone.plot_zones.length; i++) {
+                    plot[i] = calculatedZone.plot_zones[i].zone_ranges
+                    for (let j = 0; j < plot[i].length; j++) {
+                        plot[i][j] = { zipFrom: plot[i][j].zipcode_from, zipTo: plot[i][j].zipcode_to }
+                    }
+                }
                 setName('Calculated Zone')
             }
 
@@ -202,44 +202,42 @@ function TextComponent(props) {
                     <Collapse>
                         <Panel header={`Total cost: \u20AC${fuelCost.toPrecision(3)}`} key="1">
                             <ul>
-                                <li>Distance over the zones</li>
+                                <li>Distance over the zones: </li>
                                 {drivingDistanceActiv.map((drivingDistance, index) => (
                                     <p key={index}>Zone {index}: {drivingDistance.toFixed(2)}</p>
                                 ))}
-                                <li>Total driving distance</li>
+                                <li>Total driving distance: </li>
                                 <p>
                                     {drivingDistanceActiv.map((drivingDistance, index) => (
                                         <span key={index}>{drivingDistance.toFixed(2)} {index < drivingDistanceActiv.length - 1 && '+'} </span>
                                     ))}
                                     = {drivingDistanceActiv.reduce((acc, time) => acc + time, 0).toFixed(2)}
                                 </p>
-                                <li>Total cost with fuel consumption = {averageFuelConsumption} and fuel cost = {averageFuelCost}</li>
-                                <p>Total driving cost =(({drivingDistanceActiv.reduce((acc, time) => acc + time, 0).toFixed(2)} / 1000) * {averageFuelConsumption}) * {averageFuelCost} = {fuelCost.toFixed(2)}</p>
+                                <li>Total cost with fuel consumption: {averageFuelConsumption} and fuel cost = {averageFuelCost}</li>
+                                <p>Total driving cost: (({drivingDistanceActiv.reduce((acc, time) => acc + time, 0).toFixed(2)} / 1000) * {averageFuelConsumption}) * {averageFuelCost} = {fuelCost.toFixed(2)}</p>
                             </ul>
                         </Panel>
                     </Collapse>
                     {/* Done */}
-                    <Tooltip title = "This is computed by adding all of the activity times ">
-                        <p>Total activity time (hrs): {time}</p>
+                    <Tooltip title="This is computed by adding all of the activity times ">
+                        <p>Total activity time in hours: {time}</p>
                     </Tooltip>
 
                     {/*driving time = find activities per zone. find driving time in order between those activities using OSRM */}
                     {/*<p>Total driving time: {drivingTime}</p>*/}
                     <Collapse>
-                        <Panel key={2} header={`Total driving time: ${drivingTime.toPrecision(3)}`}>
+                        <Panel key={2} header={`Total driving time: ${Math.floor(drivingTime)} hours and ${Math.round((drivingTime % 1) * 60)} minutes`}>
                             <ul>
-                                <li>Driving time over the zones</li>
+                                <li>Driving time over the zones in seconds:</li>
                                 {drivingTimeActiv.map((drivingTime, index) => (
                                     <p key={index}>Zone {index}: {drivingTime.toFixed(2)}</p>
                                 ))}
-                                <li>Driving time sum</li>
-                                <p>Driving time = {drivingTimeActiv.map((drivingTime, index) => (
+                                <li>Driving time sum in seconds:</li>
+                                <p>{drivingTimeActiv.map((drivingTime, index) => (
                                     <span key={index}>{drivingTime.toFixed(2)} {index < drivingTimeActiv.length - 1 && '+'} </span>
                                 ))}
                                     = {drivingTime.toFixed(2) * 3600} </p>
-                                <li>Driving time  in hrs</li>
-                                <p>Total driving time ={drivingTime.toFixed(2) * 3600} / 3600 = {drivingTime.toFixed(2)}</p>
-
+                                <p>Total driving time in hours and minutes: {Math.floor(drivingTime)} hours and {Math.round((drivingTime % 1) * 60)} minutes</p>
                             </ul>
                         </Panel>
                     </Collapse>
