@@ -62,6 +62,7 @@ function TextComponent(props) {
     const [fuelCost, setFuelCost] = useState(0)
     const [drivingTimeActiv, setDrivingTimeActiv] = useState([])
     const [drivingDistanceActiv, setDrivingDistanceActiv] = useState([])
+    const [timeZoneText, setTimeZoneText] = useState([])
     let averageFuelConsumption = averageFuelUsage
 
     useEffect(() => {
@@ -137,6 +138,7 @@ function TextComponent(props) {
             let drivingTimeReqs = new Array(plot.length);
             //Driving time per zone, index i = zone i
             let activityTimeZone = []
+            setTimeZoneText(prevTimeZoneText => [])
             // Body of the fetch request to be sent out to OSRM
             const drivingTimeBody = {
                 method: 'GET'
@@ -178,6 +180,9 @@ function TextComponent(props) {
             }
             //FOR TANIA
             console.log(activityTimeZone)
+            for (let i = 0; i < plot.length; i++){
+                setTimeZoneText(prevTimeZoneText => [...prevTimeZoneText,activityTimeZone[i]]) ;
+            }
 
             setDrivingTimeActiv(prevDrivingTimeActiv => []);
             setDrivingDistanceActiv(prevDrivingDistanceActiv => []);
@@ -230,7 +235,19 @@ function TextComponent(props) {
                     <p> </p>
                     <Collapse>
                         <Panel key={3} header={`Total activity time in hours: ${time}`}>
-                            <li>This is computed by adding all of the activity times </li>
+                            <ul>
+                                <li>Total time over each zone: </li>
+                                {timeZoneText.map((zoneText, index) => (
+                                    <p key={index}>Zone {index}: {zoneText} hours</p>
+                                ))}
+                                <li>Total time:</li>
+                                <p>
+                                    {timeZoneText.map((zoneText, index) => (
+                                        <span key={index}>{zoneText} {index < timeZoneText.length - 1 && '+'} </span>
+                                    ))}
+                                    = {time} hours
+                                </p>
+                            </ul>
                         </Panel>
                     </Collapse>
                     <p> </p>
