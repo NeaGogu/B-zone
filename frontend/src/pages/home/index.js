@@ -37,7 +37,10 @@ export default function Home() {
     // Empty state
     const [holder, setHolder] = useState([])
 
-    // For holding render state of map 1
+    // For displaying expanded or standared zones with kmeans calculation
+    const [voronoi, setVoronoi] = useState(false)
+
+    // for holding render state of map 1
     const [computed, setComputed] = useState(false)
     // For holding render state of heat map 1
     const [computedHeat, setComputedHeat] = useState(false)
@@ -261,10 +264,13 @@ export default function Home() {
                             setZoneName={setZoneName}
                             setZoneName2={setZoneName2}
                             loadedHeat={computedHeat && computedHeat2}
-                            averageFuelCost={averageFuelCost}
-                            setAverageFuelCost={setAverageFuelCost}
-                            averageFuelUsage={averageFuelUsage}
-                            setAverageFuelUsage={setAverageFuelUsage}
+                            averageFuelCost = {averageFuelCost}
+                            setAverageFuelCost = {setAverageFuelCost}
+                            averageFuelUsage = {averageFuelUsage}
+                            setAverageFuelUsage = {setAverageFuelUsage}
+                            voronoi={voronoi}
+                            setVoronoi={setVoronoi}
+
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
@@ -284,7 +290,8 @@ export default function Home() {
                                             }
                                         })()
                                     }>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setComputedHeat={setComputedHeat} setCalculatedZone={setCalculatedZone} />;
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setComputedHeat={setComputedHeat} setCalculatedZone={setCalculatedZone} voronoi={voronoi}/>;
+                                   
                                     </Spin>
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>

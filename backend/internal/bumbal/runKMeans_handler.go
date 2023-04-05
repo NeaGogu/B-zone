@@ -17,8 +17,8 @@ type ClustersInfo struct {
 //
 //	 @Description: the main handler, does the requests to Bumbal and calls the K-Means algorithm based
 //					on the input
-//	 @param w
-//	 @param r
+//	 @param w used to write http responses
+//	 @param r used to fetch the http request
 func RunKMeans(w http.ResponseWriter, r *http.Request) {
 	// Collect all the activities from Bumbal
 	filteredResp, err := collectAllBumbalActivities(w, r)
@@ -36,8 +36,16 @@ func RunKMeans(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// use the collected data as input for the K-means algorithm
+	var computedClusters kMeans.Clusters
+	computedClusters, err = kMeans.KMeans(filteredResp, clustersInfo.NrClusters, clustersInfo.NrCandidateClusters)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// turn the clusters from the k-means algorithm into zone model
 	var computedZones []models.ZoneModel
-	computedZones, err = kMeans.KMeans(filteredResp, clustersInfo.NrClusters, clustersInfo.NrCandidateClusters)
+	computedZones, err = kMeans.ClusterToZoneModel(computedClusters, filteredResp)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -46,10 +54,12 @@ func RunKMeans(w http.ResponseWriter, r *http.Request) {
 	// set up the response
 	var output Output
 	output.Result = computedZones
+	output.ClustersResult = computedClusters
 
 	// encode the response
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(output)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

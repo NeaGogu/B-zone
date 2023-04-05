@@ -42,7 +42,7 @@ function LocationMarker() {
                         setZipcode(null);
                     }
                 });
-            map.flyTo(e.latlng, map.getZoom());
+            //map.flyTo(e.latlng, map.getZoom());
             setMarkerVisible(!markerVisible); // Toggle the marker visibility
         },
     });
@@ -65,8 +65,8 @@ function LocationMarker() {
 
 // Main function to hold the map, location marker and the layers.
 function MapComponent(props) {
-    const { value, intensity, zoneId, setZipCodes, setComputed, algorithm, nrofzones, setComputedHeat, setCalculatedZone } = props;
-    
+    const { value, intensity, zoneId, setZipCodes, setComputed, algorithm, nrofzones, setComputedHeat, setCalculatedZone, voronoi } = props;
+
     return (
         <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '60vh', flex: "1" }}>
             <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -81,7 +81,7 @@ function MapComponent(props) {
 
                 <LayersControl.Overlay name='Zones' checked={true}>
                     <LayerGroup key={zoneId} >
-                        <PolygonVis zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setCalculatedZone={setCalculatedZone}/>
+                        <PolygonVis zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setCalculatedZone={setCalculatedZone} voronoib={voronoi}/>
                     </LayerGroup>
                 </LayersControl.Overlay>
             </LayersControl>
