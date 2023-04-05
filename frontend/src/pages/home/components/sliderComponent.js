@@ -74,6 +74,12 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                     />
                 </div>
             </Form.Item>
+
+            <div style={{ padding: "0 5px"}}>
+                Options for Algorithms
+            </div>
+            <p> </p>
+
             <div style={{ width: '100%', textAlign: 'center' }}>
                 <Radio.Group onChange={onChangeAlgo} value={algorithm} style={{ paddingBottom: '10px' }}>
                     <Radio value={1}> Standard </Radio>
@@ -82,14 +88,16 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                     </Tooltip>  
                 </Radio.Group>
             </div>
+            <p> </p>
 
             <div style={{ padding: "0 5px"}}>
-                Kmeans Options
+                Options for Standard Algorithm
             </div>
+            <p> </p>
 
             <div style={{ width: '100%', textAlign: 'center' }}>
                 <Radio.Group onChange={onChangeVoronoi} value={voronoi} style={{ paddingBottom: '10px' }} disabled={disabledVornoi(algorithm)}>
-                    <Radio value={false}> Standard </Radio>
+                    <Radio value={false}> Regular </Radio>
                     <Tooltip title="This is only visual, zones will be saved as standard.">
                         <Radio value={true}> Expanded </Radio>
                     </Tooltip>

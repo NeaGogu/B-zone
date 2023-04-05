@@ -1,5 +1,5 @@
 // External dependencies
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import { LayersControl, LayerGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -18,6 +18,7 @@ function LocationMarker() {
     const [position, setPosition] = useState(null);
     const [address, setAddress] = useState(null);
     const [zipcode, setZipcode] = useState(null);
+    const [markerVisible, setMarkerVisible] = useState(true); // added state variable
 
     const map = useMapEvents({
         click(e) {
@@ -42,31 +43,29 @@ function LocationMarker() {
                     }
                 });
             //map.flyTo(e.latlng, map.getZoom());
+            setMarkerVisible(!markerVisible); // Toggle the marker visibility
         },
     });
 
     return position === null ? null : (
-        <Marker position={position}>
-            <Popup>
-                <div>
-                    <div>Latitude: {position.lat.toFixed(4)}</div>
-                    <div>Longitude: {position.lng.toFixed(4)}</div>
-                    {address && <div>Address: {address}</div>}
-                    {zipcode && <div>Zipcode: {zipcode}</div>}
-                </div>
-            </Popup>
-        </Marker>
+        markerVisible && ( // Conditionally render the Marker based on the markerVisible state variable
+            <Marker position={position}>
+                <Popup>
+                    <div>
+                        <div>Latitude: {position.lat.toFixed(4)}</div>
+                        <div>Longitude: {position.lng.toFixed(4)}</div>
+                        {address && <div>Address: {address}</div>}
+                        {zipcode && <div>Zipcode: {zipcode}</div>}
+                    </div>
+                </Popup>
+            </Marker>
+        )
     );
 }
 
 // Main function to hold the map, location marker and the layers.
 function MapComponent(props) {
     const { value, intensity, zoneId, setZipCodes, setComputed, algorithm, nrofzones, setComputedHeat, setCalculatedZone, voronoi } = props;
-    // const rendr = useRef(0)
-    // useEffect(()=>{
-    //     rendr.current +=1
-    // },[value, intensity])
-    console.log(voronoi)
 
     return (
         <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '60vh', flex: "1" }}>
