@@ -2,6 +2,7 @@ package bumbal
 
 import (
 	"bytes"
+	kMeans "bzone/backend/cmd/k-means"
 	"bzone/backend/internal/models"
 	"encoding/json"
 	"fmt"
@@ -14,18 +15,19 @@ const (
 	activitiesUrl = "activity"
 )
 
-// Output struct used for the body of the response
+// Output struct used for the body of the response of the K-means algo handler
 type Output struct {
-	Result []models.ZoneModel `json:"result,omitempty"`
+	Result         []models.ZoneModel `json:"zone_model_result,omitempty"`
+	ClustersResult kMeans.Clusters    `json:"clusters_result,omitempty"`
 }
 
 // requestBumbalActivity
 //
 //	@Description: makes a request to Bumbal that is meant to retrieve a user's activities
-//	@param w
-//	@param r
-//	@return *http.Response
-//	@return error
+//	@param w used to write http responses
+//	@param r used to fetch the http request
+//	@return *http.Response return a http response for further processing
+//	@return error for debugging purposes/ robustness
 func requestBumbalActivity(w http.ResponseWriter, r *http.Request, reqBody []byte, baseUrl string) (*http.Response, error) {
 	reqUrl := baseUrl + activitiesUrl
 	// set the request body so that it retrieves the address_applied field as well
@@ -53,10 +55,10 @@ func requestBumbalActivity(w http.ResponseWriter, r *http.Request, reqBody []byt
 //
 //	@Description: Function that first gets the number of activites stored at Bumbal and based on this information
 //					it collects all activities and then filters them in order to remove depot activities
-//	@param w
-//	@param r
-//	@return []models.ActivityModelBumbal
-//	@return error
+//	@param w used to write http responses
+//	@param r used to fetch the http request
+//	@return []models.ActivityModelBumbal returns the collected activities
+//	@return error for debugging purposes/robustness
 func collectAllBumbalActivities(w http.ResponseWriter, r *http.Request) ([]models.ActivityModelBumbal, error) {
 	// Make a request to Bumbal to retrieve the number of activities
 	reqBody := []byte(`{"count_only":true}`)
@@ -155,8 +157,8 @@ func collectAllBumbalActivities(w http.ResponseWriter, r *http.Request) ([]model
 // filterResp
 //
 //	@Description: filters the response from Bumbal so that only activities with address and depot address are used
-//	@param respModel
-//	@return []models.ActivityModelBumbal
+//	@param respModel used for parsing the unfiltered activities
+//	@return []models.ActivityModelBumbal returns the filtered activities
 func filterResp(respModel []models.ActivityModelBumbal) []models.ActivityModelBumbal {
 	var filteredResp []models.ActivityModelBumbal
 	for _, activity := range respModel {
@@ -170,9 +172,9 @@ func filterResp(respModel []models.ActivityModelBumbal) []models.ActivityModelBu
 // getClustersInfo
 //
 //	@Description: get the data from the request's body
-//	@param r
-//	@return ClustersInfo
-//	@return error
+//	@param r used to fetch the http request
+//	@return ClustersInfo to fill in the ClustersInfo data structure
+//	@return error for debugging purposes/robustness
 func getClustersInfo(r *http.Request) (ClustersInfo, error) {
 	var clustersInfo ClustersInfo
 	// decode the data from the body
@@ -184,9 +186,9 @@ func getClustersInfo(r *http.Request) (ClustersInfo, error) {
 // getZonesInfo
 //
 //	@Description: get the data from the request's body
-//	@param r
-//	@return ClustersInfo
-//	@return error
+//	@param r used to fetch the http request
+//	@return ZonesInfo to fill in the ZonesInfo data sttucture
+//	@return error for debugging purposes/robustness
 func getZonesInfo(r *http.Request) (ZonesInfo, error) {
 	var zonesInfo ZonesInfo
 	// decode the data from the body
@@ -198,9 +200,9 @@ func getZonesInfo(r *http.Request) (ZonesInfo, error) {
 // getResponseData
 //
 //	@Description: get the data from the response's body and decode it as well
-//	@param resp
-//	@return models.ActivityListResponseBumbal
-//	@return error
+//	@param resp http response to be processed in here
+//	@return models.ActivityListResponseBumbal to store the response data
+//	@return error for debugging purposes/robustness
 func getResponseData(resp *http.Response) (models.ActivityListResponseBumbal, error) {
 	var respModel models.ActivityListResponseBumbal
 	// decode the data from the body

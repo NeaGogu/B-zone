@@ -14,15 +14,24 @@ import '../index.css';
 const { SubMenu } = Menu;
 
 //Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
-const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, setNrofZones, setAverageFuelUsage,
-                         averageFuelCost,averageFuelUsage, setAverageFuelCost  }) => {
+const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, setNrofZones, voronoi, setVoronoi, setAverageFuelUsage, averageFuelCost,averageFuelUsage, setAverageFuelCost}) => {
 
-  
     const calculate = useRef(0)
 
     const onChangeAlgo = (e) => {
         setAlgorithm(e.target.value);
     };
+
+    const onChangeVoronoi = (e) => {
+        setVoronoi(e.target.value)
+    };
+
+    function disabledVornoi(algorithm) {
+        if (algorithm === 1){
+            return false;
+        }
+        return true
+    }
 
     const handleSubmit = (e) => {
         //e.preventDefault();
@@ -65,12 +74,33 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                     />
                 </div>
             </Form.Item>
+
+            <div style={{ padding: "0 5px"}}>
+                Options for Algorithms
+            </div>
+            <p> </p>
+
             <div style={{ width: '100%', textAlign: 'center' }}>
                 <Radio.Group onChange={onChangeAlgo} value={algorithm} style={{ paddingBottom: '10px' }}>
                     <Radio value={1}> Standard </Radio>
                     <Tooltip title="May take up to 10 minutes for result.">
                         <Radio value={2}> Advanced </Radio>
                     </Tooltip>  
+                </Radio.Group>
+            </div>
+            <p> </p>
+
+            <div style={{ padding: "0 5px"}}>
+                Options for Standard Algorithm
+            </div>
+            <p> </p>
+
+            <div style={{ width: '100%', textAlign: 'center' }}>
+                <Radio.Group onChange={onChangeVoronoi} value={voronoi} style={{ paddingBottom: '10px' }} disabled={disabledVornoi(algorithm)}>
+                    <Radio value={false}> Regular </Radio>
+                    <Tooltip title="This is only visual, zones will be saved as standard.">
+                        <Radio value={true}> Expanded </Radio>
+                    </Tooltip>
                 </Radio.Group>
             </div>
             <Form.Item>
@@ -81,7 +111,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                         type="number"
                         step="1"
                         min="1"
-                        
+
                         onChange={(e) => setNrofZones(e.target.value)}
                     />
                 </div>
@@ -106,7 +136,7 @@ function SiderComponent(props) {
     const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone,
         setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm,
         setAlgorithm, setNrofZones, currentView, setZoneName, setZoneName2, loadedHeat, setAverageFuelUsage,
-        averageFuelCost,averageFuelUsage, setAverageFuelCost  } = props;
+        averageFuelCost,averageFuelUsage, setAverageFuelCost, voronoi, setVoronoi   } = props;
 
     //console.log(loadedHeat)
 
@@ -189,6 +219,7 @@ function SiderComponent(props) {
                     setAverageFuelCost = {setAverageFuelCost}
                     averageFuelUsage = {averageFuelUsage}
                     setAverageFuelUsage = {setAverageFuelUsage}
+                    voronoi={voronoi} setVoronoi={setVoronoi}
                 />
             </SubMenu>
 
@@ -215,7 +246,7 @@ function SiderComponent(props) {
                                     setCurrentView('')
                                     setZoneId(zone.user_plot_id)
                                     setZoneName(zone.user_plot_name)
-                                
+
                                 
                                 }}>
                                     View

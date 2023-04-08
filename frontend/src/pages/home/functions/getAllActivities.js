@@ -14,7 +14,20 @@ async function getAllActivities() {
       body: JSON.stringify({
         "count_only": true
       })
-    }).then((response)=>{return response.json()})
+    }).then((response)=>{
+      if(!response.ok){
+        if (response.status === 401){
+          alert("Unable to retrieve this zone configuration! " + response.status + ' Error')
+          localStorage.removeItem('token')
+          localStorage.removeItem('email')
+          localStorage.removeItem('id')
+          window.location.reload()
+          return
+        } 
+        alert("Unable to retrieve this zone configuration! " + response.status + ' Error hello')
+      }
+      return response.json()
+    })
   
     let datatop = []
     // for loop and get activities based on offset

@@ -12,7 +12,7 @@ import TextComponent from './components/textComponent'
 // CSS
 import './index.css';
 import SiderComponent from "./components/sliderComponent";
-//import dumbzones from './tempData/allcases.json'
+
 import HeaderComponent from "./components/headerComponent";
 
 // Components from Ant Design
@@ -33,28 +33,32 @@ export default function Home() {
 
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
-    // empty state
+
+    // Empty state
     const [holder, setHolder] = useState([])
+
+    // For displaying expanded or standared zones with kmeans calculation
+    const [voronoi, setVoronoi] = useState(false)
 
     // for holding render state of map 1
     const [computed, setComputed] = useState(false)
-    //for holding render state of heatmap 1
+    // For holding render state of heat map 1
     const [computedHeat, setComputedHeat] = useState(false)
-    // for holding render state of map 2
+    // For holding render state of map 2
     const [computed2, setComputed2] = useState(false)
-    //for holding render state of heatmap 2
+    // For holding render state of heat map 2
     const [computedHeat2, setComputedHeat2] = useState(true)
-    // for keeping track of selected algorithm, by default kmeans
+    // For keeping track of selected algorithm, by default kmeans
     const [algorithm, setAlgorithm] = useState(1);
-    // for keeping track of selected algorithm, by default kmeans
+    // For keeping track of number of zones
     const [nrofzones, setNrofZones] = useState(1);
-    //for setting nae of zone in comparison (single)
+    // For setting name of zone in comparison (single)
     const [zoneName, setZoneName] = useState("Initial Zone");
-    //for setting nae of zone in comparison (single)
+    // For setting name of zone in comparison (single)
     const [zoneName2, setZoneName2] = useState("");
 
 
-    // For radio.
+    // For radio
     const [value, setValue] = useState(1);
     const [zipCodes, setZipCodes] = useState([]);
     const [averageFuelCost, setAverageFuelCost] = useState("1.8");
@@ -63,10 +67,10 @@ export default function Home() {
         setValue(e.target.value);
     };
 
-    //track which zone is selected
+    // Track which zone is selected
     const [zoneId, setZoneId] = useState('initial');
 
-    // For number.
+    // For intensity
     const [intensity, setIntensity] = useState(500)
     const onChangeNumber = (e) => {
         console.log('home')
@@ -86,8 +90,8 @@ export default function Home() {
         }
         const name = window.prompt('Enter a name for the save:');
         if (name) {
-            for(let i = 0; i < savedZones.length; i++) {
-                if(name === savedZones[i].user_plot_name) {
+            for (let i = 0; i < savedZones.length; i++) {
+                if (name === savedZones[i].user_plot_name) {
                     alert("you have already saved a zone under this name!")
                     return null;
                 }
@@ -97,11 +101,10 @@ export default function Home() {
         }
     }
 
-    // keep track of the saved zones and update when needed
+    // Keep track of the saved zones and update when needed
     const [savedZones, setSavedZones] = useState([]);
 
-    //
-    // for zone sync
+    // For zone synchronization
     const [currentView, setCurrentView] = useState('initial')
 
     /** 
@@ -110,7 +113,7 @@ export default function Home() {
     */
     const handleDeleteZone = (id, name) => {
         const confirm = window.confirm('Confirm deletion of ' + name);
-        // make sure user actually want to delete plot
+        // Make sure user actually wants to delete plot
         if (confirm) {
             deleteSavedZone(id)
         }
@@ -122,16 +125,16 @@ export default function Home() {
     * @return {void}
     */
     async function addSavedZone(name) {
-        // user token
+        // User token
         const userToken = localStorage.getItem('token')
-        // body of http request
+        // Body of http request
         const bodyValues = JSON.stringify({
             "plot_name": name,
             "plot_zones": zipCodes.plot_zones
 
         })
 
-        //send request to api to add zone and wait until it is completed
+        // Send request to api to add zone and wait until it is completed
         await fetch("http://localhost:4000/plot/save", {
             method: 'POST',
             headers: {
@@ -147,7 +150,7 @@ export default function Home() {
                 alert('errorSaving zones')
                 return null;
             } else {
-                // if response is ok then update the zones
+                // If response is ok then update the zones
                 const saved = await getSavedZones();
                 setSavedZones(saved)
             }
@@ -185,7 +188,7 @@ export default function Home() {
     * @return {void}
     */
     async function getSavedZones() {
-        // array to hold saved zones
+        // Array to hold saved zones
         let saved = []
 
         await fetch("http://localhost:4000/user/plots", {
@@ -207,21 +210,17 @@ export default function Home() {
         return saved
     }
 
-    // initially runs when rendering home page
+    // Initially runs when rendering home page
     useEffect(() => {
         const fetchData = async () => {
-            // variable used for saved plots in database
+            // Variable used for saved plots in database
             let saved = await getSavedZones()
-            // set the plots in the sider to be the saved plots
+            // Set the plots in the sider to be the saved plots
             setSavedZones(saved)
         }
 
         fetchData()
     }, []);
-
-    // useEffect(() => {
-    //     console.log(computedHeat, 'home')
-    // }, [computedHeat]);
 
     return (
         <ConfigProvider
@@ -269,10 +268,13 @@ export default function Home() {
                             setAverageFuelCost = {setAverageFuelCost}
                             averageFuelUsage = {averageFuelUsage}
                             setAverageFuelUsage = {setAverageFuelUsage}
+                            voronoi={voronoi}
+                            setVoronoi={setVoronoi}
+
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
-                        <Content className="map" id="map" style={{ minHeight: '60vh', overflow:'auto' }}>
+                        <Content className="map" id="map" style={{ minHeight: '60vh', overflow: 'auto' }}>
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
                                     <Spin spinning={!computed || !computedHeat} delay={500} tip={
@@ -288,7 +290,8 @@ export default function Home() {
                                             }
                                         })()
                                     }>
-                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setComputedHeat={setComputedHeat} setCalculatedZone={setCalculatedZone}/>;
+                                        <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setComputedHeat={setComputedHeat} setCalculatedZone={setCalculatedZone} voronoi={voronoi}/>;
+                                   
                                     </Spin>
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
@@ -317,22 +320,22 @@ export default function Home() {
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
                                     <TextComponent zoneId={zoneId}
-                                                   zoneName={zoneName}
-                                                   calculatedZone={calculatedZone}
-                                                   averageFuelCost = {averageFuelCost}
-                                                   setAverageFuelCost = {setAverageFuelCost}
-                                                   averageFuelUsage = {averageFuelUsage}
-                                                   setAverageFuelUsage = {setAverageFuelUsage}
+                                        zoneName={zoneName}
+                                        calculatedZone={calculatedZone}
+                                        averageFuelCost={averageFuelCost}
+                                        setAverageFuelCost={setAverageFuelCost}
+                                        averageFuelUsage={averageFuelUsage}
+                                        setAverageFuelUsage={setAverageFuelUsage}
                                     />
                                 </div>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "0%" }}>
                                     {
                                         showComparison ?
                                             <TextComponent zoneId={currentView} zoneName={zoneName2}
-                                                           averageFuelCost = {averageFuelCost}
-                                                           setAverageFuelCost = {setAverageFuelCost}
-                                                           averageFuelUsage = {averageFuelUsage}
-                                                           setAverageFuelUsage = {setAverageFuelUsage}/>
+                                                averageFuelCost={averageFuelCost}
+                                                setAverageFuelCost={setAverageFuelCost}
+                                                averageFuelUsage={averageFuelUsage}
+                                                setAverageFuelUsage={setAverageFuelUsage} />
                                             : <></>
                                     }
                                 </div>

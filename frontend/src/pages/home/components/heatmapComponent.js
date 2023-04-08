@@ -18,15 +18,14 @@ async function findAddressesPoints() {
   for (let i = 0; i < activities.length; i++) {
     
     if (activities[i].depot_address !== null) {
-      console.log(activities[i])
       data2.push(activities[i])
     }
   }
-  //console.log(data2)
+ 
   let newData = data2.map((i) => {
     return [i.address.latitude, i.address.longitude, i.duration]; // Lat Lng intensity.
   })
-  console.log(newData)
+
   return newData;
 }
 
