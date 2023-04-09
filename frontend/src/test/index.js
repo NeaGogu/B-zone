@@ -9,6 +9,7 @@ describe("Login Test", () => {
     browser = await puppeteer.launch({
       headless: false,
     });
+
     page = await browser.newPage();
     await page.setExtraHTTPHeaders({
       "Accept-Language": "en-US,en;q=0.9",
@@ -122,6 +123,10 @@ describe("Map Test", () => {
     const checkboxs = await page.$$("input.leaflet-control-layers-selector");
     checkboxs[0].click();
     await page.waitForTimeout(1000);
+    checkboxs[0].click();
+    await page.waitForTimeout(1000);
+    checkboxs[1].click();
+    await page.waitForTimeout(1000);
     checkboxs[1].click();
     await page.waitForTimeout(1000);
   }).timeout(10000);
@@ -150,29 +155,103 @@ describe("Sidebar Test", () => {
   }).timeout(10000);
   it("The button should be activated when the value is entered into the inputs", async () => {
     await page.waitForTimeout(1000);
-    const isDisabled = (await page.$("button[disabled][type=submit]")) !== null;
+    const isDisabled = (await page.$("button[disabled][type=submit]")) == null;
     expect(isDisabled).to.be.true;
-  });
+  }).timeout(10000);
   it("Zones input should be working and button enable", async () => {
     const inputs = await page.$$("input.ant-input");
     await page.waitForTimeout(1000);
-    inputs[0].type("123");
+    inputs[0].click();
+    for (let i = 0; i < 10; i++) {
+      await inputs[0].press("Backspace");
+    }
     await page.waitForTimeout(1000);
-    inputs[1].type("123");
+    inputs[0].type("3");
+    await page.waitForTimeout(1000);
+    inputs[1].click();
+    for (let i = 0; i < 10; i++) {
+      await inputs[1].press("Backspace");
+    }
+    await page.waitForTimeout(1000);
+    inputs[1].type("3");
     await page.waitForTimeout(1000);
     const inputValue = await inputs[0]
       .getProperty("value")
       .then((v) => v.jsonValue());
     await page.waitForTimeout(1000);
-    expect(inputValue).to.equal("123");
+    expect(inputValue).to.equal("3");
   }).timeout(30000);
+  it("Should click the Options for Algorithms (The standard is closed when advanced is selected)", async () => {
+    //sidebar scroll down
+    await page.waitForSelector("form.ant-form");
+    await page.hover("form.ant-form");
+    await page.waitForTimeout(1000);
+    await page.mouse.wheel({ deltaY: 100 });
+    await page.waitForTimeout(1000);
+    const radioButtons = await page.$$("input.ant-radio-input");
+    await page.waitForTimeout(1000);
+    radioButtons[0].click();
+    await page.waitForTimeout(1000);
+    radioButtons[3].click();
+    await page.waitForTimeout(1000);
+    radioButtons[2].click();
+    await page.waitForTimeout(1000);
+    radioButtons[1].click();
+    await page.waitForTimeout(1000);
+    radioButtons[0].click();
+    await page.waitForTimeout(1000);
+    const isDisabled = await page.evaluate(
+      (element) => element.disabled,
+      radioButtons[2]
+    );
+    expect(!isDisabled).to.be.true;
+  }).timeout(10000);
+  it("Should type Number of Zones input and click the button", async () => {
+    await page.waitForSelector("input.ant-input");
+    const inputs = await page.$$("input.ant-input");
+    await page.waitForTimeout(1000);
+    inputs[2].click();
+    for (let i = 0; i < 10; i++) {
+      await inputs[2].press("Backspace");
+    }
+    await page.waitForTimeout(1000);
+    inputs[2].type("3");
+    await page.waitForTimeout(1000);
+    const buttons = await page.$$("button.ant-btn-primary");
+    buttons[1].click();
+    await page.waitForTimeout(5000);
+  }).timeout(30000);
+
+  it("Initial zone collapse expand buttons click", async () => {
+    await page.waitForSelector("div.ant-collapse-header");
+    const InitialZoneButtons = await page.$$("div.ant-collapse-header");
+    await page.waitForTimeout(1000);
+    for (let i = 0; i < InitialZoneButtons.length; i++) {
+      await page.waitForTimeout(1000);
+      InitialZoneButtons[i].click();
+    }
+  }).timeout(10000);
+  it("Should save zone", async () => {
+    page.on("dialog", async (dialog) => {
+      await page.waitForTimeout(1000);
+      await dialog.accept("test zone 1");
+    });
+    await page.waitForSelector("button.ant-btn-primary");
+    await page.waitForTimeout(1000);
+    const buttons = await page.$$("button.ant-btn-primary");
+    buttons[0].click();
+    await page.waitForTimeout(1000);
+
+    await page.waitForTimeout(1000);
+  }).timeout(10000);
+
   it("Should click view and compare button", async () => {
     await page.waitForSelector("button.ant-btn-default");
     buttons = await page.$$("button.ant-btn-default");
     await page.waitForTimeout(1000);
-    buttons[0].click();
-    await page.waitForTimeout(1000);
     buttons[1].click();
+    await page.waitForTimeout(1000);
+    buttons[2].click();
     await page.waitForTimeout(1000);
   }).timeout(10000);
 });
