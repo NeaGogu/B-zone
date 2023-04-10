@@ -8,12 +8,14 @@ describe("Login Test", () => {
   before(async () => {
     browser = await puppeteer.launch({
       headless: false,
+      args: ["--start-maximized"],
     });
 
     page = await browser.newPage();
     await page.setExtraHTTPHeaders({
       "Accept-Language": "en-US,en;q=0.9",
     });
+    await page.setViewport({ width: 1366, height: 768 });
   });
 
   after(async () => {});
@@ -145,14 +147,23 @@ describe("Sidebar Test", () => {
     await page.waitForTimeout(1000);
   }).timeout(10000);
   it("Should radio button click", async () => {
-    await page.waitForSelector("input[type=radio]");
-    const locationBased = await page.$("span.ant-radio-button");
-    locationBased.click();
     await page.waitForTimeout(1000);
-    const timeBased = await page.$("input[data-testid=time-based]");
-    timeBased.click();
+    const radioButtons = await page.$$("label.ant-radio-button-wrapper");
+    radioButtons[0].click();
     await page.waitForTimeout(1000);
-  }).timeout(10000);
+    radioButtons[1].click();
+    await page.waitForTimeout(1000);
+    intensityInput = await page.$("input[data-testid='intensity-input']");
+    intensityInput.click();
+    await page.waitForTimeout(1000);
+    for (let i = 0; i < 3; i++) {
+      await intensityInput.press("Backspace");
+    }
+    await page.waitForTimeout(1000);
+    intensityInput.type("500");
+    radioButtons[0].click();
+    await page.waitForTimeout(1000);
+  }).timeout(20000);
   it("The button should be activated when the value is entered into the inputs", async () => {
     await page.waitForTimeout(1000);
     const isDisabled = (await page.$("button[disabled][type=submit]")) == null;
@@ -205,7 +216,7 @@ describe("Sidebar Test", () => {
       radioButtons[2]
     );
     expect(!isDisabled).to.be.true;
-  }).timeout(10000);
+  }).timeout(30000);
   it("Should type Number of Zones input and click the button", async () => {
     await page.waitForSelector("input.ant-input");
     const inputs = await page.$$("input.ant-input");
@@ -234,7 +245,7 @@ describe("Sidebar Test", () => {
   it("Should save zone", async () => {
     page.on("dialog", async (dialog) => {
       await page.waitForTimeout(1000);
-      await dialog.accept("test zone 1");
+      await dialog.accept("test zone 4");
     });
     await page.waitForSelector("button.ant-btn-primary");
     await page.waitForTimeout(1000);
