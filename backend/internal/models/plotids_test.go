@@ -39,15 +39,37 @@ func TestBzoneDBModel_GetPlotIDs(t *testing.T) {
 	})
 
 	// Create your subtest run instance
+	mt.Run("Missing Document of Plot IDs", func(mt *mtest.T) {
+
+		// Mock Plot data
+		findOne := mtest.CreateCursorResponse(
+			1,
+			"Bzone.users",
+			mtest.FirstBatch)
+
+		killCursors := mtest.CreateCursorResponse(0, "Bzone.users", mtest.NextBatch)
+
+		//Create Mock Responses
+		//The given bson.D will be returned from the mongo to the driver
+
+		mt.AddMockResponses(findOne, killCursors)
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		_, err := mockBZoneModel.GetPlotIDs(1)
+
+		//Check if the user data is  the same
+		assert.NotNil(t, err)
+
+	})
+
+	// Create your subtest run instance
 	mt.Run("Missing Plot IDs", func(mt *mtest.T) {
 
 		mt.AddMockResponses(bson.D{{"ok", 0}})
 		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
-		testUser, err := mockBZoneModel.GetPlotIDs(1)
+		_, err := mockBZoneModel.GetPlotIDs(1)
 
 		//Check if the user data is  the same
-		assert.ObjectsAreEqual(nil, testUser)
-		assert.ObjectsAreEqual(ErrDocumentNotFound, err)
+		assert.NotNil(t, err)
 
 	})
 
@@ -72,10 +94,30 @@ func TestBzoneDBModel_GetPlotById(t *testing.T) {
 
 		mt.AddMockResponses(findOne, killCursors)
 		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
-		testPlot, _ := mockBZoneModel.GetPlotById("1")
+		_, err := mockBZoneModel.GetPlotById("1")
 
 		//Check if the user data is  the same
-		assert.ObjectsAreEqualValues(ValidPlotModelsCollections(), testPlot)
+		assert.Nil(t, err)
+
+	})
+
+	// Create your subtest run instance
+	mt.Run("Missing Plot Document for PlotId", func(mt *mtest.T) {
+
+		// Mock Plot data
+		findOne := mtest.CreateCursorResponse(
+			1,
+			"Bzone.users",
+			mtest.FirstBatch)
+
+		killCursors := mtest.CreateCursorResponse(0, "Bzone.users", mtest.NextBatch)
+
+		mt.AddMockResponses(findOne, killCursors)
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		_, err := mockBZoneModel.GetPlotById("1")
+
+		//Check if the user data is  the same
+		assert.NotNil(t, err)
 
 	})
 
@@ -84,11 +126,9 @@ func TestBzoneDBModel_GetPlotById(t *testing.T) {
 
 		mt.AddMockResponses(bson.D{{"ok", 0}})
 		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
-		testUser, err := mockBZoneModel.GetPlotById("1")
+		_, err := mockBZoneModel.GetPlotById("1")
 
-		//Check if the user data is  the same
-		assert.ObjectsAreEqual(nil, testUser)
-		assert.ObjectsAreEqual(ErrDocumentNotFound, err)
+		assert.NotNil(t, err)
 
 	})
 
@@ -116,10 +156,10 @@ func TestBzoneDBModel_SavePlot(t *testing.T) {
 		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
 		plotToSave := ValidPlotModelsCollections()
 		testSavePlot := mockBZoneModel.SavePlot(1, &plotToSave)
-		assert.ObjectsAreEqual(testSavePlot, nil)
+		assert.Nil(t, testSavePlot)
 	})
 
-	mt.Run("Unsuccessfully Saved Plot", func(mt *mtest.T) {
+	mt.Run("Unsuccessfully Founded Plot", func(mt *mtest.T) {
 
 		mt.AddMockResponses(mtest.CreateWriteErrorsResponse(mtest.WriteError{
 			Index:   1,
@@ -132,6 +172,21 @@ func TestBzoneDBModel_SavePlot(t *testing.T) {
 		err := mockBZoneModel.SavePlot(1, &plotToSave)
 		assert.NotNil(t, err)
 		assert.True(t, mongo.IsDuplicateKeyError(err))
+	})
+
+	mt.Run("Unsuccessfully Created Plot", func(mt *mtest.T) {
+
+		successResponse := mtest.CreateSuccessResponse(
+			bson.E{Key: "nModified", Value: 1},
+			bson.E{Key: "n", Value: 1},
+		)
+		killCursors := mtest.CreateCursorResponse(0, "Bzone.users", mtest.NextBatch)
+		mt.AddMockResponses(successResponse, killCursors)
+
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		plotToSave := PlotModel{}
+		err := mockBZoneModel.SavePlot(1, &plotToSave)
+		assert.NotNil(t, err)
 	})
 }
 
@@ -168,25 +223,68 @@ func TestBzoneDBModel_DeletePlotsByOrigin(t *testing.T) {
 	// Create your subtest run instance
 	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 	defer mt.Close()
+
 	mt.Run("Successfully Deleted Plot", func(mt *mtest.T) {
 
-		mt.AddMockResponses(bson.D{
-			{"ok", 1},
-			{"value", test.MockPlotData()},
-		})
+		first := mtest.CreateCursorResponse(1, "foo.bar", mtest.FirstBatch, test.MockPlotData())
+		killCursors := mtest.CreateCursorResponse(0, "foo.bar", mtest.NextBatch)
+		deletePlot := bson.D{{"ok", 1}, {"acknowledged", true}, {"n", 2}}
+		deleteUserPlot := bson.D{{"ok", 1}, {"value", test.MockPlotData()}}
 
+		mt.AddMockResponses(first, killCursors, deletePlot, deleteUserPlot)
 		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
 		_, err := mockBZoneModel.DeletePlotsByOrigin("Bumbal", 1)
-		assert.ObjectsAreEqual(err, nil)
+		assert.Nil(t, err)
 	})
 
-	mt.Run("Unsuccessfully Deleted Plot", func(mt *mtest.T) {
+	mt.Run("Unsuccessfully Deleted Plot From Users", func(mt *mtest.T) {
+
+		first := mtest.CreateCursorResponse(1, "foo.bar", mtest.FirstBatch, test.MockPlotData())
+		second := mtest.CreateCursorResponse(1, "foo.bar", mtest.NextBatch, test.MockPlotData())
+		killCursors := mtest.CreateCursorResponse(0, "foo.bar", mtest.NextBatch)
+
+		deletePlot := bson.D{{"ok", 1}, {"acknowledged", true}, {"n", 2}}
+		deleteUserPlot := bson.D{{"ok", 1}, {"value", test.MockPlotData()}}
+
+		mt.AddMockResponses(first, second, killCursors, deletePlot, deleteUserPlot)
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		_, err := mockBZoneModel.DeletePlotsByOrigin("Bumbal", 1)
+		assert.NotNil(t, err)
+	})
+
+	mt.Run("Unsuccessful Find of Deleted Plot", func(mt *mtest.T) {
 
 		mt.AddMockResponses(bson.D{
 			{"ok", 0},
 			{"value", test.MockPlotData()},
 		})
 
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		_, err := mockBZoneModel.DeletePlotsByOrigin("Bumbal", 1)
+		assert.NotNil(t, err)
+	})
+
+	mt.Run("Cursor Error Delete Plot", func(mt *mtest.T) {
+
+		first := mtest.CreateCursorResponse(1, "foo.bar", mtest.FirstBatch, test.MockPlotData())
+		second := mtest.CreateCursorResponse(1, "foo.bar", mtest.NextBatch, test.MockPlotData())
+		deletePlot := bson.D{{"ok", 1}, {"acknowledged", true}, {"n", 2}}
+		deleteUserPlot := bson.D{{"ok", 1}, {"value", test.MockPlotData()}}
+
+		mt.AddMockResponses(first, second, deletePlot, deleteUserPlot)
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		_, err := mockBZoneModel.DeletePlotsByOrigin("Bumbal", 1)
+		assert.NotNil(t, err)
+	})
+
+	mt.Run("Unsuccessfully Deleted Plot", func(mt *mtest.T) {
+
+		first := mtest.CreateCursorResponse(1, "foo.bar", mtest.FirstBatch, test.MockPlotData())
+		second := mtest.CreateCursorResponse(1, "foo.bar", mtest.NextBatch, test.MockPlotData())
+		killCursors := mtest.CreateCursorResponse(0, "foo.bar", mtest.NextBatch)
+		deletePlot := bson.D{{"ok", 0}, {"acknowledged", true}, {"n", 2}}
+
+		mt.AddMockResponses(first, second, killCursors, deletePlot)
 		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
 		_, err := mockBZoneModel.DeletePlotsByOrigin("Bumbal", 1)
 		assert.NotNil(t, err)
@@ -202,11 +300,26 @@ func TestBzoneDBModel_DeletePlotById(t *testing.T) {
 		mt.AddMockResponses(bson.D{
 			{"ok", 1},
 			{"value", test.MockPlotData()},
+		}, bson.D{
+			{"ok", 1},
+			{"value", test.MockPlotData()},
 		})
 
 		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
 		_, err := mockBZoneModel.DeletePlotById("0", 1)
-		assert.ObjectsAreEqual(err, nil)
+		assert.Nil(t, err)
+	})
+
+	mt.Run("Unsuccessfully Deleted Plot By ID from User Collection", func(mt *mtest.T) {
+
+		mt.AddMockResponses(bson.D{
+			{"ok", 1},
+			{"value", test.MockPlotData()},
+		})
+
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		_, err := mockBZoneModel.DeletePlotById("0", 1)
+		assert.NotNil(t, err)
 	})
 
 	mt.Run("Unsuccessfully Deleted Plot By ID", func(mt *mtest.T) {

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"bzone/backend/internal/test"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/integration/mtest"
@@ -13,26 +12,7 @@ func TestBzoneDBModel_AddPlotToUserOrCreate(t *testing.T) {
 	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 	defer mt.Close()
 
-	// Create your subtest run instance
-	mt.Run("Insert User", func(mt *mtest.T) {
-
-		// Mock Plot data
-		findOne := mtest.CreateCursorResponse(
-			1,
-			"Bzone.users",
-			mtest.FirstBatch,
-			test.MockUsersData())
-
-		killCursors := mtest.CreateCursorResponse(0, "Bzone.users", mtest.NextBatch)
-
-		mt.AddMockResponses(findOne, killCursors)
-		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
-		plotToSave := ValidPlotModelsCollections()
-		testUser := mockBZoneModel.AddPlotToUserOrCreate(&plotToSave, 1)
-		assert.ObjectsAreEqual(testUser, nil)
-
-	})
-	mt.Run("Add User", func(mt *mtest.T) {
+	mt.Run("Successfully Adding User", func(mt *mtest.T) {
 
 		// Mock Plot data
 		findOne := mtest.CreateCursorResponse(
@@ -52,19 +32,41 @@ func TestBzoneDBModel_AddPlotToUserOrCreate(t *testing.T) {
 		plotToSave := ValidPlotModelsCollections()
 		testUser := mockBZoneModel.AddPlotToUserOrCreate(&plotToSave, 1)
 
-		assert.ObjectsAreEqual(testUser, nil)
+		assert.Nil(t, testUser)
 
 	})
 
-	mt.Run("Unsucessfully Adding User", func(mt *mtest.T) {
+	mt.Run("Successfully Updating User Plots", func(mt *mtest.T) {
+
+		mt.AddMockResponses(bson.D{{"count", 2}, {"ok", 1}})
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		plotToSave := ValidPlotModelsCollections()
+		testUser := mockBZoneModel.AddPlotToUserOrCreate(&plotToSave, 1)
+
+		assert.NotNil(t, testUser)
+
+	})
+
+	mt.Run("Unsuccessfully Finding Plots of User", func(mt *mtest.T) {
+		// Mock Plot data
+		mt.AddMockResponses(bson.D{{"ok", 0}})
+		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
+		plotToSave := ValidPlotModelsCollections()
+		err := mockBZoneModel.AddPlotToUserOrCreate(&plotToSave, 1)
+		assert.NotNil(t, err)
+
+	})
+
+	mt.Run("Unsuccessfully Inserting User", func(mt *mtest.T) {
+		// Mock Plot data
+
 		// Mock Plot data
 		findOne := mtest.CreateCursorResponse(
 			1,
 			"Bzone.users",
 			mtest.FirstBatch,
-			test.MockUsersData())
+			nil)
 
-		// Mock Plot data
 		mt.AddMockResponses(findOne, bson.D{{"ok", 0}})
 		var mockBZoneModel = BzoneDBModel{DB: mt.DB}
 		plotToSave := ValidPlotModelsCollections()

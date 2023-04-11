@@ -49,4 +49,28 @@ func TestZipCodeDBModel_GetZipCodesGetZipCodes(t *testing.T) {
 		_, err := mockZipCodeModel.GetZipCodes(1, 2)
 		assert.NotNil(t, err)
 	})
+	// Create your subtest run instance
+	mt.Run("Cursor Error Find Zip Codes", func(mt *mtest.T) {
+
+		// Mock Plot data
+		findOne := mtest.CreateCursorResponse(
+			1,
+			"Bzone.users",
+			mtest.FirstBatch,
+			nil)
+
+		findAnother := mtest.CreateCursorResponse(
+			0,
+			"Bzone.users",
+			mtest.NextBatch,
+			nil)
+
+		killCursors := mtest.CreateCursorResponse(0, "Bzone.users", mtest.NextBatch)
+
+		mt.AddMockResponses(findOne, findAnother, killCursors)
+		var mockZipCodeModel = ZipCodeDBModel{DB: mt.DB}
+
+		_, err := mockZipCodeModel.GetZipCodes(1, 2)
+		assert.NotNil(t, err)
+	})
 }
