@@ -11,17 +11,17 @@ import getAllActivities from '../functions/getAllActivities'
  @returns {Promise<Array>} - The array containing latitude, longitude, and intensity for each address.
  */
 async function findAddressesPoints() {
-  
+
   const activities = await getAllActivities()
-  
+
   var data2 = []
   for (let i = 0; i < activities.length; i++) {
-    
+
     if (activities[i].depot_address !== null) {
       data2.push(activities[i])
     }
   }
- 
+
   let newData = data2.map((i) => {
     return [i.address.latitude, i.address.longitude, i.duration]; // Lat Lng intensity.
   })
@@ -43,43 +43,39 @@ const Heatmap = (props) => {
 
 
   useEffect(() => {
-      const fetchData = async () => {
-        // Delete old heat layer if it exists.
-        context.layerContainer.eachLayer(function (layer) {
-          context.layerContainer.removeLayer(layer)
+    const fetchData = async () => {
+      // Delete old heat layer if it exists.
+      context.layerContainer.eachLayer(function (layer) {
+        context.layerContainer.removeLayer(layer)
+      })
+
+      // Set address points.
+      let addressPoints = await findAddressesPoints();
+
+      // Map those points to something interpretable for the heat map.
+      //console.log(addressPoints, 'hello')
+      const points = addressPoints
+        ? addressPoints.map((p) => {
+
+          // If activity time is selected.
+          if (value === 1) {
+            return [p[0], p[1], p[2]];
+          }
+          // If activity location is selected.
+          return [p[0], p[1], intensity];
         })
+        : [];
 
-        // Set address points.
-        setComputed(false)
-        let addressPoints = await findAddressesPoints();
-        setComputed(false)
-        
-        // Map those points to something interpretable for the heat map.
-        //console.log(addressPoints, 'hello')
-        const points = addressPoints
-          ? addressPoints.map((p) => {
-            setComputed(false)
-            // If activity time is selected.
-            if (value === 1) {
-              return [p[0], p[1], p[2]];
-            }
-            // If activity location is selected.
-            return [p[0], p[1], intensity];
-          })
-          : [];
+      pointsRef.current = points
+      heatRef.current = new L.heatLayer(points)
 
-        pointsRef.current = points
-        setComputed(false)
-        heatRef.current = new L.heatLayer(points)
-        setComputed(false)
+      // Create new layer and add it to the map context.
+      context.layerContainer.addLayer(heatRef.current)
+      setComputed(true)
+    };
+    setComputed(false)
+    fetchData();
 
-        // Create new layer and add it to the map context.
-        context.layerContainer.addLayer(heatRef.current)
-        setComputed(true)
-      };
-      setComputed(false)
-      fetchData();
-   
   }, [context.layerContainer, value, intensity, setComputed])
 
   return null
