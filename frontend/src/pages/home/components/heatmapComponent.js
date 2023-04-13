@@ -4,19 +4,15 @@ import { useLeafletContext } from '@react-leaflet/core'
 import 'leaflet.heat'
 import getAllActivities from '../functions/getAllActivities'
 
-
-
 /**
  Finds the latitude and longitude of each activity address and returns the data as an array.
  @returns {Promise<Array>} - The array containing latitude, longitude, and intensity for each address.
  */
 async function findAddressesPoints() {
-
   const activities = await getAllActivities()
-
   var data2 = []
-  for (let i = 0; i < activities.length; i++) {
 
+  for (let i = 0; i < activities.length; i++) {
     if (activities[i].depot_address !== null) {
       data2.push(activities[i])
     }
@@ -53,7 +49,6 @@ const Heatmap = (props) => {
       let addressPoints = await findAddressesPoints();
 
       // Map those points to something interpretable for the heat map.
-      //console.log(addressPoints, 'hello')
       const points = addressPoints
         ? addressPoints.map((p) => {
 
@@ -61,6 +56,7 @@ const Heatmap = (props) => {
           if (value === 1) {
             return [p[0], p[1], p[2]];
           }
+
           // If activity location is selected.
           return [p[0], p[1], intensity];
         })
@@ -73,6 +69,7 @@ const Heatmap = (props) => {
       context.layerContainer.addLayer(heatRef.current)
       setComputed(true)
     };
+
     setComputed(false)
     fetchData();
 

@@ -15,7 +15,7 @@ import SiderComponent from "./components/sliderComponent";
 
 import HeaderComponent from "./components/headerComponent";
 
-// Components from Ant Design
+// Components from Ant Design.
 const { darkAlgorithm } = theme;
 const { Header, Content, Sider } = Layout;
 
@@ -29,36 +29,37 @@ export default function Home() {
     // For comparison button to split map into two maps.
     const [showComparison, setShowComparison] = useState(false);
 
+    // Keep track of calculated zone.
     const [calculatedZone, setCalculatedZone] = useState([])
 
     // For view button to bring two maps back to one map.
     const [showMap, setShowMap] = useState(true);
 
-    // Empty state
+    // Empty state.
     const [holder, setHolder] = useState([])
 
-    // For displaying expanded or standared zones with kmeans calculation
+    // For displaying expanded or standared zones with kmeans calculation.
     const [voronoi, setVoronoi] = useState(false)
 
-    // for holding render state of map 1
+    // For holding render state of map 1.
     const [computed, setComputed] = useState(false)
-    // For holding render state of heat map 1
+    // For holding render state of heat map 1.
     const [computedHeat, setComputedHeat] = useState(false)
-    // For holding render state of map 2
+    // For holding render state of map 2.
     const [computed2, setComputed2] = useState(false)
-    // For holding render state of heat map 2
+    // For holding render state of heat map 2.
     const [computedHeat2, setComputedHeat2] = useState(true)
-    // For keeping track of selected algorithm, by default kmeans
+    // For keeping track of selected algorithm, by default kmeans.
     const [algorithm, setAlgorithm] = useState(1);
-    // For keeping track of number of zones
+    // For keeping track of number of zones.
     const [nrofzones, setNrofZones] = useState(1);
-    // For setting name of zone in comparison (single)
+    // For setting name of zone in comparison (single).
     const [zoneName, setZoneName] = useState("Initial Zone");
-    // For setting name of zone in comparison (single)
+    // For setting name of zone in comparison (single).
     const [zoneName2, setZoneName2] = useState("");
 
 
-    // For radio
+    // For radio.
     const [value, setValue] = useState(1);
     const [zipCodes, setZipCodes] = useState([]);
     const [averageFuelCost, setAverageFuelCost] = useState("1.8");
@@ -67,10 +68,10 @@ export default function Home() {
         setValue(e.target.value);
     };
 
-    // Track which zone is selected
+    // Track which zone is selected.
     const [zoneId, setZoneId] = useState('initial');
 
-    // For intensity
+    // For intensity.
     const [intensity, setIntensity] = useState(500)
     const onChangeNumber = (e) => {
         console.log('home')
@@ -101,10 +102,10 @@ export default function Home() {
         }
     }
 
-    // Keep track of the saved zones and update when needed
+    // Keep track of the saved zones and update when needed.
     const [savedZones, setSavedZones] = useState([]);
 
-    // For zone synchronization
+    // For zone synchronization.
     const [currentView, setCurrentView] = useState('initial')
 
     /** 
@@ -113,7 +114,7 @@ export default function Home() {
     */
     const handleDeleteZone = (id, name) => {
         const confirm = window.confirm('Confirm deletion of ' + name);
-        // Make sure user actually wants to delete plot
+        // Make sure user actually wants to delete plot.
         if (confirm) {
             deleteSavedZone(id)
         }
@@ -125,16 +126,16 @@ export default function Home() {
     * @return {void}
     */
     async function addSavedZone(name) {
-        // User token
+        // User token.
         const userToken = localStorage.getItem('token')
-        // Body of http request
+        // Body of http request.
         const bodyValues = JSON.stringify({
             "plot_name": name,
             "plot_zones": zipCodes.plot_zones
 
         })
 
-        // Send request to api to add zone and wait until it is completed
+        // Send request to api to add zone and wait until it is completed.
         await fetch("http://localhost:4000/plot/save", {
             method: 'POST',
             headers: {
@@ -150,7 +151,7 @@ export default function Home() {
                 alert('errorSaving zones')
                 return null;
             } else {
-                // If response is ok then update the zones
+                // If response is ok then update the zones.
                 const saved = await getSavedZones();
                 setSavedZones(saved)
             }
@@ -184,11 +185,11 @@ export default function Home() {
     }
 
     /** 
-    * Function which gets the saved zones from the Mongo database
+    * Function which gets the saved zones from the Mongo database.
     * @return {void}
     */
     async function getSavedZones() {
-        // Array to hold saved zones
+        // Array to hold saved zones.
         let saved = []
 
         await fetch("http://localhost:4000/user/plots", {
@@ -210,12 +211,12 @@ export default function Home() {
         return saved
     }
 
-    // Initially runs when rendering home page
+    // Initially runs when rendering home page.
     useEffect(() => {
         const fetchData = async () => {
-            // Variable used for saved plots in database
+            // Variable used for saved plots in database.
             let saved = await getSavedZones()
-            // Set the plots in the sider to be the saved plots
+            // Set the plots in the sider to be the saved plots.
             setSavedZones(saved)
         }
 

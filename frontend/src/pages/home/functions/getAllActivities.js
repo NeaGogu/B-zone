@@ -3,7 +3,7 @@ import getActivities from "./getActivities"
 async function getAllActivities() {
     const token = localStorage.getItem('token')
 
-    // first see how many activities there are
+    // First see how many activities there are.
     let  activities =  await fetch('https://sep202302.bumbal.eu/api/v2/activity', {
       method: 'PUT',
       headers: {
@@ -30,7 +30,7 @@ async function getAllActivities() {
     })
   
     let datatop = []
-    // for loop and get activities based on offset
+    // For loop and get activities based on offset.
     for (let i = 0; i < activities.count_filtered;i = i + 100) {
         const response = await getActivities(i);
   

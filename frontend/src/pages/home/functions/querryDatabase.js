@@ -32,13 +32,13 @@ async function querryDatabase(plotID) {
 
     var zoneConfig = []
 
-    // go into each zone
+    // Go into each zone.
     for (let i = 0; i < zones.length; i++) {
         var zoneRanges = zones[i].zone_ranges
         var currZoneRange = []
-        // go into each range
+        // Go into each range.
         for (let j = 0; j < zoneRanges.length; j++) {
-            //convert to format used in other GetCoordinates
+            // Convert to format used in other GetCoordinates.
             var curr = {
                 zipFrom: zoneRanges[j].zipcode_from,
                 zipTo: zoneRanges[j].zipcode_to

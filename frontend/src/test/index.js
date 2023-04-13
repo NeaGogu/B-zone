@@ -4,6 +4,9 @@ const puppeteer = require("puppeteer");
 let browser;
 let page;
 
+// Login page tests:
+// First directed to Login page, fill in email and password.
+// Only if credentials are correct and Log in button is clicked, user is redirected to Home page.
 describe("Login Test", () => {
   before(async () => {
     browser = await puppeteer.launch({
@@ -74,6 +77,10 @@ describe("Login Test", () => {
   }).timeout(10000);
 });
 
+// Map tests:
+// Test zooming in and out, by scrolling and buttons.
+// Test adding location marker.
+// Test selecting Heat map and Zones layers.
 describe("Map Test", () => {
   before(async () => {});
 
@@ -109,7 +116,7 @@ describe("Map Test", () => {
 
   it("Should add new marker", async () => {
     await page.waitForSelector("main[id=map]");
-    //scroll map zoom
+    // Scroll map zoom
     page.hover("main[id=map]");
     await page.waitForTimeout(1000);
     await page.mouse.click(500, 500);
@@ -120,7 +127,7 @@ describe("Map Test", () => {
     await page.waitForSelector("a.leaflet-control-layers-toggle");
     page.hover("a.leaflet-control-layers-toggle");
     await page.waitForTimeout(1000);
-    //select checkboxs
+    // Select checkboxs
     await page.waitForSelector("input.leaflet-control-layers-selector");
     const checkboxs = await page.$$("input.leaflet-control-layers-selector");
     checkboxs[0].click();
@@ -134,6 +141,9 @@ describe("Map Test", () => {
   }).timeout(10000);
 });
 
+// Tests for sider:
+// Expand dropdown menus.
+// Click all radio buttons and use all input fields.
 describe("Sidebar Test", () => {
   before(async () => {});
   after(async () => {});
@@ -193,7 +203,7 @@ describe("Sidebar Test", () => {
     expect(inputValue).to.equal("3");
   }).timeout(30000);
   it("Should click the Options for Algorithms (The standard is closed when advanced is selected)", async () => {
-    //sidebar scroll down
+    // Sidebar scroll down
     await page.waitForSelector("form.ant-form");
     await page.hover("form.ant-form");
     await page.waitForTimeout(1000);
@@ -267,6 +277,8 @@ describe("Sidebar Test", () => {
   }).timeout(10000);
 });
 
+// Logout test:
+// Test that clicking the Sign out button redirects to the login page.
 describe("Logout Test", () => {
   before(async () => {});
   after(async () => {

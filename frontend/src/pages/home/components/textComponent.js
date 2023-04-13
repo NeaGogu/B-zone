@@ -29,8 +29,8 @@ async function totalActivityDurations(settime) {
 }
 
 async function getDrivingTime(drivingData) {
-    // Input: a fetch response from OSRM with multiple legs per driving route
-    // Output: the total sum of the duration over all the legs of the route
+    // Input: a fetch response from OSRM with multiple legs per driving route.
+    // Output: the total sum of the duration over all the legs of the route.
     let drivingLegs = drivingData.routes[0].legs
     let sum = 0
 
@@ -41,8 +41,8 @@ async function getDrivingTime(drivingData) {
 }
 
 async function getDrivingDistance(drivingData) {
-    // Input: a fetch response from OSRM with multiple legs per driving route
-    // Output: the total sum of the distance over all the legs of the route
+    // Input: a fetch response from OSRM with multiple legs per driving route.
+    // Output: the total sum of the distance over all the legs of the route.
     let drivingLegs = drivingData.routes[0].legs
     let sum = 0
 
@@ -68,10 +68,10 @@ function TextComponent(props) {
     useEffect(() => {
         const initial = async () => {
             setLoaded(false)
-            let averageFuelCost = 1.8 // Cost in euros per litre of fuel
-            let averageFuelConsumption = 0.047 // Litres of fuel consumption per km
-            totalActivityDurations(setTime) // Set the total activity duration to be the time spend on activities
-            let plot = []; // Variable to hold the object of zones/zone configuration upon which to calculate driving time
+            let averageFuelCost = 1.8 // Cost in euros per litre of fuel.
+            let averageFuelConsumption = 0.047 // Litres of fuel consumption per km.
+            totalActivityDurations(setTime) // Set the total activity duration to be the time spend on activities.
+            let plot = []; // Variable to hold the object of zones/zone configuration upon which to calculate driving time.
 
             if (zoneId.startsWith('calculate')) { // The plot is a freshly calculated optimized plot
                 for (let i = 0; i < calculatedZone.plot_zones.length; i++) {
@@ -84,7 +84,7 @@ function TextComponent(props) {
             }
 
             else {
-                if (zoneId.startsWith('initial')) { //the plot is the initial plot from Bumbal
+                if (zoneId.startsWith('initial')) { // The plot is the initial plot from Bumbal.
                     setName(zoneName)
                     for (let i = 0; i < calculatedZone.length; i++) {
                         for (let j = 0; j < calculatedZone[i].length; j++) {
@@ -92,8 +92,8 @@ function TextComponent(props) {
                             calculatedZone[i][j].zipTo = parseInt(calculatedZone[i][j].zipTo);
                         }
                     }
-                    plot = calculatedZone // Retrieve the current plot and work with it
-                } else { // The plot is a saved plot from the backend
+                    plot = calculatedZone // Retrieve the current plot and work with it.
+                } else { // The plot is a saved plot from the backend.
                     plot = await querryDatabase(zoneId)
                     setName(zoneName)
                 }
@@ -102,27 +102,27 @@ function TextComponent(props) {
             console.log("The plot currently working with is: ")
             console.log(plot)
 
-            let listOfActivities = await getAllActivities() // Get all activity locations from Bumbal
+            let listOfActivities = await getAllActivities() // Get all activity locations from Bumbal.
 
-            let activites2 = listOfActivities.map((i) => { // Get activities and related zipcode + add a blank zone field with -1 id
+            let activites2 = listOfActivities.map((i) => { // Get activities and related zipcode + add a blank zone field with -1 id.
                 return [i.address.latitude, i.address.longitude, i.address.zipcode, -1, i.duration]; // Lat Lng intensity.
             })
 
-            // Go through each activity and find matching zone
+            // Go through each activity and find matching zone.
             for (let i = 0; i < activites2.length; i++) {
-                // Get the numerical part of a zipcode for each activity
+                // Get the numerical part of a zipcode for each activity.
                 let zipcode = parseInt(activites2[i][2].slice(0, 4))
                 for (let j = 0; j < plot.length; j++) {
-                    // For each possible zone, check all zone ranges
+                    // For each possible zone, check all zone ranges.
                     for (let k = 0; k < plot[j].length; k++) {
-                        // For each zone range, check whether the zipcode of the activity fits into that zone range
+                        // For each zone range, check whether the zipcode of the activity fits into that zone range.
                         if (zipcode >= plot[j][k].zipFrom && zipcode <= plot[j][k].zipTo) {
                             activites2[i][3] = j;
                         }
                     }
                 }
             }
-            // Filter out all activities which are depot activities, only driving time activities remain
+            // Filter out all activities which are depot activities, only driving time activities remain.
             let activities2Filtered = []
             for (let i = 0; i < activites2.length; i++) {
                 if (activites2[i][3] !== -1) {
@@ -130,24 +130,25 @@ function TextComponent(props) {
                 }
             }
 
-            // Array to hold driving time per zone
+            // Array to hold driving time per zone.
             let drivingTimeActivities = new Array(plot.length);
-            // Array to hold driving distances per zone
+            // Array to hold driving distances per zone.
             let drivingDistanceActivities = new Array(plot.length);
-            // Array to hold fetch requests HTML per zone
+            // Array to hold fetch requests HTML per zone.
             let drivingTimeReqs = new Array(plot.length);
-            //Driving time per zone, index i = zone i
+            //Driving time per zone, index i = zone i.
             let activityTimeZone = []
             setTimeZoneText(prevTimeZoneText => [])
-            // Body of the fetch request to be sent out to OSRM
+            // Body of the fetch request to be sent out to OSRM.
             const drivingTimeBody = {
                 method: 'GET'
             };
-            // Introduce activity counter to see how many activities there are per zone
+            // Introduce activity counter to see how many activities there are per zone.
             let countActivities = 0
-            // Go through all zones to see what the driving time of activities in that zone is
+            
+            // Go through all zones to see what the driving time of activities in that zone is.
             for (let i = 0; i < plot.length; i++) {
-                // Fo through all activities to find which ones belong to zone i, calculate their driving time
+                // Go through all activities to find which ones belong to zone i, calculate their driving time.
                 countActivities = 0
                 drivingTimeActivities[i] = 0
                 drivingDistanceActivities[i] = 0
@@ -155,7 +156,7 @@ function TextComponent(props) {
                 drivingTimeReqs[i] = "http://router.project-osrm.org/route/v1/driving/"
                 for (let j = 0; j < activities2Filtered.length; j++) {
                     if (activities2Filtered[j][3] === i) {
-                        // Update the request for zone i to contain the coordinates of all activities
+                        // Update the request for zone i to contain the coordinates of all activities.
                         drivingTimeReqs[i] = drivingTimeReqs[i] + activities2Filtered[j][1] + ',' + activities2Filtered[j][0] + ';'
                         countActivities = countActivities + 1;
                         activityTimeZone[i] = activityTimeZone[i] + parseInt(activities2Filtered[j][4])
@@ -163,17 +164,17 @@ function TextComponent(props) {
                     }
                 }
 
-                // Remove last ';' from the request string for driving time in zone i
+                // Remove last ';' from the request string for driving time in zone i.
                 drivingTimeReqs[i] = drivingTimeReqs[i].slice(0, -1);
-                // Check whether there are less than 2 activities in this zone
+                // Check whether there are less than 2 activities in this zone.
                 if (countActivities < 2) {
-                    drivingTimeActivities[i] = 0 // Minimal driving time needed in this zone
-                    drivingDistanceActivities[i] = 0 //Minimal distance to drive in this zone
+                    drivingTimeActivities[i] = 0 // Minimal driving time needed in this zone.
+                    drivingDistanceActivities[i] = 0 //Minimal distance to drive in this zone.
                 } else {
-                    // Now that the request string for zone i is built, send out fetch request
+                    // Now that the request string for zone i is built, send out fetch request.
                     const response = await fetch(drivingTimeReqs[i], drivingTimeBody);
                     const drivingData = await response.json();
-                    // Using the data from OSRM, compile over all legs of the activities what the total duration is and store it for zone i
+                    // Using the data from OSRM, compile over all legs of the activities what the total duration is and store it for zone i.
                     drivingTimeActivities[i] = await getDrivingTime(drivingData)
                     drivingDistanceActivities[i] = await getDrivingDistance(drivingData)
                 }
@@ -197,8 +198,8 @@ function TextComponent(props) {
             }
 
             setDrivingTime(totalDrivingTime.toPrecision(3) / 3600)
-            // Time to find fuel cost: fuel cost = (litres used * fuel cost)
-            // Litres used = driving distance * fuel efficiency
+            // Time to find fuel cost: fuel cost = (litres used * fuel cost).
+            // Litres used = driving distance * fuel efficiency.
             setFuelCost(((totalDrivingDistance.toPrecision(4) / 1000) * averageFuelConsumption) * averageFuelCost)
             setLoaded(true)
         }
