@@ -9,24 +9,16 @@ require (
 	github.com/rjNemo/underscore v0.5.0
 	github.com/stretchr/testify v1.8.2
 	go.mongodb.org/mongo-driver v1.11.2
-	golang.org/x/oauth2 v0.6.0
 )
 
 require github.com/google/uuid v1.3.0
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/exp v0.0.0-20220314205449-43aec2f8a4e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-)
-
-require (
-	golang.org/x/net v0.8.0 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
 )
 
 require (
@@ -44,5 +36,3 @@ require (
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/text v0.8.0 // indirect
 )
-
-require github.com/pzsz/voronoi v0.0.0-20130609164533-4314be88c79f

@@ -1,7 +1,6 @@
 package kMeans
 
 import (
-	"bzone/backend/internal/models"
 	model "bzone/backend/internal/models"
 	"errors"
 	"fmt"
@@ -112,7 +111,7 @@ func zipcodeSetToZoneModel(listZipcodeSet []map[string]struct{}) ([]model.ZoneMo
 // It adds each new ZoneRange to a list of ZoneRanges.
 // The function then merges overlapping ZoneRanges and returns the merged list of ZoneRanges and no error.
 // If an error occurs while creating or merging the ZoneRanges, it returns the error.
-func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]models.ZoneRangeModel, error) {
+func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]model.ZoneRangeModel, error) {
 	if len(zipcodeSet) <= 0 {
 		return nil, fmt.Errorf("length of zipcodeSet is too small: %q", zipcodeSet)
 	}
@@ -137,7 +136,7 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]models.Z
 	})
 
 	// Create a list of ZoneRanges
-	zoneRanges := make([]models.ZoneRangeModel, 0)
+	zoneRanges := make([]model.ZoneRangeModel, 0)
 
 	var initialZipcode, lastZipcode int64
 	firstLoop := true
@@ -176,7 +175,7 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]models.Z
 	zoneRanges = append(zoneRanges, zoneRange)
 
 	// Merge overlapping zone ranges
-	mergedRanges := make([]models.ZoneRangeModel, 0, len(zoneRanges))
+	mergedRanges := make([]model.ZoneRangeModel, 0, len(zoneRanges))
 
 	for i := 0; i < len(zoneRanges); i++ {
 		mergedRange := zoneRanges[i]
@@ -203,7 +202,7 @@ func createZoneRanges(idCounter int, zipcodeSet map[string]struct{}) ([]models.Z
 // The function returns the new ZoneRangeModel and no error.
 func createZoneRange(id string, zipcodeFrom int64, zipcodeTo int64, IsoCountry string) (model.ZoneRangeModel, error) {
 	if zipcodeFrom > zipcodeTo {
-		return model.ZoneRangeModel{}, errors.New("zipcodeFrom cannot be greater than zipcodeTo")
+		return model.ZoneRangeModel{}, fmt.Errorf("invalid zipcode range: zipcodeFrom (%d) cannot be greater than zipcodeTo (%d)", zipcodeFrom, zipcodeTo)
 	}
 
 	idInt, _ := strconv.ParseInt(id, 10, 64)

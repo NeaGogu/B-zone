@@ -42,6 +42,7 @@ type activities []model.ActivityModelBumbal
 // radius of the Earth in kilometers (for haversine distance)
 const earthRadius = 6371
 
+// Standard errors that are returned
 var ErrNrObservationsTooSmall = errors.New("number of activities smaller than number of Clusters")
 var ErrNrCandidateClustersTooSmall = errors.New("number of candidate Clusters smaller than or equal to 0")
 var ErrNoObservations = errors.New("number of candidates smaller than or equal to 0")
@@ -49,6 +50,7 @@ var ErrNoClusters = errors.New("number of Clusters smaller than or equal to 0")
 var ErrNoActivities = errors.New("number of activities smaller than or equal to 0")
 var ErrNrClustersTooSmall = errors.New("nrClusters variable is smaller than or equal to 0")
 
+// Standard empty structs to return when an error occurs
 var zeroCoordinate = Coordinates{
 	Latitude:  0,
 	Longitude: 0,
@@ -68,11 +70,12 @@ var zeroCluster = Cluster{
 	observations: zeroObservations,
 }
 
-var zeroClusters = Clusters{
-	zeroCluster,
-}
-
+// KMeans is an implementation of the k-means clustering algorithm. Given a set of activities, it uses the k-means algorithm to group the activities into a specified number of clusters.
+// The function takes in the activities, the desired number of clusters, and the desired number of candidate clusters to use during initialization. If any of the input parameters do not meet the preconditions, an error is returned.
+// The function initializes the clusters with random centers and then repeatedly assigns observations to their nearest cluster and updates the cluster centers until convergence is achieved.
+// The function returns the resulting clusters and any errors that were encountered during the clustering process.
 func KMeans(activities activities, nrClusters int, nrCandidateClusters int) (Clusters, error) {
+	// return error if precondition isn't met
 	if len(activities) <= 0 {
 		return nil, ErrNoActivities
 	}
@@ -135,32 +138,23 @@ func KMeans(activities activities, nrClusters int, nrCandidateClusters int) (Clu
 
 	}
 
-	// //convert Clusters to sets of zipcodes
-	// zipcodeList, err := clusterToZipcodeSet(Clusters, activities)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("got an error in clusterToZipCodeSet: %v", err)
-	// }
-
-	// //convert Clusters to a list of zone models
-	// clusterSet, err := zipcodeSetToZoneModel(zipcodeList)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("got an error in zipcodeSetToZoneModel: %v", err)
-	// }
-
 	return Clusters, err
 }
 
-// updateCluster updates all centers of the given Clusters.
+// updateCluster requires Clusters, for each Cluster in Clusters it will calculate the center of all associated observations
+// and set the center field of the Cluster to the calculated center. Returns the updates Clusters.
 func updateCluster(Clusters Clusters) Clusters {
 	for index, Cluster := range Clusters {
 		if len(Cluster.observations) == 0 {
-			continue // skip over empty Clusters
+			// skip over empty Clusters
+			continue
 		}
 
+		// initiate sum variables
 		sumLatitude := 0.00
 		sumlongitude := 0.00
 
-		// calculate the sum of all Longitude / latitudes of points assigned to the Cluster
+		// calculate the sum of all Longitude / Latitude of points assigned to the Cluster
 		for _, observation := range Cluster.observations {
 			sumLatitude += observation.Coordinates.Latitude
 			sumlongitude += observation.Coordinates.Longitude
@@ -406,6 +400,7 @@ func distance(observation observation, Cluster Cluster) float64 {
 }
 
 // distanceKilometers takes as input an observation and a Cluster and calculates the distance between the observation and the Cluster in kilometers
+// distanceKilometers can replace distance for a more accurate result (taking into account the spherical nature of earth)
 func distanceKilometers(observation observation, Cluster Cluster) float64 {
 	// Calculate the distance between the observation and the Cluster using the haversine formula
 	resultHaversine := haversineDistance(observation.Coordinates, Cluster.Center)
