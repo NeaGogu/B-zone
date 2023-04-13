@@ -36,6 +36,7 @@ func MockPlotData() bson.D {
 		}},
 		{"plot_created_at", "0001-01-01T00:00:00Z"},
 		{"plot_saved_at", "0001-01-01T00:00:00Z"},
+		{"origin", "Algo"},
 	}
 }
 

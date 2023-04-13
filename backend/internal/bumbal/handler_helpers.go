@@ -28,7 +28,7 @@ type Output struct {
 //	@param r used to fetch the http request
 //	@return *http.Response return a http response for further processing
 //	@return error for debugging purposes/ robustness
-func requestBumbalActivity(w http.ResponseWriter, r *http.Request, reqBody []byte) (*http.Response, error) {
+func requestBumbalActivity(w http.ResponseWriter, r *http.Request, reqBody []byte, baseUrl string) (*http.Response, error) {
 	reqUrl := baseUrl + activitiesUrl
 	// set the request body so that it retrieves the address_applied field as well
 	jwToken := r.Header.Get("Authorization") // -> "Bearer <TOKEN>"
@@ -62,7 +62,7 @@ func requestBumbalActivity(w http.ResponseWriter, r *http.Request, reqBody []byt
 func collectAllBumbalActivities(w http.ResponseWriter, r *http.Request) ([]models.ActivityModelBumbal, error) {
 	// Make a request to Bumbal to retrieve the number of activities
 	reqBody := []byte(`{"count_only":true}`)
-	resp, err := requestBumbalActivity(w, r, reqBody)
+	resp, err := requestBumbalActivity(w, r, reqBody, baseUrl)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return nil, err
@@ -111,7 +111,7 @@ func collectAllBumbalActivities(w http.ResponseWriter, r *http.Request) ([]model
 			offset := []byte(fmt.Sprintf("%d", i*100))
 			reqBody = append(append(reqBodyHead, offset...), reqBodyTail...)
 
-			partResponse, err := requestBumbalActivity(w, r, reqBody)
+			partResponse, err := requestBumbalActivity(w, r, reqBody, baseUrl)
 			if err != nil {
 				return
 			}

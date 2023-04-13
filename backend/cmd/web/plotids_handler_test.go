@@ -33,7 +33,7 @@ func SetUpMockApp(mt *mtest.T) *application {
 	app := &application{
 		errorLog:       errorLog,
 		infoLog:        infoLog,
-		zipCodeDbModel: nil,
+		zipCodeDbModel: &models.ZipCodeDBModel{DB: mt.DB},
 		bzoneDbModel:   &models.BzoneDBModel{DB: mt.DB},
 	}
 	return app
@@ -83,6 +83,7 @@ func TestApplication_GetPlotById(t *testing.T) {
 		testCase2(t, app)
 
 	})
+
 	// Create your subtest for missing plot ID
 	mt.Run("InvalidPlotId", func(mt *mtest.T) {
 		// Mock Plot data with empty document
@@ -104,7 +105,7 @@ func TestApplication_GetPlotById(t *testing.T) {
 	})
 
 	// Create your subtest for error message in mongo
-	mt.Run("ErrorInDataBase", func(mt *mtest.T) {
+	mt.Run("Missing Plot Document", func(mt *mtest.T) {
 		// Mock Plot data
 		findOne := mtest.CreateCursorResponse(
 			1,
@@ -121,6 +122,23 @@ func TestApplication_GetPlotById(t *testing.T) {
 		testCase3(t, app)
 
 	})
+
+	// Create your subtest for error message in mongo
+	mt.Run("Error In DataBase", func(mt *mtest.T) {
+		// Mock Plot data
+		mt.AddMockResponses(mtest.CreateWriteErrorsResponse(mtest.WriteError{
+			Index:   1,
+			Code:    11000,
+			Message: "duplicate key error",
+		}))
+
+		//set up the app for the tests
+		app := SetUpMockApp(mt)
+
+		testCase5(t, app)
+
+	})
+
 }
 
 // testCase1
@@ -240,6 +258,24 @@ func testCase4(t *testing.T, a *application) {
 	rctx := chi.NewRouteContext()
 	reqInvalidPlotId = reqInvalidPlotId.WithContext(context.WithValue(reqInvalidPlotId.Context(), chi.RouteCtxKey, rctx))
 	rctx.URLParams.Add("plotId", "errorID")
+	wInvalidPlotId := httptest.NewRecorder()
+	a.GetPlotById(wInvalidPlotId, reqInvalidPlotId)
+
+	responseMissingPlotId := wInvalidPlotId.Result()
+	body, _ := io.ReadAll(responseMissingPlotId.Body)
+
+	assert.Equal(t, 500, responseMissingPlotId.StatusCode) // We expect return code 500
+	assert.Equal(t, "Internal Server Error\n", string(body))
+}
+
+// testCase5
+
+func testCase5(t *testing.T, a *application) {
+	// Test handler, Invalid plot ID case
+	reqInvalidPlotId := httptest.NewRequest("GET", "/", nil)
+	rctx := chi.NewRouteContext()
+	reqInvalidPlotId = reqInvalidPlotId.WithContext(context.WithValue(reqInvalidPlotId.Context(), chi.RouteCtxKey, rctx))
+	rctx.URLParams.Add("plotId", "1")
 	wInvalidPlotId := httptest.NewRecorder()
 	a.GetPlotById(wInvalidPlotId, reqInvalidPlotId)
 
@@ -513,6 +549,24 @@ func TestApplication_DeletePlotById(t *testing.T) {
 
 	})
 
+	mt.Run("Plot Not Found", func(mt *mtest.T) {
+
+		mt.AddMockResponses(bson.D{
+			{"ok", 1},
+			{"value", test.MockPlotData()},
+		}, bson.D{
+			{"ok", 1},
+			{"value", test.MockPlotData()},
+		})
+
+		//set up the app for the tests
+		app := SetUpMockApp(mt)
+
+		//Test case for missing plot id
+		deletePlotTestCase2(t, app)
+
+	})
+
 }
 
 func deletePlotTestCase0(t *testing.T, a *application) {
@@ -523,9 +577,9 @@ func deletePlotTestCase0(t *testing.T, a *application) {
 	req = req.WithContext(ctx)
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	rctx.URLParams.Add("plotId", "1")
-	wSavePlot := httptest.NewRecorder()
-	a.DeletePlotById(wSavePlot, req)
-	responseFailed := wSavePlot.Result()
+	w := httptest.NewRecorder()
+	a.DeletePlotById(w, req)
+	responseFailed := w.Result()
 
 	assert.Equal(t, http.StatusInternalServerError, responseFailed.StatusCode)
 }
@@ -538,9 +592,24 @@ func deletePlotTestCase1(t *testing.T, a *application) {
 	req = req.WithContext(ctx)
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	rctx.URLParams.Add("plotId", "")
-	wSavePlot := httptest.NewRecorder()
-	a.DeletePlotById(wSavePlot, req)
-	responseMissingID := wSavePlot.Result()
+	w := httptest.NewRecorder()
+	a.DeletePlotById(w, req)
+	responseMissingID := w.Result()
 
 	assert.Equal(t, http.StatusBadRequest, responseMissingID.StatusCode)
+}
+
+func deletePlotTestCase2(t *testing.T, a *application) {
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	rctx := chi.NewRouteContext()
+	ctx := context.WithValue(req.Context(), ContextUserKey, 1)
+	req = req.WithContext(ctx)
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+	rctx.URLParams.Add("plotId", "1")
+	w := httptest.NewRecorder()
+	a.DeletePlotById(w, req)
+	response := w.Result()
+
+	assert.Equal(t, http.StatusNotFound, response.StatusCode)
 }

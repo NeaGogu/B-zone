@@ -2,10 +2,14 @@ package main
 
 import (
 	"bzone/backend/internal/test"
+	"fmt"
+	"github.com/golang-jwt/jwt"
 	"log"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -124,6 +128,26 @@ func TestJWTRequestChecker(t *testing.T) {
 	rr = httptest.NewRecorder()
 	router.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
+
+	// Test with a request that has nil user id
+	req = httptest.NewRequest("GET", "/test", nil)
+	assert.NoError(t, err)
+	tokenNil, _ := CreateAccessWrongTokenString(nil)
+	req.Header.Add("Authorization", tokenNil)
+	rr = httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+
+	// Test with a request that has non convertable user id
+	uid := strconv.FormatInt(math.MaxInt64, 10) + "0"
+	req = httptest.NewRequest("GET", "/test", nil)
+	assert.NoError(t, err)
+	tokenNon, _ := CreateAccessWrongTokenString(uid)
+	req.Header.Add("Authorization", tokenNon)
+	rr = httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+
 }
 
 func TestRoutes(t *testing.T) {
@@ -145,4 +169,27 @@ func TestRoutes(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
+}
+
+func CreateAccessWrongTokenString(userId any) (string, error) {
+	// Define the token claims, including the user ID
+	claims := jwt.MapClaims{
+		"user_id": userId,
+	}
+
+	// Define the token signing method and secret key
+	signingMethod := jwt.SigningMethodHS256
+	secret := []byte("my_secret_key")
+
+	// Create the token
+	token := jwt.NewWithClaims(signingMethod, claims)
+
+	// Sign the token with the secret key
+	tokenString, err := token.SignedString(secret)
+	if err != nil {
+		return "", fmt.Errorf("error signing token: %v", err)
+	}
+
+	// Return the Bearer string access token
+	return fmt.Sprintf("Bearer %s", tokenString), nil
 }

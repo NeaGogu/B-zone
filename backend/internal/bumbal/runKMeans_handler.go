@@ -15,8 +15,8 @@ type ClustersInfo struct {
 
 // RunKMeans
 //
-//	 @Description: the main handler, does the requests to Bumbal and calls the K-Means algorithm based
-//					on the input
+//	 @Description: the main handler, does the requests to Bumbal and calls the K-Means algorithm
+//					based on the input
 //	 @param w used to write http responses
 //	 @param r used to fetch the http request
 func RunKMeans(w http.ResponseWriter, r *http.Request) {
