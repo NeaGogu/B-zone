@@ -141,3 +141,44 @@ func TestPopulation_tournamentSelection(t *testing.T) {
 		})
 	}
 }
+
+func TestPopulation_calcCosts(t *testing.T) {
+	tests := []struct {
+		name       string
+		population Population
+		want       []float64
+	}{
+		{
+			name:       "empty population",
+			population: Population{},
+			want:       []float64{},
+		},
+		{
+			name: "singleton population",
+			population: Population{Solution{
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}},
+					{Pos{0, 0, 1}, []Pos{{3, 4, 0}}}},
+			}},
+			want: []float64{21},
+		},
+		{
+			name: "double population",
+			population: Population{Solution{
+				Routes: []Route{{Pos{0, 0, 0}, []Pos{{3, 4, 0}}},
+					{Pos{0, 0, 1}, []Pos{{3, 4, 0}}}},
+			},
+				Solution{
+					Routes: []Route{{Pos{0, 0, 0}, []Pos{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}}},
+				}},
+			want: []float64{21, 4.4},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.population.calcCosts()
+			for i := 0; i < len(tt.want); i++ {
+				assert.Equal(t, tt.want[i], tt.population[i].Cost)
+			}
+		})
+	}
+}
