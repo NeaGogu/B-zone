@@ -42,7 +42,6 @@ function LocationMarker() {
                         setZipcode(null);
                     }
                 });
-            //map.flyTo(e.latlng, map.getZoom());
             setMarkerVisible(!markerVisible); // Toggle the marker visibility
         },
     });

@@ -27,9 +27,7 @@
       })
     };
   
-    const response = await fetch('https://sep202302.bumbal.eu/api/v2/activity', requestOptions);
-  
-  
+    const response = await fetch('https://sep202302.bumbal.eu/api/v2/activity', requestOptions);  
     return response;
 }
 

@@ -13,7 +13,7 @@ import '../index.css';
 
 const { SubMenu } = Menu;
 
-//Input field function -> later on add calculations, for now checks if the two fields are filled and if so, then the button is activated
+// Input field function.
 const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, setNrofZones, voronoi, setVoronoi, setAverageFuelUsage, averageFuelCost,averageFuelUsage, setAverageFuelCost}) => {
 
     const calculate = useRef(0)
@@ -34,18 +34,16 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
     }
 
     const handleSubmit = (e) => {
-        //e.preventDefault();
-        //const isValid = onSubmit(averageFuelCost, averageFuelUsage);
         const isValid = true;
         if (isValid) {
             toggleMap()
-            // toggles the map to be one map
+            // Toggles the map to be one map.
             calculate.current += 1;
             setZoneId('calculate' + calculate.current.toString() )    
         }
     };
 
-    // Input fields for the zone calculation (average fuel cost, average fuel usage of car).
+    // Input fields for the zone calculation (average fuel cost, average fuel usage of car, algorithm choices, number of zones).
     return (
         <Form onFinish={handleSubmit}>
             <Form.Item rules={[{ required: true }]}>
@@ -105,7 +103,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
             </div>
             <Form.Item>
                 <div style={{ padding: "0 5px" }}>
-                    Nunber of Zones
+                    Number of Zones
                     <Input
                         placeholder="input desired number of zones"
                         type="number"
@@ -138,9 +136,6 @@ function SiderComponent(props) {
         setAlgorithm, setNrofZones, currentView, setZoneName, setZoneName2, loadedHeat, setAverageFuelUsage,
         averageFuelCost,averageFuelUsage, setAverageFuelCost, voronoi, setVoronoi   } = props;
 
-    //console.log(loadedHeat)
-
-
     const toggleMap = () => {
         if (showComparison && !showMap) {
             setShowComparison(false);
@@ -155,17 +150,15 @@ function SiderComponent(props) {
         }
     };
 
-    // for intensity change
+    // For intensity change.
     const onChangeNumber = (e) => {
         setIntensity(e)
     }
 
-    // for radio change
+    // For radio change.
     const onChange = (e) => {
         setValue(e.target.value);
     };
-
-
 
     return (
         <Menu
@@ -180,10 +173,7 @@ function SiderComponent(props) {
          
             selectable={false}
         >
-
-
             <SubMenu key="sub3" data-testid="heatmap-btn" title="Heat map" style={{}}>
-
                 <div style={{ width: '100%', textAlign: 'center' }}>
                     <Menu.Item key="5" style={{ padding: 0 }}>
                         <Radio.Group value={values} onChange={onChange} size='small' disabled={!loadedHeat}>
@@ -246,8 +236,6 @@ function SiderComponent(props) {
                                     setCurrentView('')
                                     setZoneId(zone.user_plot_id)
                                     setZoneName(zone.user_plot_name)
-
-                                
                                 }}>
                                     View
                                 </Button>
@@ -257,12 +245,10 @@ function SiderComponent(props) {
                                         setCurrentView('')
                     
                                     } else {
-                    
                                         setCurrentView(zone.user_plot_id)
                                         toggleComparison()
                                         setZoneName2(zone.user_plot_name)
                                     }
-                                
                                 }}>
                                     Compare
                                 </Button>
@@ -270,7 +256,6 @@ function SiderComponent(props) {
                         </Menu.Item>
                     ))}
                 </div>
-                
             </SubMenu>
         </Menu>
     );
