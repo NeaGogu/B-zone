@@ -2,7 +2,7 @@ services:
   b-zone-backend:
     build:
 #      context:
-      dockerfile: packageApp.Dockerfile
+      dockerfile: BuildBackend.Dockerfile
     image: bzone/backend_image:1.0.0
     container_name: b-zone-backend-container
     ports:
