@@ -1,76 +1,55 @@
 # B-zone
 SEP-2023/Q3 Bumbal zone management
 
+In this README file it is detailed which files should not be checked in the code quality assessment. This is separated into backend and frontend parts, since the backend uses Go, which cannot be checked with the suggested tools and thus in discussion with the course coordinator different tools were chosen.
 
-### Setting up Frontend
-##### Installation
-**Node.js** can be installed from the following link: https://nodejs.org/en/download/
+## Backend
+Automatically generated:
+- None
 
-##### Set up
-In the terminal run `cd frontend`, to access the frontend app. To start the web app run `npm start`. The web app should open a tab automatically, but if this is not the case it is located at http://localhost:3000/. To stop the app, press `Ctrl + c` in the terminal and answer `y` to the prompt (if there is one).   
+Compiled but unchanged third party resources:
+- None
 
-### Setting up DataBase: MongoDB + Docker
-We will use Docker to host a MongoDB instance locally.
+Data files/classes:
+- bumbal_swag_models.go
+- bzone_models.go
+- bZonePlot.go
 
-- [ ] Install [Docker Desktop](https://www.docker.com/products/docker-desktop/). Run it (update WSL2 if needed).
+Test files:
+- geneticAlgorithm_test.go
+- population_test.go
+- pos_test.go
+- route_test.go
+- sliceFunctions_test.go
+- solution_test.go
+- clusterToZipcode_test.go
+- kMeans_test.go
+- handlers_test.go
+- helpers_test.go
+- plotids_handler_test.go
+- routes_test.go
+- zip_handler_test.go
+- bumbal_zones_test.go
+- handler_helpers_test.go
+- bumbal_handler_models_test.go
+- bZonePlot_test.go
+- plotids_test.go
+- test_env_models_test.go
+- users_test.go
+- zipcodes_test.go
+- script_test.go
 
-- [ ] Download [MongoDB Shell](https://www.mongodb.com/try/download/shell).
+## Frontend
 
-- [ ] Download [MongoDB Compass](https://www.mongodb.com/try/download/compass).
+Automatically generated:
+- ..
 
-- [ ] Open Command Prompt (cmd). 
+Compiled but unchanged third party resources:
+- ..
 
-- [ ] Enter ```docker pull mongo```.
+Data files/classes:
+- ..
 
-- [ ] Enter ```docker images```. You should see something similar:
+Test files:
+- ..
 
-```
-REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
-mongo        latest    a440572ac3c1   3 weeks ago   639MB
-```
-
-- [ ] Enter `docker run -d -p 27017:27017 -v ~/mongodb:/data/db --name Bumbal mongo:latest`. The entire command line should look like this: 
-
-```
-C:\Users\20193308\mongodb> docker run -d -p 27017:27017 --name Bumbal mongo:latest
-```
-
-- [ ]  Enter `docker ps`. You should see something similar:
-
-```
-C:\Users\20193308\mongodb> docker ps
-
-CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS                      NAMES
-a56ffa709baa   mongo:latest   "docker-entrypoint.s…"   7 seconds ago    Up 7 seconds    0.0.0.0:27017->27017/tcp    Bumbal
-```
-- [ ]  Open the Docker Desktop. You should see Container "Bumbal" with status "Running".
-
-- [ ] Press on the Bumbal Container and go to "Terminal". _(Or you can continue using cmd by entering: "docker exec -it Bumbal /bin/bash" in the cmd)_
-
-- [ ]  Enter `mongosh`. You should see something similar:
-
-```
-C:\Users\20193308\mongodb> mongosh
-
-Current Mongosh Log ID: 63fdcfa758222f13f077d16e
-Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
-Using MongoDB:          6.0.4
-Using Mongosh:          1.6.2
-```
-
-- [ ]  Enter `show dbs`. You should see something similar:
-```
-C:\Users\20193308\mongodb> show dbs
-
-admin   40.00 KiBur products, anonymous usage data is collected and sent to MongoDB periodically (https://www.mongodb.co
-config  60.00 KiBolicy).
-local   40.00 KiBy running the disableTelemetry() command.
-```
-Commands that can be used in the shell: `use admin`,`use local`, `use test`, `show collections`, etc... https://www.mongodb.com/docs/mongodb-shell/
-
-- [ ]  Run `MongoDB Compass`. Enter `mongodb://localhost:27017`.
-
-
-![](https://www.prisma.io/dataguide/content/mongodb/setting-up-a-local-database/windows/16_compass_running.png)
-
-9 minutes Tutorial: https://www.youtube.com/watch?v=xBbSR7xU2Yw
