@@ -1,9 +1,11 @@
 # B-zone
 SEP-2023/Q3 Bumbal zone management
 
-In this README file it is detailed which files should not be checked in the code quality assessment. This is separated into backend and frontend parts, since the backend uses Go, which cannot be checked with the suggested tools and thus in discussion with the course coordinator different tools were chosen.
+In this README file it is detailed which files should be checked or not be checked in the code quality assessment. This is separated into distinct backend and frontend parts, since the backend uses Go, which cannot be checked with the suggested tools and thus in discussion with the course coordinator different tools were chosen.
 
 ## Backend
+*Should not be checked:*
+
 Automatically generated:
 - None
 
@@ -39,17 +41,53 @@ Test files:
 - zipcodes_test.go
 - script_test.go
 
+*Should be checked:*
+
+All of the other files in the backend folder.
+
 ## Frontend
+*Should not be checked:*
 
 Automatically generated:
-- ..
+- node_modules/.
+- manifest.json
+- robots.txt
+- reporWebVitals.js
+- setupTests.js
+- package-lock.json
+- package.json
 
 Compiled but unchanged third party resources:
-- ..
+- None
 
 Data files/classes:
-- ..
+- NL_Boundary.json
 
 Test files:
-- ..
+- src/test/.
+
+*Should be checked:*
+
+Created/changed files, all in frontend/src:
+
+- headerComponent.js
+- heatmapComponent.js
+- mapComponent.js
+- polygonComponents.js
+- sliderComponent.js
+- textComponent.js
+- getActivities.js
+- getAllActivities.js
+- querryDatabase.js
+- pages/home/index.css
+- pages/home/index.js
+- pages/login/index.css
+- pages/login/index.js
+- App.css
+- App.js
+
+- index.html
+- index.js
+
+
 
