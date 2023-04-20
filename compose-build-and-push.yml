@@ -1,7 +1,7 @@
 services:
   b-zone-backend:
     build:
-      dockerfile: packageApp.Dockerfile
+      dockerfile: BuildBackend.Dockerfile
     image: goglete/sep_bzone_backend:latest
     container_name: b-zone-backend-container
     ports:
