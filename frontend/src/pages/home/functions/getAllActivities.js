@@ -1,5 +1,9 @@
 import getActivities from "./getActivities"
 
+/**
+ Sends multiple request to the Bumbal API in order to retrieve all activities.
+ @returns {Promise<Array>} - A promise resolving to an array containing all activities from Bumbal.
+ */
 async function getAllActivities() {
     const token = localStorage.getItem('token')
 
