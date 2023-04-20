@@ -8,17 +8,18 @@ import { Layout, Menu, theme, ConfigProvider, Spin } from 'antd';
 // Components
 import Map from './components/mapComponent';
 import TextComponent from './components/textComponent'
+import SiderComponent from "./components/siderComponent";
+import HeaderComponent from "./components/headerComponent";
 
 // CSS
 import './index.css';
-import SiderComponent from "./components/sliderComponent";
 
-import HeaderComponent from "./components/headerComponent";
 
 // Components from Ant Design.
 const { darkAlgorithm } = theme;
 const { Header, Content, Sider } = Layout;
 
+//get user token from local storage
 localStorage.getItem('token')
 
 export default function Home() {
@@ -59,11 +60,15 @@ export default function Home() {
     const [zoneName2, setZoneName2] = useState("");
 
 
-    // For radio.
+    // For radio
     const [value, setValue] = useState(1);
+    // For keeping track of currently displayed zones' zip codes
     const [zipCodes, setZipCodes] = useState([]);
+    // For keeping track of the fuel cost input from user
     const [averageFuelCost, setAverageFuelCost] = useState("1.8");
+    // For keeping track of the fuel usage input from user
     const [averageFuelUsage, setAverageFuelUsage] = useState("0.047");
+
     const onChange = (e) => {
         setValue(e.target.value);
     };
@@ -71,11 +76,9 @@ export default function Home() {
     // Track which zone is selected.
     const [zoneId, setZoneId] = useState('initial');
 
-    // For intensity.
+    // For intensity of heatmap
     const [intensity, setIntensity] = useState(500)
     const onChangeNumber = (e) => {
-        console.log('home')
-        console.log(intensity)
         setIntensity(e)
     }
 
@@ -84,19 +87,22 @@ export default function Home() {
     * @return {void}
     */
     async function handleSaveClick() {
-        console.log(savedZones);
+        //if zipcodes is empty, there are no new zones to save (intial zone is always automatically saved to backend)
         if (zipCodes.length === 0) {
             alert('nothing to save')
             return null;
         }
+        //window prompt for user to give a name to their zone
         const name = window.prompt('Enter a name for the save:');
         if (name) {
+            //check first whether the name has already been used for another saved zone
             for (let i = 0; i < savedZones.length; i++) {
                 if (name === savedZones[i].user_plot_name) {
                     alert("you have already saved a zone under this name!")
                     return null;
                 }
             }
+            //otherwise, save the zone
             addSavedZone(name);
             setZipCodes([])
         }
@@ -113,8 +119,8 @@ export default function Home() {
     * @return {void}
     */
     const handleDeleteZone = (id, name) => {
+        // Make sure user actually wants to delete plot via boolean variable confirmation
         const confirm = window.confirm('Confirm deletion of ' + name);
-        // Make sure user actually wants to delete plot.
         if (confirm) {
             deleteSavedZone(id)
         }
@@ -135,7 +141,7 @@ export default function Home() {
 
         })
 
-        // Send request to api to add zone and wait until it is completed.
+        // Send request to B-Zone API to add zone and wait until it is completed. POST method and two body values required
         await fetch("http://localhost:4000/plot/save", {
             method: 'POST',
             headers: {
@@ -144,7 +150,7 @@ export default function Home() {
                 'Authorization': `Bearer ${userToken}`
             },
             body: bodyValues
-
+        //wait on response to verify whether it is OK or not
         }).then(async (response) => {
             if (!response.ok) {
                 console.log('error in response to set zone')
@@ -164,7 +170,9 @@ export default function Home() {
     * @return {void}
     */
     async function deleteSavedZone(id) {
+        //User Token
         const userToken = localStorage.getItem('token')
+        //delete a plot from B-Zone backend, DELETE method required as well as the id of the saved plot to be deleted
         await fetch("http://localhost:4000/plot/" + id, {
             method: 'DELETE',
             headers: {
@@ -172,6 +180,7 @@ export default function Home() {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${userToken}`
             }
+        //upon ok response, updated the saved zones in sider component via getSavedZones()
         }).then(async (response) => {
             if (response.ok) {
                 const saved = await getSavedZones();
@@ -179,6 +188,7 @@ export default function Home() {
                 alert('Plot succesfully deleted')
                 return null
             }
+            //otherwise, notify user
             alert('Could not delete plot, server error')
             return null
         })
@@ -191,7 +201,7 @@ export default function Home() {
     async function getSavedZones() {
         // Array to hold saved zones.
         let saved = []
-
+        // Fetch the saved user plots from B-Zone backend, GET method, Bearer's authorization via user token
         await fetch("http://localhost:4000/user/plots", {
             method: 'GET',
             headers: {
@@ -199,6 +209,7 @@ export default function Home() {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
+        //if response was not OK, notify user. otherwise, return the set of saved zones
         }).then((response) => {
             if (!response.ok) {
                 alert('error retrieving zones')
@@ -238,11 +249,13 @@ export default function Home() {
             }}
         >
             <Layout style={{ height: '100vh' }}>
+                {/*Include header component at top of page*/}
                 <Header className="header" >
                     <HeaderComponent handleSaveClick={handleSaveClick} savedZones={savedZones} />
                     <Menu theme="dark" mode="horizontal" />
                 </Header>
                 <Layout >
+                    {/*Include sider component at side of page*/}
                     <Sider width={"225"} style={{ background: colorBgContainer }}>
                         <SiderComponent
                             savedZones={savedZones}
@@ -275,9 +288,11 @@ export default function Home() {
                         />
                     </Sider>
                     <Layout style={{ padding: 30 }}>
+                        {/*Set out content space for map component*/}
                         <Content className="map" id="map" style={{ minHeight: '60vh', overflow: 'auto' }}>
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
+                                    {/*Add spinning component to notify user when the map is loading*/}
                                     <Spin spinning={!computed || !computedHeat} delay={500} tip={
                                         (() => {
                                             if (!computed && !computedHeat) {
@@ -291,6 +306,7 @@ export default function Home() {
                                             }
                                         })()
                                     }>
+                                        {/*Include map component at top of page*/}
                                         <Map intensity={intensity} value={value} onChange={onChange} onChangeNumber={onChangeNumber} zoneId={zoneId} setZipCodes={setZipCodes} setComputed={setComputed} algorithm={algorithm} nrofzones={nrofzones} setComputedHeat={setComputedHeat} setCalculatedZone={setCalculatedZone} voronoi={voronoi}/>;
                                    
                                     </Spin>
@@ -320,6 +336,7 @@ export default function Home() {
                             </div>
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px" }}>
                                 <div style={showComparison ? { paddingRight: "5px", width: "50%" } : { paddingRight: "5px", width: "100%" }}>
+                                    {/*Include text component at bottom of page*/}
                                     <TextComponent zoneId={zoneId}
                                         zoneName={zoneName}
                                         calculatedZone={calculatedZone}

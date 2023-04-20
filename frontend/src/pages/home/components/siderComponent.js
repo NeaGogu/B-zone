@@ -26,6 +26,11 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
         setVoronoi(e.target.value)
     };
 
+    /**
+     * Function to disable and enable the Voronoi option for algorithm
+     * @param {Int} algorithm - What type of algorithm option was selected by user.
+     * @return {Boolean}
+     */
     function disabledVornoi(algorithm) {
         if (algorithm === 1){
             return false;
@@ -46,6 +51,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
     // Input fields for the zone calculation (average fuel cost, average fuel usage of car, algorithm choices, number of zones).
     return (
         <Form onFinish={handleSubmit}>
+            {/*Form item to hold user input value of average fuel cost*/}
             <Form.Item rules={[{ required: true }]}>
                 <div style={{ padding: "0 5px" }}>
                     Average fuel cost
@@ -59,6 +65,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                     />
                 </div>
             </Form.Item>
+            {/*Form item to hold user input value of average fuel usage of car*/}
             <Form.Item>
                 <div style={{ padding: "0 5px" }}>
                     Average fuel usage of car
@@ -78,6 +85,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
             </div>
             <p> </p>
 
+            {/*Radio group to hold user input for the type of algorithm*/}
             <div style={{ width: '100%', textAlign: 'center' }}>
                 <Radio.Group onChange={onChangeAlgo} value={algorithm} style={{ paddingBottom: '10px' }}>
                     <Radio value={1}> Standard </Radio>
@@ -93,6 +101,7 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
             </div>
             <p> </p>
 
+            {/*Radio group to hold user input for the options of standard algorithm*/}
             <div style={{ width: '100%', textAlign: 'center' }}>
                 <Radio.Group onChange={onChangeVoronoi} value={voronoi} style={{ paddingBottom: '10px' }} disabled={disabledVornoi(algorithm)}>
                     <Radio value={false}> Regular </Radio>
@@ -101,6 +110,8 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                     </Tooltip>
                 </Radio.Group>
             </div>
+
+            {/*Form item to hold user input for the number of desired zones in calculation*/}
             <Form.Item>
                 <div style={{ padding: "0 5px" }}>
                     Number of Zones
@@ -114,8 +125,8 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
                     />
                 </div>
             </Form.Item>
-                
-            
+
+            {/*Calculation button for requesting a new zone claulcation*/}
             <div style={{ textAlign: "center", padding: 5 }}>
                 <Button
                     style={{ width: "95%"}}
@@ -130,12 +141,14 @@ const ZoneSubMenu = ({ onSubmit, setZoneId, toggleMap, algorithm, setAlgorithm, 
     );
 };
 
+//main SiderComponent function that renders all elements
 function SiderComponent(props) {
     const { values, setShowMap, setShowComparison, showMap, showComparison, onDeleteZone,
         setValue, setIntensity, savedZones, setZoneId, setCurrentView, algorithm,
         setAlgorithm, setNrofZones, currentView, setZoneName, setZoneName2, loadedHeat, setAverageFuelUsage,
         averageFuelCost,averageFuelUsage, setAverageFuelCost, voronoi, setVoronoi   } = props;
 
+    //For toggling map configuration.
     const toggleMap = () => {
         if (showComparison && !showMap) {
             setShowComparison(false);
@@ -143,6 +156,7 @@ function SiderComponent(props) {
         }
     };
 
+    //For toggling comparison configuration.
     const toggleComparison = () => {
         if (!showComparison && showMap) {
             setShowComparison(true);
@@ -173,6 +187,7 @@ function SiderComponent(props) {
          
             selectable={false}
         >
+            {/*Submenu to contain options and parameter input of the heatmap*/}
             <SubMenu key="sub3" data-testid="heatmap-btn" title="Heat map" style={{}}>
                 <div style={{ width: '100%', textAlign: 'center' }}>
                     <Menu.Item key="5" style={{ padding: 0 }}>
@@ -198,6 +213,7 @@ function SiderComponent(props) {
                 </Menu.Item>
             </SubMenu>
 
+            {/*Zone submenu*/}
             <SubMenu key="sub4" title="Zones">
                 <ZoneSubMenu
                     setZoneId={setZoneId}
@@ -213,6 +229,7 @@ function SiderComponent(props) {
                 />
             </SubMenu>
 
+            {/*Saved zones submenu*/}
             <SubMenu key="sub2" title="Saved Zones" >
                 <div style={{'max-height': '50vh', 'overflow': 'auto'}}>
                     {savedZones.map((zone) => (

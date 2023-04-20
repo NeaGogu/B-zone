@@ -15,18 +15,24 @@ import PolygonVis from './polygonComponents'
  * @return {JSX.Element|null} - Returns a JSX element containing a map marker with a popup, or null if the position is null.
  */
 function LocationMarker() {
+    // For keeping track of the position of a marker on the map
     const [position, setPosition] = useState(null);
+    // For keeping track of the address of a marker on the map
     const [address, setAddress] = useState(null);
+    // For keeping track of the zipcodes of a marker on the map
     const [zipcode, setZipcode] = useState(null);
+    // For keeping track of the visibility of a marker on the map
     const [markerVisible, setMarkerVisible] = useState(true); // added state variable
 
     const map = useMapEvents({
         click(e) {
+            //find latitude and longitude of where user has clicked on map
             const { lat, lng } = e.latlng;
             setPosition(e.latlng);
             
             const API_KEY = 'pk.eyJ1IjoidGFuaWFnb2lhMTEiLCJhIjoiY2xleTRrYm02MDlmMTN4bzVsZTR4cWp4OCJ9.hmT59q-Q1IcEjC6mdY2R9w';
             const API_URL = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${API_KEY}&types=postcode,address`;
+            //send API request to mapbox with latitude and longitude to update the address and zipcodes of marker clicked
             fetch(API_URL)
                 .then(response => response.json())
                 .then(data => {
@@ -49,6 +55,7 @@ function LocationMarker() {
     return position === null ? null : (
         markerVisible && ( // Conditionally render the Marker based on the markerVisible state variable
             <Marker position={position}>
+                {/*Create a popup for the marker detailing address, zipcodes and coordinates*/}
                 <Popup>
                     <div>
                         <div>Latitude: {position.lat.toFixed(4)}</div>
@@ -67,10 +74,13 @@ function MapComponent(props) {
     const { value, intensity, zoneId, setZipCodes, setComputed, algorithm, nrofzones, setComputedHeat, setCalculatedZone, voronoi } = props;
 
     return (
+
         <MapContainer center={[52, 7]} zoom={7} scrollWheelZoom={true} style={{ height: '60vh', flex: "1" }}>
+            {/*A map container with imported geographical data from OSM*/}
             <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
+            {/*add layers over the map container for heat map and zones*/}
             <LayersControl position='topright'>
                 <LayersControl.Overlay name='Heat map' checked={true}>
                     <LayerGroup >
