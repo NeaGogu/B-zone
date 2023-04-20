@@ -55,7 +55,6 @@ async function getCoordinates(zipsList) {
             struct.push(await fetch('http://localhost:4000/test/zip/coordinates?zip_from=' + zipsList[i][j].zipFrom.toString() + '&zip_to=' + zipsList[i][j].zipTo.toString())
                 .then((response) => {
                     if (!response.ok) {
-                        console.log("Response from our backend is not ok ???")
                     }
                     return response.json()
                 })
@@ -288,7 +287,7 @@ async function calculateZone(algorithm, nrofzones) {
 /**
 * Function to render the non-expanded zones
 * @param {Object} context - Leaflet Map Context.
-* @param {Arrat} coordinatesList - Coordinates of zones to be rendered.
+* @param {Array} coordinatesList - Coordinates of zones to be rendered.
 * @return {Void}
 */
 function renderZones(context, coordinatesList) {

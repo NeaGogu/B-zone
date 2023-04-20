@@ -40,11 +40,11 @@ const user_items = [
  * @return {void}
  */
 function signOut() {
+    //get token from local storage, instantiate boolean variable for validity
     const token = localStorage.getItem('token');
     var valid;
 
-    //1. Delete the user token and send sign out GET message.
-    console.log("Fetching sign out API")
+    //send sign-out API request to Bumbal API, GET method, user token encoded in both URL and Bearer's Authorization
     fetch(`https://sep202302.bumbal.eu/api/v2/authenticate/sign-out?token=${encodeURIComponent(token)}`, {
         method: 'GET',
         headers: {
@@ -53,20 +53,17 @@ function signOut() {
             'Authorization': `Bearer ${token}`, // Add token to Bearer Authorization when sending GET signOut request.
         }
     })
+        //if response is ok, set validity of user signing out to true
         .then((response) => {
-            console.log("This is the response:")
-            console.log(response)
             if (response.ok) {
                 valid = true;
 
             }
+        //if valid response, clear the local storage and reroute user to login page. otherwise, notify user of error
         }).then((data) => {
-        console.log("This is the data:")
-        console.log(data)
         if (valid) {
             localStorage.clear();
             alert('You have been logged out!')
-            //2. Re-route user to home page.
             window.location.reload()
         } else {
             alert("You could not be logged out! Please try again later.")
@@ -75,6 +72,7 @@ function signOut() {
 }
 
 // The main header component, shows the logo, the B-Zone title, the save button and the user credentials menu.
+// Includes B-Zone logo, B-Zone title, and Dropdown menu for viewing credentials + signing out
 const HeaderComponent = ({handleSaveClick}) => {
     return (
         <div style={{ display: 'flex', justifyContent: 'flex-end' }} >

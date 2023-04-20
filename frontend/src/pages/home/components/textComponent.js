@@ -7,8 +7,9 @@ import { Collapse } from 'antd';
 const { Panel } = Collapse;
 
 /**
- Finds the latitude and longitude of each activity address and returns the data as an array.
- @returns {int} - The array containing latitude, longitude, and intensity for each address.
+ Updates the time property to be the total activity duration for a particular user.
+ @param {Function} - The function which sets total activity duration
+ @returns {null} - No return, settime function input is used to update the total activity time
  */
 async function totalActivityDurations(settime) {
     const activities = await getAllActivities();
@@ -28,33 +29,47 @@ async function totalActivityDurations(settime) {
     settime(time);
 }
 
+/**
+ Function to sum up total driving time for a particular driving route.
+ @param {Promise Response} - An API call response from OSRM
+ @returns {int} - the sum of total driving time over all legs of a route
+ */
 async function getDrivingTime(drivingData) {
     // Input: a fetch response from OSRM with multiple legs per driving route.
     // Output: the total sum of the duration over all the legs of the route.
     let drivingLegs = drivingData.routes[0].legs
     let sum = 0
 
+    //for each driving leg, add up the total duration
     for (let i = 0; i < drivingLegs.length; i++) {
         sum = sum + drivingLegs[i].duration
     }
     return sum;
 }
 
+/**
+ Function to sum up total driving distance for a particular driving route.
+ @param {Promise Response} - An API call response from OSRM
+ @returns {int} - the sum of total driving distance over all legs of a route
+ */
 async function getDrivingDistance(drivingData) {
     // Input: a fetch response from OSRM with multiple legs per driving route.
     // Output: the total sum of the distance over all the legs of the route.
     let drivingLegs = drivingData.routes[0].legs
     let sum = 0
 
+    //sum up the distance over all legs of a route
     for (let i = 0; i < drivingLegs.length; i++) {
         sum = sum + drivingLegs[i].distance
     }
     return sum;
 }
 
+//main function, rendering all elements of Text Component
 function TextComponent(props) {
     const { zoneId, zoneName, calculatedZone, averageFuelCost, averageFuelUsage } = props;
 
+    //other const values and setters, to update various metrics such as activity time, driving time, etc.
     const [name, setName] = useState('')
     const [loaded, setLoaded] = useState(false)
     const [time, setTime] = useState(0)
@@ -74,6 +89,7 @@ function TextComponent(props) {
             let plot = []; // Variable to hold the object of zones/zone configuration upon which to calculate driving time.
 
             if (zoneId.startsWith('calculate')) { // The plot is a freshly calculated optimized plot
+                //Manipulate plot data into a B-Zone frontend compatible data structure
                 for (let i = 0; i < calculatedZone.plot_zones.length; i++) {
                     plot[i] = calculatedZone.plot_zones[i].zone_ranges
                     for (let j = 0; j < plot[i].length; j++) {
@@ -85,6 +101,7 @@ function TextComponent(props) {
 
             else {
                 if (zoneId.startsWith('initial')) { // The plot is the initial plot from Bumbal.
+                    //Manipulate Bumbal data into a B-Zone frontend compatible data structure
                     setName(zoneName)
                     for (let i = 0; i < calculatedZone.length; i++) {
                         for (let j = 0; j < calculatedZone[i].length; j++) {
@@ -98,9 +115,6 @@ function TextComponent(props) {
                     setName(zoneName)
                 }
             }
-
-            console.log("The plot currently working with is: ")
-            console.log(plot)
 
             let listOfActivities = await getAllActivities() // Get all activity locations from Bumbal.
 
@@ -184,6 +198,7 @@ function TextComponent(props) {
                 setTimeZoneText(prevTimeZoneText => [...prevTimeZoneText, activityTimeZone[i]]);
             }
 
+            //update activity time, driving time, etc. parameters to newly calculated values
             setDrivingTimeActiv(prevDrivingTimeActiv => []);
             setDrivingDistanceActiv(prevDrivingDistanceActiv => []);
 
@@ -210,11 +225,12 @@ function TextComponent(props) {
 
     return (
         <Card title={name} style={{ marginLeft: 'auto', marginRight: 'auto', flex: '1' }} >
+            {/*Add spinner for delay upon loading of the component*/}
             <Spin spinning={!loaded} delay={200} tip='Calculating...'>
                 <div >
                     {/*fuel cost = fuel input times driving time*/}
-                    {/*<p>Total cost: ${fuelCost}</p>*/}
                     <Collapse >
+                        {/*Add a first panel header, to summarize the driving distance over all zones*/}
                         <Panel header={`Total cost: \u20AC${fuelCost.toPrecision(3)}`} key="1">
                             <ul>
                                 <li>Distance over the zones: </li>
@@ -235,6 +251,7 @@ function TextComponent(props) {
                     </Collapse>
                     <p> </p>
                     <Collapse>
+                        {/*Add a first panel header, to summarize the activity time over all zones*/}
                         <Panel key={3} header={`Total activity time in hours: ${time}`}>
                             <ul>
                                 <li> Activity time over the zones: </li>
@@ -252,6 +269,7 @@ function TextComponent(props) {
                     {/*driving time = find activities per zone. find driving time in order between those activities using OSRM */}
                     {/*<p>Total driving time: {drivingTime}</p>*/}
                     <Collapse>
+                        {/*Add a first panel header, to summarize the driving time over all zones*/}
                         <Panel key={2} header={`Total driving time: ${Math.floor(drivingTime)} hours and ${Math.round((drivingTime % 1) * 60)} minutes`}>
                             <ul>
                                 <li>Driving time over the zones:</li>
