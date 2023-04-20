@@ -8,7 +8,7 @@ import { Layout, Menu, theme, ConfigProvider, Spin } from 'antd';
 // Components
 import Map from './components/mapComponent';
 import TextComponent from './components/textComponent'
-import SiderComponent from "./components/sliderComponent";
+import SiderComponent from "./components/siderComponent";
 import HeaderComponent from "./components/headerComponent";
 
 // CSS

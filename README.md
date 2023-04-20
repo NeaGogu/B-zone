@@ -110,7 +110,7 @@ Created/changed files, all in frontend/src/.:
 - pages/home/components/heatmapComponent.js
 - pages/home/components/mapComponent.js
 - pages/home/components/polygonComponents.js
-- pages/home/components/sliderComponent.js
+- pages/home/components/siderComponent.js
 - pages/home/components/textComponent.js
 - pages/home/functions/getActivities.js
 - pages/home/functions/getAllActivities.js
