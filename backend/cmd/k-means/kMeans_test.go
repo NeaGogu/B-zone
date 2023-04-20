@@ -664,6 +664,53 @@ func TestHaversineDistance(t *testing.T) {
 	}
 }
 
+func TestDistanceKilometers(t *testing.T) {
+	testCases := []struct {
+		name           string
+		observation    observation
+		cluster        Cluster
+		expectedResult float64
+	}{
+		{
+			name: "Basic test case",
+			observation: observation{
+				Coordinates: createCoordinate(t, 40.7128, -74.0060),
+			},
+			cluster: Cluster{
+				Center: createCoordinate(t, 37.7749, -122.4194),
+			},
+			expectedResult: 4129,
+		},
+		{
+			name: "Observation and cluster have same coordinates",
+			observation: observation{
+				Coordinates: createCoordinate(t, 37.7749, -122.4194),
+			},
+			cluster: Cluster{
+				Center: createCoordinate(t, 37.7749, -122.4194),
+			},
+			expectedResult: 0,
+		},
+		{
+			name: "Observation and cluster are on opposite sides of the earth",
+			observation: observation{
+				Coordinates: createCoordinate(t, 51.448557, 5.450123),
+			},
+			cluster: Cluster{
+				Center: createCoordinate(t, -51.448557, -174.549877),
+			},
+			expectedResult: 20015,
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			result := distanceKilometers(tt.observation, tt.cluster)
+			assert.InDelta(t, tt.expectedResult, result, 1.0, "Unexpected distance result")
+		})
+	}
+}
+
 func BenchmarkKMeansALot(t *testing.B) {
 	activities := make(activities, 0)
 	for i := 0; i < 100000; i++ {

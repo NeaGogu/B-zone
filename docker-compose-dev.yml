@@ -1,0 +1,37 @@
+# This docker compose file is used to run Bzone in development mode
+# The images are built from source and all containers are exposed
+# To run this file and ensure that you have the latest version of the images, run
+#
+# docker compose -f docker-compose-dev.yml up --force-recreate --build -d
+
+services:
+  b-zone-backend:
+    build:
+      dockerfile: BuildBackend.Dockerfile
+    image: bzone/backend_image:dev-image
+    container_name: b-zone-backend-dev
+    ports:
+      - "4000:4000"
+    networks:
+      - bzone_dev_network
+  b-zone-frontend:
+    build:
+         dockerfile: BuildFrontendDev.Dockerfile
+    image: bzone/frontend_image:dev-image
+    container_name: b-zone-frontend-dev
+    environment:
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    networks:
+      - bzone_dev_network
+  mongodb:
+    image: goglete/sep_initial_db:v1.0.0
+    container_name: mongodb-container
+    ports:
+      - "27017:27017"
+    networks:
+      - bzone_dev_network
+networks:
+  bzone_dev_network:
+    driver: bridge

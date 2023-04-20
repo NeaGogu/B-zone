@@ -1,76 +1,125 @@
 # B-zone
 SEP-2023/Q3 Bumbal zone management
 
+In this README file it is detailed which files should be checked or not be checked in the code quality assessment. This is separated into distinct backend and frontend parts, since the backend uses Go, which cannot be checked with the suggested tools and thus in discussion with the course coordinator different tools were chosen.
 
-### Setting up Frontend
-##### Installation
-**Node.js** can be installed from the following link: https://nodejs.org/en/download/
+## Root
+Files in the root should not be checked, all of B-Zone's source files are in either the backend or the frontend folder.
 
-##### Set up
-In the terminal run `cd frontend`, to access the frontend app. To start the web app run `npm start`. The web app should open a tab automatically, but if this is not the case it is located at http://localhost:3000/. To stop the app, press `Ctrl + c` in the terminal and answer `y` to the prompt (if there is one).   
+## Backend
+All files listed below are in backend/.
 
-### Setting up DataBase: MongoDB + Docker
-We will use Docker to host a MongoDB instance locally.
+*Should not be checked:*
 
-- [ ] Install [Docker Desktop](https://www.docker.com/products/docker-desktop/). Run it (update WSL2 if needed).
+Automatically generated:
+- None
 
-- [ ] Download [MongoDB Shell](https://www.mongodb.com/try/download/shell).
+Compiled but unchanged third party resources:
+- None
 
-- [ ] Download [MongoDB Compass](https://www.mongodb.com/try/download/compass).
+Data files/classes:
+- internal/bumbal/bumbal_swag_models.go
+- internal/models/bzone_models.go
+- internal/models/bZonePlot.go
 
-- [ ] Open Command Prompt (cmd). 
+Test files:
+- cmd/genetic/geneticAlgorithm_test.go
+- cmd/genetic/population_test.go
+- cmd/genetic/pos_test.go
+- cmd/genetic/route_test.go
+- cmd/genetic/sliceFunctions_test.go
+- cmd/genetic/solution_test.go
+- cmd/k-means/clusterToZipcode_test.go
+- cmd/k-means/kMeans_test.go
+- cmd/web/handlers_test.go
+- cmd/web/helpers_test.go
+- cmd/web/plotids_handler_test.go
+- cmd/web/routes_test.go
+- cmd/web/zip_handler_test.go
+- internal/bumbal/bumbal_zones_test.go
+- internal/bumbal/handler_helpers_test.go
+- internal/models/bumbal_handler_models_test.go
+- internal/models/bZonePlot_test.go
+- internal/models/plotids_test.go
+- internal/models/test_env_models_test.go
+- internal/models/users_test.go
+- internal/models/zipcodes_test.go
+- scripts/script_test.go
 
-- [ ] Enter ```docker pull mongo```.
+*Should be checked:*
 
-- [ ] Enter ```docker images```. You should see something similar:
+- cmd/genetic/geneticAlgorithm.go
+- cmd/genetic/population.go
+- cmd/genetic/pos.go
+- cmd/genetic/route.go
+- cmd/genetic/sliceFunctions.go
+- cmd/genetic/solution.go
+- cmd/k-means/clusterToZipcode.go
+- cmd/k-means/kMeans.go
+- cmd/web/bumbal_handler.go
+- cmd/web/helpers.go
+- cmd/web/main.go
+- cmd/web/plotids_handler.go
+- cmd/web/routes.go
+- cmd/web/zip_handler.go
+- internal/bumbal/bumbal_swag_models.go
+- internal/bumbal/bumbal_zones_helper.go
+- internal/bumbal/handler_helpers.go
+- internal/bumbal/runGenetic_handler.go
+- internal/bumbal/runKMeans_handler.go
+- internal/models/bumbal_handler_models.go
+- internal/models/bzone_models.go
+- internal/models/bZonePlot.go
+- internal/models/errors.go
+- internal/models/plotids.go
+- internal/models/users.go
+- internal/models/zipcodes.go
+- internal/test/testing_env.go
+- scripts/populate_database.go
+- scripts/populate_zones_dummy.go
+- scripts/scrips_main.go
 
-```
-REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
-mongo        latest    a440572ac3c1   3 weeks ago   639MB
-```
+## Frontend
+All files listed below are in frontend/.
 
-- [ ] Enter `docker run -d -p 27017:27017 -v ~/mongodb:/data/db --name Bumbal mongo:latest`. The entire command line should look like this: 
+*Should not be checked:*
 
-```
-C:\Users\20193308\mongodb> docker run -d -p 27017:27017 --name Bumbal mongo:latest
-```
+Automatically generated:
+- node_modules/.
+- public/manifest.json
+- public/robots.txt
+- src/reporWebVitals.js
+- src/setupTests.js
+- package-lock.json
+- package.json
 
-- [ ]  Enter `docker ps`. You should see something similar:
+Compiled but unchanged third party resources:
+- None
 
-```
-C:\Users\20193308\mongodb> docker ps
+Data files/classes:
+- src/pages/home/Data/NL_Boundary.json
 
-CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS                      NAMES
-a56ffa709baa   mongo:latest   "docker-entrypoint.s…"   7 seconds ago    Up 7 seconds    0.0.0.0:27017->27017/tcp    Bumbal
-```
-- [ ]  Open the Docker Desktop. You should see Container "Bumbal" with status "Running".
+Test files:
+- src/test/.
 
-- [ ] Press on the Bumbal Container and go to "Terminal". _(Or you can continue using cmd by entering: "docker exec -it Bumbal /bin/bash" in the cmd)_
+*Should be checked:*
 
-- [ ]  Enter `mongosh`. You should see something similar:
+Created/changed files, all in frontend/src/.:
 
-```
-C:\Users\20193308\mongodb> mongosh
-
-Current Mongosh Log ID: 63fdcfa758222f13f077d16e
-Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
-Using MongoDB:          6.0.4
-Using Mongosh:          1.6.2
-```
-
-- [ ]  Enter `show dbs`. You should see something similar:
-```
-C:\Users\20193308\mongodb> show dbs
-
-admin   40.00 KiBur products, anonymous usage data is collected and sent to MongoDB periodically (https://www.mongodb.co
-config  60.00 KiBolicy).
-local   40.00 KiBy running the disableTelemetry() command.
-```
-Commands that can be used in the shell: `use admin`,`use local`, `use test`, `show collections`, etc... https://www.mongodb.com/docs/mongodb-shell/
-
-- [ ]  Run `MongoDB Compass`. Enter `mongodb://localhost:27017`.
-
-
-![](https://www.prisma.io/dataguide/content/mongodb/setting-up-a-local-database/windows/16_compass_running.png)
-
-9 minutes Tutorial: https://www.youtube.com/watch?v=xBbSR7xU2Yw
+- pages/home/components/headerComponent.js
+- pages/home/components/heatmapComponent.js
+- pages/home/components/mapComponent.js
+- pages/home/components/polygonComponents.js
+- pages/home/components/sliderComponent.js
+- pages/home/components/textComponent.js
+- pages/home/functions/getActivities.js
+- pages/home/functions/getAllActivities.js
+- pages/home/functions/querryDatabase.js
+- pages/home/index.css
+- pages/home/index.js
+- pages/login/index.css
+- pages/login/index.js
+- App.css
+- App.js
+- index.css
+- index.js
